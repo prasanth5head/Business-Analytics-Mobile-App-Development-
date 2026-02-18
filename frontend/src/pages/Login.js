@@ -1,0 +1,126 @@
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { GoogleLogin } from '@react-oauth/google';
+import { useNavigate } from 'react-router-dom';
+import './Login.css';
+
+const Login = () => {
+    const navigate = useNavigate();
+    const [credentials, setCredentials] = useState({ email: '', password: '' });
+    const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        const userInfo = localStorage.getItem('userInfo');
+        if (userInfo) {
+            navigate('/');
+        }
+    }, [navigate]);
+
+    const handleChange = (e) => {
+        setCredentials({ ...credentials, [e.target.name]: e.target.value });
+    };
+
+    const handleLogin = async (e) => {
+        e.preventDefault();
+        setError('');
+        setLoading(true);
+
+        try {
+            const res = await axios.post('http://localhost:5000/api/users/login', credentials);
+            localStorage.setItem('userInfo', JSON.stringify(res.data));
+            navigate('/');
+        } catch (err) {
+            setError(err.response?.data?.message || 'Invalid email or password');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleGoogleSuccess = async (credentialResponse) => {
+        try {
+            const { credential } = credentialResponse;
+            const res = await axios.post('http://localhost:5000/api/users/google-login', {
+                tokenId: credential,
+            });
+
+            localStorage.setItem('userInfo', JSON.stringify(res.data));
+            navigate('/');
+        } catch (err) {
+            console.error(err);
+            setError(err.response?.data?.message || 'Google Login Failed');
+        }
+    };
+
+    const handleError = () => {
+        setError('Google Sign In was unsuccessful. Try again later');
+    };
+
+    return (
+        <div className="login-container">
+            <div className="bg-circle bg-circle-1"></div>
+            <div className="bg-circle bg-circle-2"></div>
+
+            <div className="login-card">
+                <h1>Analytics Pro</h1>
+                <p>Sign in to unlock business insights</p>
+
+                {error && <div className="error-message">{error}</div>}
+
+                <form onSubmit={handleLogin} className="login-form">
+                    <div className="input-group">
+                        <input
+                            type="email"
+                            name="email"
+                            placeholder="Email Address"
+                            value={credentials.email}
+                            onChange={handleChange}
+                            required
+                        />
+                    </div>
+                    <div className="input-group">
+                        <input
+                            type="password"
+                            name="password"
+                            placeholder="Password"
+                            value={credentials.password}
+                            onChange={handleChange}
+                            required
+                        />
+                    </div>
+                    <button type="submit" className="login-btn" disabled={loading}>
+                        {loading ? 'Authenticating...' : 'Sign In'}
+                    </button>
+                </form>
+
+                <div className="divider">
+                    <span>OR</span>
+                </div>
+
+                <div className="google-login-wrapper">
+                    <GoogleLogin
+                        onSuccess={handleGoogleSuccess}
+                        onError={handleError}
+                        theme="filled_black"
+                        shape="pill"
+                        size="large"
+                        width="300"
+                        text="continue_with_google"
+                    />
+                </div>
+
+                <div className="redirect-link" style={{ marginTop: '20px', color: 'rgba(255, 255, 255, 0.7)' }}>
+                    Don't have an account?
+                    <span
+                        style={{ color: '#ff00cc', cursor: 'pointer', fontWeight: 'bold', marginLeft: '5px' }}
+                        onClick={() => navigate('/register')}
+                    >
+                        Register
+                    </span>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default Login;
