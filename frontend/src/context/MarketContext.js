@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import axios from 'axios';
+import api from '../api';
 
 const MarketContext = createContext();
 
@@ -12,11 +12,11 @@ export const MarketProvider = ({ children }) => {
     const fetchData = useCallback(async () => {
         try {
             setLoading(true);
-            const { data } = await axios.get(`${process.env.REACT_APP_API_URL}/api/market/data`);
+            const { data } = await api.get(`/api/market/data`);
             setMarketData(data);
 
             // Get AI recommendations based on the new market data
-            const { data: aiData } = await axios.post(`${process.env.REACT_APP_API_URL}/api/market/recommendations`, {
+            const { data: aiData } = await api.post(`/api/market/recommendations`, {
                 salesData: data.salesData,
                 productData: data.productData,
                 summary: data.summary
@@ -39,7 +39,7 @@ export const MarketProvider = ({ children }) => {
 
     const addRevenue = async (amount, month) => {
         try {
-            await axios.post(`${process.env.REACT_APP_API_URL}/api/market/revenue`, { amount, month });
+            await api.post(`/api/market/revenue`, { amount, month });
             await fetchData(); // Refresh data after adding
             return { success: true };
         } catch (err) {
