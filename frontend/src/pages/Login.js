@@ -27,7 +27,7 @@ const Login = () => {
         setLoading(true);
 
         try {
-            const res = await axios.post('http://localhost:5000/api/users/login', credentials);
+            const res = await axios.post(`${process.env.REACT_APP_API_URL}/api/users/login`, credentials);
             localStorage.setItem('userInfo', JSON.stringify(res.data));
             navigate('/');
         } catch (err) {
@@ -40,7 +40,7 @@ const Login = () => {
     const handleGoogleSuccess = async (credentialResponse) => {
         try {
             const { credential } = credentialResponse;
-            const res = await axios.post('http://localhost:5000/api/users/google-login', {
+            const res = await axios.post(`${process.env.REACT_APP_API_URL}/api/users/google-login`, {
                 tokenId: credential,
             });
 

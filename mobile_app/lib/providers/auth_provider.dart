@@ -12,7 +12,7 @@ class AuthProvider with ChangeNotifier {
   String? get token => _token;
   String? get userName => _userName;
 
-  final String baseUrl = 'http://10.0.2.2:5000/api/users';
+  final String baseUrl = 'https://business-analytics-mobile-app-development.onrender.com/api/users';
 
   AuthProvider() {
     _loadSession();

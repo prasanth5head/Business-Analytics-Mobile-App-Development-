@@ -15,7 +15,7 @@ class MarketProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
 
-  final String baseUrl = 'http://10.0.2.2:5000/api'; // Use 10.0.2.2 for Android emulator to access localhost
+  final String baseUrl = 'https://business-analytics-mobile-app-development.onrender.com/api';
 
   Future<void> fetchData() async {
     _isLoading = true;
