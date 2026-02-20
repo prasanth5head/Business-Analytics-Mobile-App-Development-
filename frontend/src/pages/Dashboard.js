@@ -147,38 +147,38 @@ const Dashboard = () => {
                         startIcon={<Refresh />}
                         onClick={refreshData}
                         disabled={loading}
-                        sx={{ borderRadius: 2, bgcolor: theme.palette.mode === 'light' ? '#1a237e' : theme.palette.primary.main }}
+                        sx={{ borderRadius: 3, px: 3 }}
                     >
-                        Update Live Feed
+                        Update Feed
                     </Button>
                 </Box>
             </Box>
 
             {/* Quick Action Bar / Input Revenue */}
-            <Paper sx={{ p: 3, mb: 4, borderRadius: 2, border: `1px solid ${theme.palette.divider}` }}>
-                <Typography variant="h6" sx={{ mb: 2, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <AddCircleOutline color="primary" /> Manual Revenue Entry
+            <Paper sx={{ p: 4, mb: 4, borderRadius: 6, border: `1px solid rgba(255,255,255,0.05)`, background: 'rgba(225, 255, 1, 0.02)' }}>
+                <Typography variant="h6" sx={{ mb: 3, fontWeight: 800, display: 'flex', alignItems: 'center', gap: 1.5, color: 'primary.main' }}>
+                    <AddCircleOutline /> Manual Revenue Entry
                 </Typography>
-                <Box component="form" onSubmit={handleAddRevenue} sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
+                <Box component="form" onSubmit={handleAddRevenue} sx={{ display: 'flex', gap: 3, alignItems: 'center', flexWrap: 'wrap' }}>
                     <TextField
-                        size="small"
+                        size="medium"
                         label="Revenue Amount"
                         variant="outlined"
                         value={revAmount}
                         onChange={(e) => setRevAmount(e.target.value)}
                         placeholder="e.g. 5000"
                         InputProps={{
-                            startAdornment: <InputAdornment position="start">₹</InputAdornment>,
+                            startAdornment: <InputAdornment position="start" sx={{ color: 'primary.main' }}>₹</InputAdornment>,
                         }}
-                        sx={{ flexGrow: 1, minWidth: '200px' }}
+                        sx={{ flexGrow: 1, minWidth: '240px' }}
                     />
                     <TextField
                         select
-                        size="small"
+                        size="medium"
                         label="Month"
                         value={revMonth}
                         onChange={(e) => setRevMonth(e.target.value)}
-                        sx={{ width: '150px' }}
+                        sx={{ width: '180px' }}
                     >
                         {months.map((m) => (
                             <MenuItem key={m} value={m}>{m}</MenuItem>
@@ -188,7 +188,7 @@ const Dashboard = () => {
                         type="submit"
                         variant="contained"
                         disabled={submitting}
-                        sx={{ height: '40px', px: 4, borderRadius: 2 }}
+                        sx={{ height: '56px', px: 5, borderRadius: 3, fontWeight: 800, fontSize: '1rem' }}
                     >
                         {submitting ? 'Adding...' : 'Add Data'}
                     </Button>
@@ -198,20 +198,19 @@ const Dashboard = () => {
             {/* AI Top Alert Bar */}
             {aiAnalysis && (
                 <Paper sx={{
-                    p: 2, mb: 4,
+                    p: 2.5, mb: 4,
                     display: 'flex',
                     alignItems: 'center',
-                    background: theme.palette.mode === 'light'
-                        ? 'linear-gradient(90deg, #1a237e 0%, #3949ab 100%)'
-                        : 'linear-gradient(90deg, #0d47a1 0%, #1a237e 100%)',
+                    background: 'linear-gradient(90deg, #161B22 0%, #0F131A 100%)',
+                    borderLeft: `6px solid ${theme.palette.primary.main}`,
                     color: 'white',
-                    borderRadius: 2,
-                    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.2)'
+                    borderRadius: 3,
+                    boxShadow: '0 10px 30px rgba(0, 0, 0, 0.3)'
                 }}>
-                    <Typography variant="body2" sx={{ flexGrow: 1, fontWeight: 500 }}>
-                        <strong>AI INSIGHT:</strong> {aiAnalysis.substring(0, 150)}...
+                    <Typography variant="body1" sx={{ flexGrow: 1, fontWeight: 600, letterSpacing: '0.01em' }}>
+                        <span style={{ color: theme.palette.primary.main }}>STRATEGIC AI:</span> {aiAnalysis.substring(0, 150)}...
                     </Typography>
-                    <Chip label="LIVE ANALYSIS" size="small" sx={{ bgcolor: 'rgba(255,255,255,0.2)', color: 'white', fontWeight: 'bold' }} />
+                    <Chip label="LIVE ANALYSIS" size="small" sx={{ bgcolor: theme.palette.primary.main, color: 'black', fontWeight: 900, px: 1 }} />
                 </Paper>
             )}
 
@@ -227,44 +226,44 @@ const Dashboard = () => {
             </Snackbar>
 
             {/* KPI Section */}
-            <Grid container spacing={3} sx={{ mb: 4 }}>
+            <Grid container spacing={4} sx={{ mb: 4 }}>
                 <Grid item xs={12} sm={6} md={3}>
                     <KPICard
-                        title="Total Revenue (Live)"
+                        title="Live Revenue"
                         value={`₹${summary.totalSales.toLocaleString()}`}
                         percentage={summary.growthRate}
                         icon={<AttachMoney />}
-                        color="#2e7d32"
+                        color={theme.palette.primary.main}
                         up={true}
                     />
                 </Grid>
                 <Grid item xs={12} sm={6} md={3}>
                     <KPICard
-                        title="Active Customers"
+                        title="Active Users"
                         value={summary.activeUsers.toLocaleString()}
                         percentage={summary.customerGrowth}
                         icon={<PeopleAlt />}
-                        color="#1976d2"
+                        color={theme.palette.secondary.main}
                         up={true}
                     />
                 </Grid>
                 <Grid item xs={12} sm={6} md={3}>
                     <KPICard
-                        title="Average Profit"
+                        title="Avg. Profit"
                         value={`₹${summary.avgProfit.toLocaleString()}`}
                         percentage={summary.profitGrowth}
                         icon={<TrendingUp />}
-                        color="#8e24aa"
+                        color="#00E6FF" // Ice Cyan
                         up={true}
                     />
                 </Grid>
                 <Grid item xs={12} sm={6} md={3}>
                     <KPICard
-                        title="Market Volatility"
-                        value="Low"
-                        percentage="Stable"
+                        title="Volatility"
+                        value="Stable"
+                        percentage="Low"
                         icon={<NotificationsActive />}
-                        color="#ff6f00"
+                        color={theme.palette.error.main}
                         up={false}
                     />
                 </Grid>

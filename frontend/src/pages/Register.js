@@ -51,23 +51,32 @@ const Register = () => {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                background: theme.palette.mode === 'dark'
-                    ? 'radial-gradient(circle at bottom right, #1a237e 0%, #232730 40%, #000 100%)'
-                    : 'radial-gradient(circle at bottom right, #f3e5f5 0%, #ffffff 40%, #f5f5f5 100%)',
+                background: `radial-gradient(circle at bottom right, ${theme.palette.secondary.main}15 0%, ${theme.palette.background.default} 60%, ${theme.palette.primary.main}10 100%)`,
                 position: 'relative',
                 overflow: 'hidden',
                 p: 2
             }}
         >
-            {/* Background Brushes */}
+            {/* Creative Aurora Glows */}
+            <Box sx={{
+                position: 'absolute',
+                bottom: '-10%',
+                right: '-10%',
+                width: 500,
+                height: 500,
+                borderRadius: '50%',
+                background: `radial-gradient(circle, ${theme.palette.secondary.main}20 0%, transparent 70%)`,
+                filter: 'blur(100px)',
+                zIndex: 0
+            }} />
             <Box sx={{
                 position: 'absolute',
                 top: '15%',
-                right: '15%',
+                left: '5%',
                 width: 350,
                 height: 350,
                 borderRadius: '50%',
-                background: 'rgba(234, 84, 85, 0.1)',
+                background: `radial-gradient(circle, ${theme.palette.primary.main}10 0%, transparent 70%)`,
                 filter: 'blur(90px)',
                 zIndex: 0
             }} />
@@ -77,24 +86,36 @@ const Register = () => {
                     <Paper
                         elevation={0}
                         sx={{
-                            p: { xs: 3, md: 5 },
-                            borderRadius: 4,
-                            bgcolor: theme.palette.mode === 'dark' ? 'rgba(47, 51, 73, 0.8)' : 'rgba(255, 255, 255, 0.9)',
-                            backdropFilter: 'blur(10px)',
-                            border: `1px solid ${theme.palette.divider}`,
+                            p: { xs: 4, md: 6 },
+                            borderRadius: 8,
+                            bgcolor: 'rgba(15, 19, 26, 0.7)',
+                            backdropFilter: 'blur(20px)',
+                            border: `1px solid rgba(255, 255, 255, 0.05)`,
                             textAlign: 'center',
-                            boxShadow: '0 8px 32px rgba(0,0,0,0.15)'
+                            boxShadow: '0 20px 80px rgba(0,0,0,0.5)',
+                            transition: 'all 0.3s ease',
+                            '&:hover': {
+                                border: `1px solid ${theme.palette.secondary.main}30`,
+                            }
                         }}
                     >
-                        <Box sx={{ mb: 3, display: 'inline-flex', p: 1.5, borderRadius: 2, bgcolor: 'secondary.main', color: 'white' }}>
+                        <Box sx={{
+                            mb: 4,
+                            display: 'inline-flex',
+                            p: 2,
+                            borderRadius: '24px',
+                            bgcolor: theme.palette.secondary.main,
+                            color: 'white',
+                            boxShadow: `0 0 20px ${theme.palette.secondary.main}40`,
+                        }}>
                             <RegisterIcon fontSize="large" />
                         </Box>
 
-                        <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 800, letterSpacing: -0.5 }}>
-                            Create Account
+                        <Typography variant="h3" component="h1" gutterBottom sx={{ fontWeight: 900, color: '#fff', mb: 1.5 }}>
+                            Register
                         </Typography>
-                        <Typography variant="body2" color="text.secondary" sx={{ mb: 4 }}>
-                            Join Analytics Pro and start growing your business
+                        <Typography variant="body2" sx={{ mb: 5, color: '#8F9BB3', letterSpacing: '0.05em', textTransform: 'uppercase', fontSize: '0.75rem' }}>
+                            Join the Strategic Network
                         </Typography>
 
                         {error && (

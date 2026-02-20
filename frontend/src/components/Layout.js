@@ -53,11 +53,16 @@ const Layout = () => {
     ];
 
     const drawer = (
-        <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-            <Toolbar sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', py: 2 }}>
-                <Typography variant="h5" color="primary" sx={{ fontWeight: 'bold' }}>
-                    BizAnalytics
-                </Typography>
+        <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', bgcolor: 'background.paper', borderRight: '1px solid rgba(255,255,255,0.05)' }}>
+            <Toolbar sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', py: 4, px: 3 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                    <Box sx={{ width: 40, height: 40, borderRadius: 3, bgcolor: 'primary.main', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 0 15px ${theme.palette.primary.main}40` }}>
+                        <Typography variant="h6" sx={{ color: 'black', fontWeight: 900 }}>BA</Typography>
+                    </Box>
+                    <Typography variant="h6" color="#fff" sx={{ fontWeight: 800, letterSpacing: '-0.02em' }}>
+                        BizAnalytics
+                    </Typography>
+                </Box>
             </Toolbar>
             <Box sx={{ overflow: 'auto', flexGrow: 1 }}>
                 <List>
@@ -67,21 +72,29 @@ const Layout = () => {
                                 selected={location.pathname === item.path}
                                 onClick={() => navigate(item.path)}
                                 sx={{
-                                    mx: 1,
-                                    borderRadius: 2,
+                                    mx: 2,
+                                    my: 0.5,
+                                    borderRadius: 3,
+                                    py: 1.5,
                                     '&.Mui-selected': {
-                                        backgroundColor: theme.palette.primary.main + '20', // 20% opacity
+                                        background: `linear-gradient(90deg, ${theme.palette.primary.main}25 0%, transparent 100%)`,
                                         color: theme.palette.primary.main,
-                                        '&:hover': {
-                                            backgroundColor: theme.palette.primary.main + '30',
+                                        '& .MuiListItemIcon-root': {
+                                            color: theme.palette.primary.main,
                                         },
+                                        '&:hover': {
+                                            background: `linear-gradient(90deg, ${theme.palette.primary.main}35 0%, transparent 100%)`,
+                                        },
+                                    },
+                                    '&:hover': {
+                                        bgcolor: 'rgba(255,255,255,0.03)',
                                     }
                                 }}
                             >
-                                <ListItemIcon sx={{ color: location.pathname === item.path ? theme.palette.primary.main : 'inherit' }}>
+                                <ListItemIcon sx={{ minWidth: 45, color: location.pathname === item.path ? theme.palette.primary.main : '#8F9BB3' }}>
                                     {item.icon}
                                 </ListItemIcon>
-                                <ListItemText primary={item.text} primaryTypographyProps={{ fontWeight: 500 }} />
+                                <ListItemText primary={item.text} primaryTypographyProps={{ fontWeight: 700, fontSize: '0.9rem' }} />
                             </ListItemButton>
                         </ListItem>
                     ))}

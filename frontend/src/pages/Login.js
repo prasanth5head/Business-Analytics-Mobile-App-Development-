@@ -83,35 +83,33 @@ const Login = () => {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                background: theme.palette.mode === 'dark'
-                    ? 'radial-gradient(circle at top left, #1a237e 0%, #232730 40%, #000 100%)'
-                    : 'radial-gradient(circle at top left, #e3f2fd 0%, #ffffff 40%, #f5f5f5 100%)',
+                background: `radial-gradient(circle at top left, ${theme.palette.primary.main}15 0%, ${theme.palette.background.default} 60%, ${theme.palette.secondary.main}10 100%)`,
                 position: 'relative',
                 overflow: 'hidden',
                 p: 2
             }}
         >
-            {/* Animated Background Elements */}
+            {/* Creative Aurora Glows */}
             <Box sx={{
                 position: 'absolute',
-                top: '10%',
-                left: '20%',
-                width: 300,
-                height: 300,
+                top: '-10%',
+                left: '-10%',
+                width: 500,
+                height: 500,
                 borderRadius: '50%',
-                background: 'rgba(115, 103, 240, 0.1)',
-                filter: 'blur(80px)',
+                background: `radial-gradient(circle, ${theme.palette.primary.main}20 0%, transparent 70%)`,
+                filter: 'blur(100px)',
                 zIndex: 0
             }} />
             <Box sx={{
                 position: 'absolute',
                 bottom: '10%',
-                right: '20%',
+                right: '10%',
                 width: 400,
                 height: 400,
                 borderRadius: '50%',
-                background: 'rgba(0, 207, 232, 0.1)',
-                filter: 'blur(100px)',
+                background: `radial-gradient(circle, ${theme.palette.secondary.main}15 0%, transparent 70%)`,
+                filter: 'blur(80px)',
                 zIndex: 0
             }} />
 
@@ -120,24 +118,36 @@ const Login = () => {
                     <Paper
                         elevation={0}
                         sx={{
-                            p: { xs: 3, md: 5 },
-                            borderRadius: 4,
-                            bgcolor: theme.palette.mode === 'dark' ? 'rgba(47, 51, 73, 0.8)' : 'rgba(255, 255, 255, 0.9)',
-                            backdropFilter: 'blur(10px)',
-                            border: `1px solid ${theme.palette.divider}`,
+                            p: { xs: 4, md: 6 },
+                            borderRadius: 8,
+                            bgcolor: 'rgba(15, 19, 26, 0.7)',
+                            backdropFilter: 'blur(20px)',
+                            border: `1px solid rgba(255, 255, 255, 0.05)`,
                             textAlign: 'center',
-                            boxShadow: '0 8px 32px rgba(0,0,0,0.15)'
+                            boxShadow: '0 20px 80px rgba(0,0,0,0.5)',
+                            transition: 'all 0.3s ease',
+                            '&:hover': {
+                                border: `1px solid ${theme.palette.primary.main}30`,
+                            }
                         }}
                     >
-                        <Box sx={{ mb: 3, display: 'inline-flex', p: 1.5, borderRadius: 2, bgcolor: 'primary.main', color: 'white' }}>
+                        <Box sx={{
+                            mb: 4,
+                            display: 'inline-flex',
+                            p: 2,
+                            borderRadius: '24px',
+                            bgcolor: theme.palette.primary.main,
+                            color: 'black',
+                            boxShadow: `0 0 20px ${theme.palette.primary.main}40`,
+                        }}>
                             <LogoIcon fontSize="large" />
                         </Box>
 
-                        <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 800, letterSpacing: -0.5 }}>
+                        <Typography variant="h3" component="h1" gutterBottom sx={{ fontWeight: 900, color: '#fff', mb: 1.5 }}>
                             Analytics Pro
                         </Typography>
-                        <Typography variant="body2" color="text.secondary" sx={{ mb: 4 }}>
-                            Sign in to unlock strategic business insights
+                        <Typography variant="body2" sx={{ mb: 5, color: '#8F9BB3', letterSpacing: '0.05em', textTransform: 'uppercase', fontSize: '0.75rem' }}>
+                            Strategic Intelligence Platform
                         </Typography>
 
                         {error && (
