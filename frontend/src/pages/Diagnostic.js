@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-    Box, Typography, Grid, Paper, Chip, Divider, Skeleton, Alert, Button
+    Box, Typography, Grid, Paper, Chip, Divider, Skeleton, Alert, Button, useTheme
 } from '@mui/material';
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
@@ -9,24 +9,35 @@ import {
 import { Refresh } from '@mui/icons-material';
 import { useMarket } from '../context/MarketContext';
 
-const FindingCard = ({ title, observation, evidence, severity }) => (
-    <Paper sx={{
-        p: 3, mb: 2,
-        borderLeft: `4px solid ${severity === 'High' || severity === 'Critical' ? '#d32f2f' : severity === 'Medium' || severity === 'Strategy' ? '#ff9800' : '#4caf50'}`
-    }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-            <Typography variant="h6" fontWeight="bold">{title}</Typography>
-            <Chip label={severity.toUpperCase()} size="small"
-                color={severity === 'High' || severity === 'Critical' ? 'error' : severity === 'Medium' || severity === 'Strategy' ? 'warning' : 'success'} />
-        </Box>
-        <Typography variant="body1" paragraph>{observation}</Typography>
-        <Typography variant="body2" color="text.secondary">
-            <strong>AI Observation:</strong> {evidence}
-        </Typography>
-    </Paper>
-);
+const FindingCard = ({ title, observation, evidence, severity }) => {
+    const theme = useTheme();
+    return (
+        <Paper sx={{
+            p: 3, mb: 2,
+            bgcolor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.02)' : 'background.paper',
+            borderLeft: `4px solid ${severity === 'High' || severity === 'Critical'
+                    ? theme.palette.error.main
+                    : severity === 'Medium' || severity === 'Strategy'
+                        ? theme.palette.warning.main
+                        : theme.palette.success.main
+                }`,
+            borderRadius: 2
+        }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                <Typography variant="h6" fontWeight="bold" color="text.primary">{title}</Typography>
+                <Chip label={severity.toUpperCase()} size="small"
+                    color={severity === 'High' || severity === 'Critical' ? 'error' : severity === 'Medium' || severity === 'Strategy' ? 'warning' : 'success'} />
+            </Box>
+            <Typography variant="body1" paragraph color="text.primary">{observation}</Typography>
+            <Typography variant="body2" color="text.secondary">
+                <strong>AI Observation:</strong> {evidence}
+            </Typography>
+        </Paper>
+    );
+};
 
 const Diagnostic = () => {
+    const theme = useTheme();
     const { marketData, aiRecommendations, loading, error, refreshData } = useMarket();
 
     if (loading && !marketData) {
@@ -63,14 +74,20 @@ const Diagnostic = () => {
             {/* Header */}
             <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <Box>
-                    <Typography variant="h4" fontWeight="900" gutterBottom sx={{ color: '#ff7300' }}>
+                    <Typography variant="h4" fontWeight="900" gutterBottom sx={{ color: 'text.primary' }}>
                         🔍 Diagnostic Analytics
                     </Typography>
                     <Typography variant="h6" color="text.secondary">
                         "Why did it happen?" — Real-time AI Data Correlation
                     </Typography>
                 </Box>
-                <Button startIcon={<Refresh />} onClick={refreshData} disabled={loading}>
+                <Button
+                    variant="outlined"
+                    startIcon={<Refresh />}
+                    onClick={refreshData}
+                    disabled={loading}
+                    sx={{ borderRadius: 2 }}
+                >
                     Update Analysis
                 </Button>
             </Box>
@@ -78,8 +95,8 @@ const Diagnostic = () => {
             {/* AI Diagnostics Summary */}
             <Grid container spacing={3} sx={{ mb: 4 }}>
                 <Grid item xs={12}>
-                    <Paper sx={{ p: 3, mb: 1, borderLeft: '6px solid #ff7300' }}>
-                        <Typography variant="h6" fontWeight="bold" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
+                    <Paper sx={{ p: 3, mb: 1, borderLeft: `6px solid ${theme.palette.primary.main}`, borderRadius: 2 }}>
+                        <Typography variant="h6" fontWeight="bold" gutterBottom color="text.primary">
                             AI-Generated Diagnostic Report
                         </Typography>
                         <Divider sx={{ my: 2 }} />
@@ -101,8 +118,8 @@ const Diagnostic = () => {
             </Grid>
 
             {/* Correlation Chart */}
-            <Paper sx={{ p: 3, mb: 4 }}>
-                <Typography variant="h6" gutterBottom fontWeight="bold">
+            <Paper sx={{ p: 3, mb: 4, borderRadius: 3 }}>
+                <Typography variant="h6" gutterBottom fontWeight="bold" color="text.primary">
                     Live Correlation: Unit Price vs. Sales Volume
                 </Typography>
                 <Typography variant="body2" color="text.secondary" gutterBottom>
@@ -110,14 +127,14 @@ const Diagnostic = () => {
                 </Typography>
                 <ResponsiveContainer width="100%" height={400}>
                     <ComposedChart data={priceSalesCorrelation}>
-                        <CartesianGrid stroke="#f5f5f5" />
-                        <XAxis dataKey="p" />
-                        <YAxis yAxisId="left" orientation="left" stroke="#413ea0" label={{ value: 'Sales', angle: -90, position: 'insideLeft' }} />
-                        <YAxis yAxisId="right" orientation="right" stroke="#ff7300" label={{ value: 'Price (₹)', angle: 90, position: 'insideRight' }} />
-                        <Tooltip />
+                        <CartesianGrid stroke={theme.palette.divider} vertical={false} />
+                        <XAxis dataKey="p" stroke={theme.palette.text.secondary} />
+                        <YAxis yAxisId="left" orientation="left" stroke={theme.palette.primary.main} label={{ value: 'Sales', angle: -90, position: 'insideLeft', fill: theme.palette.text.secondary }} />
+                        <YAxis yAxisId="right" orientation="right" stroke={theme.palette.secondary.main} label={{ value: 'Price (₹)', angle: 90, position: 'insideRight', fill: theme.palette.text.secondary }} />
+                        <Tooltip contentStyle={{ backgroundColor: theme.palette.background.paper, border: `1px solid ${theme.palette.divider}`, borderRadius: 8 }} />
                         <Legend />
-                        <Bar yAxisId="left" dataKey="sales" barSize={30} fill="#413ea0" name="Sales Volume" radius={[4, 4, 0, 0]} />
-                        <Line yAxisId="right" type="monotone" dataKey="price" stroke="#ff7300" strokeWidth={3} name="Unit Price (₹)" dot={{ r: 4 }} />
+                        <Bar yAxisId="left" dataKey="sales" barSize={30} fill={theme.palette.primary.main} name="Sales Volume" radius={[4, 4, 0, 0]} />
+                        <Line yAxisId="right" type="monotone" dataKey="price" stroke={theme.palette.secondary.main} strokeWidth={3} name="Unit Price (₹)" dot={{ r: 4, fill: theme.palette.secondary.main }} />
                     </ComposedChart>
                 </ResponsiveContainer>
             </Paper>
@@ -125,31 +142,31 @@ const Diagnostic = () => {
             {/* Risk Factors */}
             <Grid container spacing={3}>
                 <Grid item xs={12} md={6}>
-                    <Paper sx={{ p: 3, height: '100%' }}>
-                        <Typography variant="h6" gutterBottom fontWeight="bold">Complaint Trends</Typography>
+                    <Paper sx={{ p: 3, height: '100%', borderRadius: 3 }}>
+                        <Typography variant="h6" gutterBottom fontWeight="bold" color="text.primary">Complaint Trends</Typography>
                         <ResponsiveContainer width="100%" height={300}>
                             <LineChart data={salesData}>
-                                <CartesianGrid strokeDasharray="3 3" />
-                                <XAxis dataKey="p" />
-                                <YAxis />
-                                <Tooltip />
-                                <Line type="monotone" dataKey="complaints" stroke="#d32f2f" strokeWidth={2} name="Complaints" dot={{ r: 4 }} />
+                                <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
+                                <XAxis dataKey="p" stroke={theme.palette.text.secondary} />
+                                <YAxis stroke={theme.palette.text.secondary} />
+                                <Tooltip contentStyle={{ backgroundColor: theme.palette.background.paper, border: `1px solid ${theme.palette.divider}`, borderRadius: 8 }} />
+                                <Line type="monotone" dataKey="complaints" stroke={theme.palette.error.main} strokeWidth={2} name="Complaints" dot={{ r: 4, fill: theme.palette.error.main }} />
                             </LineChart>
                         </ResponsiveContainer>
                     </Paper>
                 </Grid>
                 <Grid item xs={12} md={6}>
-                    <Paper sx={{ p: 3, height: '100%' }}>
-                        <Typography variant="h6" gutterBottom fontWeight="bold">Product Risk Profile</Typography>
+                    <Paper sx={{ p: 3, height: '100%', borderRadius: 3 }}>
+                        <Typography variant="h6" gutterBottom fontWeight="bold" color="text.primary">Product Risk Profile</Typography>
                         <ResponsiveContainer width="100%" height={300}>
                             <BarChart data={returnVsMargin} layout="vertical">
-                                <CartesianGrid strokeDasharray="3 3" />
-                                <XAxis type="number" />
-                                <YAxis dataKey="name" type="category" width={80} />
-                                <Tooltip />
+                                <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
+                                <XAxis type="number" stroke={theme.palette.text.secondary} />
+                                <YAxis dataKey="name" type="category" width={80} stroke={theme.palette.text.secondary} />
+                                <Tooltip contentStyle={{ backgroundColor: theme.palette.background.paper, border: `1px solid ${theme.palette.divider}`, borderRadius: 8 }} />
                                 <Legend />
-                                <Bar dataKey="profitMargin" fill="#4caf50" name="Margin %" />
-                                <Bar dataKey="returnRate" fill="#f44336" name="Returns %" />
+                                <Bar dataKey="profitMargin" fill={theme.palette.success.main} name="Margin %" radius={[0, 4, 4, 0]} />
+                                <Bar dataKey="returnRate" fill={theme.palette.error.main} name="Returns %" radius={[0, 4, 4, 0]} />
                             </BarChart>
                         </ResponsiveContainer>
                     </Paper>

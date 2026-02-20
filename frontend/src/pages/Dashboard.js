@@ -43,14 +43,25 @@ import { useMarket } from '../context/MarketContext';
 const KPICard = ({ title, value, percentage, icon, color, up }) => {
     const theme = useTheme();
     return (
-        <Card sx={{ height: '100%', position: 'relative', overflow: 'hidden', borderBottom: `4px solid ${color}` }}>
+        <Card sx={{
+            height: '100%',
+            position: 'relative',
+            overflow: 'hidden',
+            borderBottom: `4px solid ${color}`,
+            borderRadius: 4,
+            transition: 'transform 0.3s ease',
+            '&:hover': {
+                transform: 'translateY(-5px)',
+                boxShadow: `0 10px 30px ${color}20`
+            }
+        }}>
             <CardContent>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                     <Box>
-                        <Typography color="text.secondary" variant="subtitle2" gutterBottom>
+                        <Typography color="text.secondary" variant="subtitle2" gutterBottom sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                             {title}
                         </Typography>
-                        <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 1 }}>
+                        <Typography variant="h4" sx={{ fontWeight: 900, mb: 1, color: 'text.primary' }}>
                             {value}
                         </Typography>
                         <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -69,12 +80,13 @@ const KPICard = ({ title, value, percentage, icon, color, up }) => {
                     <Box
                         sx={{
                             p: 1.5,
-                            borderRadius: '50%',
+                            borderRadius: 3,
                             bgcolor: `${color}15`,
                             color: color,
                             display: 'flex',
                             alignItems: 'center',
-                            justifyContent: 'center'
+                            justifyContent: 'center',
+                            boxShadow: `0 4px 10px ${color}20`
                         }}
                     >
                         {icon}
@@ -138,7 +150,7 @@ const Dashboard = () => {
             {/* Header Area */}
             <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Box>
-                    <Typography variant="h4" sx={{ fontWeight: 900, color: 'text.primary' }}>Global Operations Center</Typography>
+                    <Typography variant="h4" sx={{ fontWeight: 900, color: 'text.primary', letterSpacing: '-0.03em' }}>Global Operations Center</Typography>
                     <Typography variant="body1" color="text.secondary">Real-time market tracking & AI-driven strategic intelligence.</Typography>
                 </Box>
                 <Box sx={{ display: 'flex', gap: 2 }}>
@@ -147,7 +159,7 @@ const Dashboard = () => {
                         startIcon={<Refresh />}
                         onClick={refreshData}
                         disabled={loading}
-                        sx={{ borderRadius: 3, px: 3 }}
+                        sx={{ borderRadius: 3, px: 3, fontWeight: 900 }}
                     >
                         Update Feed
                     </Button>
@@ -155,7 +167,15 @@ const Dashboard = () => {
             </Box>
 
             {/* Quick Action Bar / Input Revenue */}
-            <Paper sx={{ p: 4, mb: 4, borderRadius: 6, border: `1px solid rgba(255,255,255,0.05)`, background: 'rgba(225, 255, 1, 0.02)' }}>
+            <Paper sx={{
+                p: { xs: 3, md: 4 },
+                mb: 4,
+                borderRadius: 4,
+                border: `1px solid ${theme.palette.divider}`,
+                background: theme.palette.mode === 'dark'
+                    ? `linear-gradient(135deg, ${theme.palette.background.paper} 0%, rgba(255, 94, 0, 0.05) 100%)`
+                    : `linear-gradient(135deg, #ffffff 0%, rgba(255, 94, 0, 0.05) 100%)`
+            }}>
                 <Typography variant="h6" sx={{ mb: 3, fontWeight: 800, display: 'flex', alignItems: 'center', gap: 1.5, color: 'primary.main' }}>
                     <AddCircleOutline /> Manual Revenue Entry
                 </Typography>
@@ -188,7 +208,7 @@ const Dashboard = () => {
                         type="submit"
                         variant="contained"
                         disabled={submitting}
-                        sx={{ height: '56px', px: 5, borderRadius: 3, fontWeight: 800, fontSize: '1rem' }}
+                        sx={{ height: '56px', px: 5, borderRadius: 3, fontWeight: 900, fontSize: '1rem' }}
                     >
                         {submitting ? 'Adding...' : 'Add Data'}
                     </Button>
@@ -201,16 +221,17 @@ const Dashboard = () => {
                     p: 2.5, mb: 4,
                     display: 'flex',
                     alignItems: 'center',
-                    background: 'linear-gradient(90deg, #161B22 0%, #0F131A 100%)',
+                    background: theme.palette.mode === 'dark' ? 'rgba(18, 18, 18, 1)' : '#ffffff',
                     borderLeft: `6px solid ${theme.palette.primary.main}`,
-                    color: 'white',
+                    color: 'text.primary',
                     borderRadius: 3,
-                    boxShadow: '0 10px 30px rgba(0, 0, 0, 0.3)'
+                    border: `1px solid ${theme.palette.divider}`,
+                    boxShadow: theme.palette.mode === 'dark' ? '0 10px 40px rgba(0,0,0,0.5)' : '0 10px 30px rgba(0,0,0,0.05)'
                 }}>
-                    <Typography variant="body1" sx={{ flexGrow: 1, fontWeight: 600, letterSpacing: '0.01em' }}>
-                        <span style={{ color: theme.palette.primary.main }}>STRATEGIC AI:</span> {aiAnalysis.substring(0, 150)}...
+                    <Typography variant="body1" sx={{ flexGrow: 1, fontWeight: 600, letterSpacing: '0.01em', color: 'text.primary' }}>
+                        <span style={{ color: theme.palette.primary.main, fontWeight: 900 }}>STRATEGIC AI:</span> {aiAnalysis.substring(0, 150)}...
                     </Typography>
-                    <Chip label="LIVE ANALYSIS" size="small" sx={{ bgcolor: theme.palette.primary.main, color: 'black', fontWeight: 900, px: 1 }} />
+                    <Chip label="LIVE ANALYSIS" size="small" sx={{ bgcolor: theme.palette.primary.main, color: 'white', fontWeight: 900, px: 1 }} />
                 </Paper>
             )}
 
@@ -218,9 +239,8 @@ const Dashboard = () => {
                 open={snackbar.open}
                 autoHideDuration={6000}
                 onClose={() => setSnackbar({ ...snackbar, open: false })}
-                message={snackbar.message}
             >
-                <Alert onClose={() => setSnackbar({ ...snackbar, open: false })} severity={snackbar.severity} sx={{ width: '100%' }}>
+                <Alert onClose={() => setSnackbar({ ...snackbar, open: false })} severity={snackbar.severity} sx={{ width: '100%', borderRadius: 2 }}>
                     {snackbar.message}
                 </Alert>
             </Snackbar>
@@ -253,7 +273,7 @@ const Dashboard = () => {
                         value={`₹${summary.avgProfit.toLocaleString()}`}
                         percentage={summary.profitGrowth}
                         icon={<TrendingUp />}
-                        color={theme.palette.success.main} // Bright Lime
+                        color={theme.palette.success.main}
                         up={true}
                     />
                 </Grid>
@@ -263,7 +283,7 @@ const Dashboard = () => {
                         value="Stable"
                         percentage="Low"
                         icon={<NotificationsActive />}
-                        color="#FF3D00" // Bright Red-Orange
+                        color={theme.palette.error.main}
                         up={false}
                     />
                 </Grid>
@@ -272,8 +292,8 @@ const Dashboard = () => {
             {/* Charts Row */}
             <Grid container spacing={3} sx={{ mb: 4 }}>
                 <Grid item xs={12} md={8}>
-                    <Paper sx={{ p: 3, borderRadius: 2, height: '100%', position: 'relative' }}>
-                        <Typography variant="h6" sx={{ mb: 3, fontWeight: 700 }}>Sales vs. Profit Performance</Typography>
+                    <Paper sx={{ p: 3, borderRadius: 4, height: '100%', border: `1px solid ${theme.palette.divider}` }}>
+                        <Typography variant="h6" sx={{ mb: 3, fontWeight: 800, color: 'text.primary' }}>Sales vs. Profit Performance</Typography>
                         <ResponsiveContainer width="100%" height={350}>
                             <AreaChart data={salesData}>
                                 <defs>
@@ -282,16 +302,16 @@ const Dashboard = () => {
                                         <stop offset="95%" stopColor={theme.palette.primary.main} stopOpacity={0} />
                                     </linearGradient>
                                 </defs>
-                                <XAxis dataKey="p" stroke={theme.palette.text.secondary} />
-                                <YAxis stroke={theme.palette.text.secondary} />
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
+                                <XAxis dataKey="p" stroke={theme.palette.text.secondary} axisLine={false} tickLine={false} />
+                                <YAxis stroke={theme.palette.text.secondary} axisLine={false} tickLine={false} />
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={theme.palette.divider} />
                                 <Tooltip
                                     contentStyle={{
                                         borderRadius: 16,
-                                        border: '1px solid rgba(255,255,255,0.1)',
+                                        border: `1px solid ${theme.palette.divider}`,
                                         boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
-                                        backgroundColor: '#121212',
-                                        color: '#fff'
+                                        backgroundColor: theme.palette.background.paper,
+                                        color: theme.palette.text.primary
                                     }}
                                 />
                                 <Area type="monotone" dataKey="sales" stroke={theme.palette.primary.main} strokeWidth={4} fillOpacity={1} fill="url(#colorSales)" name="Sales (₹)" />
@@ -301,21 +321,23 @@ const Dashboard = () => {
                     </Paper>
                 </Grid>
                 <Grid item xs={12} md={4}>
-                    <Paper sx={{ p: 3, borderRadius: 2, height: '100%' }}>
-                        <Typography variant="h6" sx={{ mb: 3, fontWeight: 700 }}>AI Strategic Priorities</Typography>
+                    <Paper sx={{ p: 3, borderRadius: 4, height: '100%', border: `1px solid ${theme.palette.divider}` }}>
+                        <Typography variant="h6" sx={{ mb: 3, fontWeight: 800, color: 'text.primary' }}>AI Strategic Priorities</Typography>
                         {recommendations ? (
                             recommendations.slice(0, 3).map((rec, idx) => (
                                 <Box key={idx} sx={{
-                                    mb: 2.5, p: 2,
-                                    bgcolor: theme.palette.mode === 'light' ? '#f8f9fa' : 'rgba(255,255,255,0.05)',
-                                    borderRadius: 2,
-                                    borderLeft: `4px solid ${rec.type === 'Critical' ? theme.palette.error.main : theme.palette.primary.main}`
+                                    mb: 2, p: 2,
+                                    bgcolor: theme.palette.mode === 'light' ? 'rgba(0,0,0,0.02)' : 'rgba(255,255,255,0.03)',
+                                    borderRadius: 3,
+                                    borderLeft: `4px solid ${rec.type === 'Critical' ? theme.palette.error.main : theme.palette.primary.main}`,
+                                    transition: 'transform 0.2s ease',
+                                    '&:hover': { transform: 'translateX(5px)' }
                                 }}>
                                     <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                                        <Typography variant="subtitle2" fontWeight="bold">
+                                        <Typography variant="subtitle2" fontWeight="900" color="text.primary">
                                             {rec.title}
                                         </Typography>
-                                        <Chip label={`${rec.confidence}%`} size="small" variant="outlined" sx={{ height: 20, fontSize: '0.65rem' }} />
+                                        <Chip label={`${rec.confidence}%`} size="small" variant="outlined" sx={{ height: 20, fontSize: '0.65rem', fontWeight: 900 }} />
                                     </Box>
                                     <Typography variant="caption" color="text.secondary" display="block">
                                         {rec.recommendation}
@@ -327,7 +349,7 @@ const Dashboard = () => {
                                 <Typography color="text.secondary">No active alerts</Typography>
                             </Box>
                         )}
-                        <Button fullWidth variant="outlined" sx={{ mt: 1 }}>View All Diagnostics</Button>
+                        <Button fullWidth variant="outlined" sx={{ mt: 1, borderRadius: 2, fontWeight: 700 }}>View All Diagnostics</Button>
                     </Paper>
                 </Grid>
             </Grid>
@@ -335,32 +357,32 @@ const Dashboard = () => {
             {/* Category Split */}
             <Grid container spacing={3}>
                 <Grid item xs={12} md={6}>
-                    <Paper sx={{ p: 3, borderRadius: 2 }}>
-                        <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>Profit Margin by Category</Typography>
+                    <Paper sx={{ p: 3, borderRadius: 4, border: `1px solid ${theme.palette.divider}` }}>
+                        <Typography variant="h6" sx={{ mb: 2, fontWeight: 800, color: 'text.primary' }}>Profit Margin by Category</Typography>
                         <ResponsiveContainer width="100%" height={250}>
                             <BarChart data={productData} layout="vertical">
                                 <XAxis type="number" hide />
-                                <YAxis dataKey="name" type="category" stroke={theme.palette.text.secondary} width={100} />
-                                <Tooltip cursor={{ fill: theme.palette.mode === 'light' ? '#f1f1f1' : 'rgba(255,255,255,0.1)' }} />
+                                <YAxis dataKey="name" type="category" stroke={theme.palette.text.secondary} width={100} axisLine={false} tickLine={false} />
+                                <Tooltip cursor={{ fill: theme.palette.mode === 'light' ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)' }} />
                                 <Bar dataKey="profitMargin" fill={theme.palette.primary.main} radius={[0, 4, 4, 0]} name="Margin %" barSize={20} />
                             </BarChart>
                         </ResponsiveContainer>
                     </Paper>
                 </Grid>
                 <Grid item xs={12} md={6}>
-                    <Paper sx={{ p: 3, borderRadius: 2 }}>
-                        <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>Recent Activity Feed</Typography>
+                    <Paper sx={{ p: 3, borderRadius: 4, border: `1px solid ${theme.palette.divider}` }}>
+                        <Typography variant="h6" sx={{ mb: 2, fontWeight: 800, color: 'text.primary' }}>Recent Activity Feed</Typography>
                         {[
                             { time: '2 mins ago', msg: 'Gemini AI recalculated Q2 forecast (+15% uplift projected)', icon: <TrendingUp />, color: theme.palette.primary.main },
-                            { time: '15 mins ago', msg: 'Market volatility detected in Electronics category', icon: <TrendingUp />, color: theme.palette.warning.main },
+                            { time: '15 mins ago', msg: 'Market volatility detected in Electronics category', icon: <NotificationsActive />, color: theme.palette.warning.main },
                             { time: '1 hour ago', msg: 'System refresh: Live market raw data synchronized', icon: <Refresh />, color: theme.palette.success.main }
                         ].map((item, i) => (
-                            <Box key={i} sx={{ display: 'flex', gap: 2, mb: 2 }}>
-                                <Avatar sx={{ bgcolor: `${item.color}15`, color: item.color, width: 32, height: 32 }}>
+                            <Box key={i} sx={{ display: 'flex', gap: 2, mb: 2, p: 1.5, borderRadius: 2, '&:hover': { bgcolor: 'rgba(0,0,0,0.02)' } }}>
+                                <Avatar sx={{ bgcolor: `${item.color}15`, color: item.color, width: 40, height: 40, borderRadius: 2 }}>
                                     {item.icon}
                                 </Avatar>
                                 <Box>
-                                    <Typography variant="body2" fontWeight="bold">{item.msg}</Typography>
+                                    <Typography variant="body2" fontWeight="bold" color="text.primary">{item.msg}</Typography>
                                     <Typography variant="caption" color="text.secondary">{item.time}</Typography>
                                 </Box>
                             </Box>

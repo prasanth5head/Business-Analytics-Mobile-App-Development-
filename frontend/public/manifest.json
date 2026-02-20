@@ -1,6 +1,6 @@
 {
-  "short_name": "Business",
-  "name": "Business Analytics",
+  "short_name": "Analytics Pro",
+  "name": "Analytics Pro Dashboard",
   "icons": [
     {
       "src": "favicon.ico",
@@ -22,6 +22,6 @@
   ],
   "start_url": ".",
   "display": "standalone",
-  "theme_color": "#7367F0",
-  "background_color": "#232730"
+  "theme_color": "#FF5E00",
+  "background_color": "#080808"
 }

@@ -153,10 +153,10 @@ const Login = () => {
                             <LogoIcon fontSize="large" />
                         </Box>
 
-                        <Typography variant="h3" component="h1" gutterBottom sx={{ fontWeight: 900, color: '#fff', mb: 1.5 }}>
+                        <Typography variant="h3" component="h1" gutterBottom sx={{ fontWeight: 900, color: 'text.primary', mb: 1.5 }}>
                             Analytics Pro
                         </Typography>
-                        <Typography variant="body2" sx={{ mb: 5, color: '#8F9BB3', letterSpacing: '0.05em', textTransform: 'uppercase', fontSize: '0.75rem' }}>
+                        <Typography variant="body2" sx={{ mb: 5, color: 'text.secondary', letterSpacing: '0.05em', textTransform: 'uppercase', fontSize: '0.75rem' }}>
                             Strategic Intelligence Platform
                         </Typography>
 

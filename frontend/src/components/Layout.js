@@ -100,7 +100,7 @@ const Layout = () => {
                                     }
                                 }}
                             >
-                                <ListItemIcon sx={{ minWidth: 45, color: location.pathname === item.path ? theme.palette.primary.main : '#8F9BB3' }}>
+                                <ListItemIcon sx={{ minWidth: 45, color: location.pathname === item.path ? theme.palette.primary.main : 'text.secondary' }}>
                                     {item.icon}
                                 </ListItemIcon>
                                 <ListItemText primary={item.text} primaryTypographyProps={{ fontWeight: 700, fontSize: '0.9rem' }} />
@@ -136,6 +136,7 @@ const Layout = () => {
                     ml: { sm: `${drawerWidth}px` },
                     boxShadow: 'none',
                     bgcolor: 'background.default',
+                    color: 'text.primary', // Ensure children inherit the correct theme color
                     borderBottom: `1px solid ${theme.palette.divider}`
                 }}
             >
@@ -145,7 +146,11 @@ const Layout = () => {
                         aria-label="open drawer"
                         edge="start"
                         onClick={handleDrawerToggle}
-                        sx={{ mr: 2, display: { sm: 'none' } }}
+                        sx={{
+                            mr: 2,
+                            display: { sm: 'none' },
+                            color: theme.palette.mode === 'light' ? 'black' : 'inherit' // Explicitly black for visibility
+                        }}
                     >
                         <MenuIcon />
                     </IconButton>
