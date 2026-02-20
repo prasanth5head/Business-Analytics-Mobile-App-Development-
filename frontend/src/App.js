@@ -10,6 +10,7 @@ import Register from './pages/Register';
 import Reports from './pages/Reports';
 
 import Login from './pages/Login';
+import Chatai from './pages/Chatai';
 import ReactiveCursor from './components/ReactiveCursor';
 import PWAUpdateHandler from './components/PWAUpdateHandler';
 
@@ -37,6 +38,7 @@ function App() {
                 <Route path="predictive" element={<Predictive />} />
                 <Route path="prescriptive" element={<Prescriptive />} />
                 <Route path="reports" element={<Reports />} />
+                <Route path="chat" element={<Chatai />} />
                 <Route path="*" element={<Dashboard />} />
               </Route>
             </Route>

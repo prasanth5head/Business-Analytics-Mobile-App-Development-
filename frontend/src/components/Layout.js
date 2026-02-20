@@ -31,7 +31,6 @@ import {
 import { useColorMode } from '../context/ThemeContext';
 
 import ChatAssistantIcon from '@mui/icons-material/Chat';
-import ChatBot from './ChatBot';
 
 const drawerWidth = 260;
 
@@ -41,13 +40,10 @@ const Layout = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const [mobileOpen, setMobileOpen] = useState(false);
-    const [chatOpen, setChatOpen] = useState(false);
 
     const handleDrawerToggle = () => {
         setMobileOpen(!mobileOpen);
     };
-
-    const toggleChat = () => setChatOpen(!chatOpen);
 
     const menuItems = [
         { text: 'Dashboard', icon: <DashboardIcon />, path: '/' },
@@ -118,19 +114,27 @@ const Layout = () => {
             <List sx={{ pb: 2 }}>
                 <ListItem disablePadding>
                     <ListItemButton
-                        onClick={toggleChat}
+                        selected={location.pathname === '/chat'}
+                        onClick={() => navigate('/chat')}
                         sx={{
                             mx: 2,
                             borderRadius: 3,
-                            bgcolor: chatOpen ? 'primary.main' : 'transparent',
-                            color: chatOpen ? 'white' : 'inherit',
+                            bgcolor: location.pathname === '/chat' ? 'primary.main' : 'transparent',
+                            color: location.pathname === '/chat' ? 'white' : 'inherit',
                             '&:hover': {
-                                bgcolor: chatOpen ? 'primary.dark' : 'rgba(255,255,255,0.03)',
+                                bgcolor: location.pathname === '/chat' ? 'primary.dark' : 'rgba(255,255,255,0.03)',
+                            },
+                            '&.Mui-selected': {
+                                bgcolor: 'primary.main',
+                                color: 'white',
+                                '& .MuiListItemIcon-root': {
+                                    color: 'white',
+                                },
                             }
                         }}
                     >
-                        <ListItemIcon sx={{ color: chatOpen ? 'white' : 'inherit' }}><ChatAssistantIcon /></ListItemIcon>
-                        <ListItemText primary="Ask AI Assistant" primaryTypographyProps={{ fontWeight: 800 }} />
+                        <ListItemIcon sx={{ color: location.pathname === '/chat' ? 'white' : 'inherit' }}><ChatAssistantIcon /></ListItemIcon>
+                        <ListItemText primary="AI Chatbot" primaryTypographyProps={{ fontWeight: 800 }} />
                     </ListItemButton>
                 </ListItem>
                 <ListItem disablePadding>
@@ -229,7 +233,6 @@ const Layout = () => {
                 <Toolbar />
                 <Outlet />
             </Box>
-            <ChatBot open={chatOpen} onClose={() => setChatOpen(false)} />
         </Box>
     );
 };
