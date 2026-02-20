@@ -51,7 +51,7 @@ const authUser = async (req, res) => {
 // @access  Public
 const registerUser = async (req, res) => {
     let { name, email, password } = req.body;
-    email = email ? email.trim() : '';
+    email = email ? email.trim().toLowerCase() : '';
 
     try {
         const userExists = await User.findOne({ email });
@@ -100,9 +100,10 @@ const googleLogin = async (req, res) => {
         });
 
         const { name, email, sub } = ticket.getPayload();
-        console.log(`Google Auth Success for: ${email}`);
+        const normalizedEmail = email ? email.trim().toLowerCase() : '';
+        console.log(`Google Auth Success for: ${normalizedEmail}`);
 
-        let user = await User.findOne({ email });
+        let user = await User.findOne({ email: normalizedEmail });
 
         if (user) {
             if (!user.googleId) {
@@ -112,7 +113,7 @@ const googleLogin = async (req, res) => {
         } else {
             user = await User.create({
                 name,
-                email,
+                email: normalizedEmail,
                 googleId: sub,
             });
         }
