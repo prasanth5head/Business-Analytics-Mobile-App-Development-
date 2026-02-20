@@ -31,19 +31,8 @@ app.get('/', (req, res) => {
   res.send('API is running...');
 });
 
-const path = require('path');
-
 app.use('/api/users', require('./routes/userRoutes'));
 app.use('/api/market', require('./routes/marketRoutes'));
-
-// Serve static files from the frontend build folder
-const buildPath = path.join(__dirname, '../frontend/build');
-app.use(express.static(buildPath));
-
-// Handle SPA routing - deliver index.html for any unknown routes
-app.get('*', (req, res) => {
-  res.sendFile(path.join(buildPath, 'index.html'));
-});
 
 const PORT = process.env.PORT || 5000;
 

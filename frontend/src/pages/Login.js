@@ -42,26 +42,16 @@ const Login = () => {
     const handleGoogleSuccess = async (credentialResponse) => {
         try {
             setError('');
-            console.log('Mobile Debug: Credential Response received', Object.keys(credentialResponse));
             const { credential } = credentialResponse;
-
-            if (!credential) {
-                console.error('Mobile Debug: No credential found in response!');
-                setError('Google authentication failed: No token received.');
-                return;
-            }
-
-            console.log('Mobile Debug: Google Token acquired (length):', credential.length);
-
+            console.log('Mobile Debug: Google Token acquired (length):', credential?.length);
             const res = await api.post(`/api/users/google-login`, {
                 tokenId: credential,
             });
 
-            console.log('Mobile Debug: Google Login Server Success:', res.data.email);
             localStorage.setItem('userInfo', JSON.stringify(res.data));
             navigate('/');
         } catch (err) {
-            console.error('Mobile Debug: Google Login Catch Error', err);
+            console.error(err);
             const msg = err.response?.data?.message || 'Google Login Failed';
             const detail = err.response?.data?.detail ? `\nDetail: ${err.response.data.detail}` : '';
             const suggestion = err.response?.data?.suggestion ? `\nHint: ${err.response.data.suggestion}` : '';
