@@ -17,11 +17,14 @@ import {
     useTheme,
     Fade
 } from '@mui/material';
-import { LockOutlined as LockIcon, BarChart as LogoIcon } from '@mui/icons-material';
+import { LockOutlined as LockIcon, BarChart as LogoIcon, Brightness4 as DarkModeIcon, Brightness7 as LightModeIcon } from '@mui/icons-material';
+import { useColorMode } from '../context/ThemeContext';
+import IconButton from '@mui/material/IconButton';
 
 const Login = () => {
     const navigate = useNavigate();
     const theme = useTheme();
+    const { toggleColorMode } = useColorMode();
     const [credentials, setCredentials] = useState({ email: '', password: '' });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
@@ -83,12 +86,19 @@ const Login = () => {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                background: `radial-gradient(circle at top left, ${theme.palette.primary.main}15 0%, ${theme.palette.background.default} 60%, ${theme.palette.secondary.main}10 100%)`,
+                background: theme.palette.background.default,
                 position: 'relative',
                 overflow: 'hidden',
                 p: 2
             }}
         >
+            {/* Theme Toggle Button */}
+            <Box sx={{ position: 'absolute', top: 16, right: 16, zIndex: 10 }}>
+                <IconButton onClick={toggleColorMode} color="inherit">
+                    {theme.palette.mode === 'dark' ? <LightModeIcon /> : <DarkModeIcon />}
+                </IconButton>
+            </Box>
+
             {/* Creative Aurora Glows */}
             <Box sx={{
                 position: 'absolute',
@@ -120,11 +130,11 @@ const Login = () => {
                         sx={{
                             p: { xs: 4, md: 6 },
                             borderRadius: 8,
-                            bgcolor: 'rgba(15, 19, 26, 0.7)',
+                            bgcolor: theme.palette.mode === 'dark' ? 'rgba(18, 18, 18, 0.7)' : 'rgba(255, 255, 255, 0.9)',
                             backdropFilter: 'blur(20px)',
-                            border: `1px solid rgba(255, 255, 255, 0.05)`,
+                            border: `1px solid ${theme.palette.divider}`,
                             textAlign: 'center',
-                            boxShadow: '0 20px 80px rgba(0,0,0,0.5)',
+                            boxShadow: theme.palette.mode === 'dark' ? '0 20px 80px rgba(0,0,0,0.5)' : '0 10px 40px rgba(0,0,0,0.05)',
                             transition: 'all 0.3s ease',
                             '&:hover': {
                                 border: `1px solid ${theme.palette.primary.main}30`,
@@ -135,9 +145,9 @@ const Login = () => {
                             mb: 4,
                             display: 'inline-flex',
                             p: 2,
-                            borderRadius: '24px',
+                            borderRadius: 2, // Square-ish
                             bgcolor: theme.palette.primary.main,
-                            color: 'black',
+                            color: theme.palette.primary.contrastText,
                             boxShadow: `0 0 20px ${theme.palette.primary.main}40`,
                         }}>
                             <LogoIcon fontSize="large" />

@@ -2,9 +2,6 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
-import { ThemeProvider, CssBaseline } from '@mui/material';
-import theme from './theme';
-
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 
@@ -12,10 +9,7 @@ const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
     <GoogleOAuthProvider clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID}>
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
-        <App />
-      </ThemeProvider>
+      <App />
     </GoogleOAuthProvider>
   </React.StrictMode>
 );

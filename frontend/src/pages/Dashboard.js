@@ -138,7 +138,7 @@ const Dashboard = () => {
             {/* Header Area */}
             <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Box>
-                    <Typography variant="h4" sx={{ fontWeight: 900, color: theme.palette.mode === 'light' ? '#1a237e' : theme.palette.primary.light }}>Global Operations Center</Typography>
+                    <Typography variant="h4" sx={{ fontWeight: 900, color: 'text.primary' }}>Global Operations Center</Typography>
                     <Typography variant="body1" color="text.secondary">Real-time market tracking & AI-driven strategic intelligence.</Typography>
                 </Box>
                 <Box sx={{ display: 'flex', gap: 2 }}>

@@ -14,11 +14,14 @@ import {
     useTheme,
     Fade
 } from '@mui/material';
-import { PersonAdd as RegisterIcon } from '@mui/icons-material';
+import { PersonAdd as RegisterIcon, Brightness4 as DarkModeIcon, Brightness7 as LightModeIcon } from '@mui/icons-material';
+import { useColorMode } from '../context/ThemeContext';
+import IconButton from '@mui/material/IconButton';
 
 const Register = () => {
     const navigate = useNavigate();
     const theme = useTheme();
+    const { toggleColorMode } = useColorMode();
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -51,22 +54,29 @@ const Register = () => {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                background: `radial-gradient(circle at bottom right, ${theme.palette.secondary.main}15 0%, ${theme.palette.background.default} 60%, ${theme.palette.primary.main}10 100%)`,
+                background: theme.palette.background.default,
                 position: 'relative',
                 overflow: 'hidden',
                 p: 2
             }}
         >
+            {/* Theme Toggle Button */}
+            <Box sx={{ position: 'absolute', top: 16, right: 16, zIndex: 10 }}>
+                <IconButton onClick={toggleColorMode} color="inherit">
+                    {theme.palette.mode === 'dark' ? <LightModeIcon /> : <DarkModeIcon />}
+                </IconButton>
+            </Box>
+
             {/* Creative Aurora Glows */}
             <Box sx={{
                 position: 'absolute',
                 bottom: '-10%',
                 right: '-10%',
-                width: 600,
-                height: 600,
+                width: 500,
+                height: 500,
                 borderRadius: '50%',
-                background: `radial-gradient(circle, ${theme.palette.secondary.main}15 0%, transparent 70%)`,
-                filter: 'blur(120px)',
+                background: `radial-gradient(circle, ${theme.palette.secondary.main}20 0%, transparent 70%)`,
+                filter: 'blur(100px)',
                 zIndex: 0
             }} />
             <Box sx={{
@@ -88,11 +98,11 @@ const Register = () => {
                         sx={{
                             p: { xs: 4, md: 6 },
                             borderRadius: 8,
-                            bgcolor: 'rgba(15, 19, 26, 0.7)',
+                            bgcolor: theme.palette.mode === 'dark' ? 'rgba(18, 18, 18, 0.7)' : 'rgba(255, 255, 255, 0.9)',
                             backdropFilter: 'blur(20px)',
-                            border: `1px solid rgba(255, 255, 255, 0.05)`,
+                            border: `1px solid ${theme.palette.divider}`,
                             textAlign: 'center',
-                            boxShadow: '0 20px 80px rgba(0,0,0,0.5)',
+                            boxShadow: theme.palette.mode === 'dark' ? '0 20px 80px rgba(0,0,0,0.5)' : '0 10px 40px rgba(0,0,0,0.05)',
                             transition: 'all 0.3s ease',
                             '&:hover': {
                                 border: `1px solid ${theme.palette.secondary.main}30`,
@@ -103,9 +113,9 @@ const Register = () => {
                             mb: 4,
                             display: 'inline-flex',
                             p: 2,
-                            borderRadius: '24px',
+                            borderRadius: 2,
                             bgcolor: theme.palette.secondary.main,
-                            color: 'white',
+                            color: theme.palette.secondary.contrastText,
                             boxShadow: `0 0 20px ${theme.palette.secondary.main}40`,
                         }}>
                             <RegisterIcon fontSize="large" />

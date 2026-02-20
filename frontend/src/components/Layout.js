@@ -56,11 +56,20 @@ const Layout = () => {
         <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', bgcolor: 'background.paper', borderRight: '1px solid rgba(255,255,255,0.05)' }}>
             <Toolbar sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', py: 4, px: 3 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                    <Box sx={{ width: 44, height: 44, borderRadius: 3, background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 8px 16px ${theme.palette.primary.main}40` }}>
+                    <Box sx={{
+                        width: 44,
+                        height: 44,
+                        borderRadius: 1, // Square (minimal rounding)
+                        background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        boxShadow: `0 8px 16px ${theme.palette.primary.main}40`
+                    }}>
                         <Typography variant="h6" sx={{ color: 'white', fontWeight: 900 }}>BA</Typography>
                     </Box>
-                    <Typography variant="h5" color="#fff" sx={{ fontWeight: 900, letterSpacing: '-0.04em' }}>
-                        BIZ<span style={{ color: theme.palette.primary.main }}>PRO</span>
+                    <Typography variant="h5" color="text.primary" sx={{ fontWeight: 900, letterSpacing: '-0.04em' }}>
+                        Analytics <span style={{ color: theme.palette.primary.main }}>Pro</span>
                     </Typography>
                 </Box>
             </Toolbar>
