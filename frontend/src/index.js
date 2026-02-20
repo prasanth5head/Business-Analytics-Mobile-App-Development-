@@ -14,9 +14,13 @@ root.render(
   </React.StrictMode>
 );
 
-// If you want your app to work offline and load faster, you can change
-// unregister() to register() below. Note this comes with some pitfalls.
-// Learn more about service workers: https://cra.link/PWA
-serviceWorkerRegistration.register();
+// Register service worker with update callback
+serviceWorkerRegistration.register({
+  onUpdate: (registration) => {
+    // Custom event to be caught by PWAUpdateHandler component
+    const event = new CustomEvent('pwa-update', { detail: registration });
+    window.dispatchEvent(event);
+  }
+});
 
 reportWebVitals();

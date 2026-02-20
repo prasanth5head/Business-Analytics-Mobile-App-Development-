@@ -11,6 +11,7 @@ import Reports from './pages/Reports';
 
 import Login from './pages/Login';
 import ReactiveCursor from './components/ReactiveCursor';
+import PWAUpdateHandler from './components/PWAUpdateHandler';
 
 import ProtectedRoute from './components/ProtectedRoute';
 import { MarketProvider } from './context/MarketContext';
@@ -22,6 +23,7 @@ function App() {
       <MarketProvider>
         <BrowserRouter>
           <ReactiveCursor />
+          <PWAUpdateHandler />
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
