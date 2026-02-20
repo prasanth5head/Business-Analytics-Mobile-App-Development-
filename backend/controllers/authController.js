@@ -99,7 +99,16 @@ const googleLogin = async (req, res) => {
             audience: process.env.GOOGLE_CLIENT_ID,
         });
 
-        const { name, email, sub } = ticket.getPayload();
+        const payload = ticket.getPayload();
+        const { name, email, sub, aud } = payload;
+
+        console.log('Token Audience:', aud);
+        console.log('Server Client ID:', process.env.GOOGLE_CLIENT_ID);
+
+        if (aud !== process.env.GOOGLE_CLIENT_ID) {
+            console.error('AUDIENCE MISMATCH detected!');
+        }
+
         const normalizedEmail = email ? email.trim().toLowerCase() : '';
         console.log(`Google Auth Success for: ${normalizedEmail}`);
 

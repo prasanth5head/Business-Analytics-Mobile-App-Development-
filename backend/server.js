@@ -9,6 +9,12 @@ connectDB();
 
 const app = express();
 
+// Set security headers for Google OAuth compatibility on mobile
+app.use((req, res, next) => {
+  res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
+  next();
+});
+
 app.use(cors({
   origin: function (origin, callback) {
     // Allow requests with no origin (like mobile apps or curl requests)

@@ -43,6 +43,7 @@ const Login = () => {
         try {
             setError('');
             const { credential } = credentialResponse;
+            console.log('Mobile Debug: Google Token acquired (length):', credential?.length);
             const res = await api.post(`/api/users/google-login`, {
                 tokenId: credential,
             });
@@ -112,6 +113,7 @@ const Login = () => {
                         size="large"
                         width="300"
                         text="continue_with_google"
+                        ux_mode="redirect"
                     />
                 </div>
 
