@@ -63,16 +63,23 @@ app.post("/chat", auth, async (req, res) => {
     if (!prompt || prompt.trim() === "")
       return res.status(400).json({ message: "Prompt required" });
 
-    // Using gemini-1.5-flash which is widely available and fast
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    // Using gemini-1.5-flash with a system instruction for friendliness and professional tone
+    const model = genAI.getGenerativeModel({
+      model: "gemini-1.5-flash",
+      systemInstruction: "You are a friendly, professional, and helpful business analytics assistant. You provide clear, data-driven insights in a polite and encouraging manner. Your goal is to help users grow their business."
+    });
+
     const result = await model.generateContent(prompt);
     const response = result.response;
 
     res.json({ response: response.text() });
   }
   catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Chat error" });
+    console.error("AI Chat Error Details:", err);
+    if (err.status === 403 || err.message?.includes("PERMISSION_DENIED")) {
+      return res.status(503).json({ message: "Gemini API key is invalid or restricted. Please check your API key settings." });
+    }
+    res.status(500).json({ message: "Chat error: " + (err.message || "Unknown error") });
   }
 });
 
