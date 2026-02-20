@@ -55,28 +55,84 @@ const theme = createTheme({
         h6: { fontWeight: 500, fontSize: '1rem' },
     },
     components: {
+        MuiCssBaseline: {
+            styleOverrides: {
+                body: {
+                    scrollbarColor: '#6b6b6b #2b2b2b',
+                    '&::-webkit-scrollbar, & *::-webkit-scrollbar': {
+                        backgroundColor: 'transparent',
+                        width: '8px',
+                        height: '8px',
+                    },
+                    '&::-webkit-scrollbar-thumb, & *::-webkit-scrollbar-thumb': {
+                        borderRadius: 8,
+                        backgroundColor: '#3f445e',
+                        minHeight: 24,
+                        border: '2px solid transparent',
+                        backgroundClip: 'padding-box',
+                    },
+                    '&::-webkit-scrollbar-thumb:focus, & *::-webkit-scrollbar-thumb:focus': {
+                        backgroundColor: '#4e5474',
+                    },
+                    '&::-webkit-scrollbar-thumb:active, & *::-webkit-scrollbar-thumb:active': {
+                        backgroundColor: '#4e5474',
+                    },
+                    '&::-webkit-scrollbar-thumb:hover, & *::-webkit-scrollbar-thumb:hover': {
+                        backgroundColor: '#4e5474',
+                    },
+                    '&::-webkit-scrollbar-corner, & *::-webkit-scrollbar-corner': {
+                        backgroundColor: 'transparent',
+                    },
+                },
+            },
+        },
         MuiButton: {
             styleOverrides: {
                 root: {
-                    borderRadius: 8,
+                    borderRadius: 12,
                     textTransform: 'none',
                     fontWeight: 600,
                     boxShadow: 'none',
+                    padding: '8px 20px',
                     '&:hover': {
-                        boxShadow: '0px 2px 10px rgba(115, 103, 240, 0.3)',
+                        boxShadow: '0px 4px 12px rgba(115, 103, 240, 0.4)',
+                        transform: 'translateY(-1px)',
                     },
+                    transition: 'all 0.2s ease-in-out',
                 },
                 containedPrimary: {
                     background: 'linear-gradient(45deg, #7367F0 30%, #9E94FF 90%)',
                 }
             },
         },
+        MuiTextField: {
+            defaultProps: {
+                variant: 'outlined',
+            },
+            styleOverrides: {
+                root: {
+                    '& .MuiOutlinedInput-root': {
+                        borderRadius: 12,
+                        '& fieldset': {
+                            borderColor: 'rgba(255, 255, 255, 0.1)',
+                        },
+                        '&:hover fieldset': {
+                            borderColor: '#7367F0',
+                        },
+                        '&.Mui-focused fieldset': {
+                            borderWidth: '2px',
+                        },
+                    },
+                },
+            },
+        },
         MuiCard: {
             styleOverrides: {
                 root: {
-                    borderRadius: 16,
-                    boxShadow: '0px 4px 20px rgba(0, 0, 0, 0.1)',
+                    borderRadius: 20,
+                    boxShadow: '0px 10px 30px rgba(0, 0, 0, 0.2)',
                     backgroundImage: 'none',
+                    border: '1px solid rgba(255, 255, 255, 0.05)',
                 },
             },
         },
@@ -84,6 +140,7 @@ const theme = createTheme({
             styleOverrides: {
                 root: {
                     backgroundImage: 'none',
+                    borderRadius: 16,
                 },
             },
         },
