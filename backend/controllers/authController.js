@@ -11,23 +11,37 @@ const generateToken = (id) => {
 // @route   POST /api/users/login
 // @access  Public
 const authUser = async (req, res) => {
-    const { email, password } = req.body;
+    let { email, password } = req.body;
+
+    // Trimming and lowercasing email for mobile users
+    email = email ? email.trim().toLowerCase() : '';
+
+    console.log(`Login attempt for: ${email}`);
 
     try {
         const user = await User.findOne({ email });
 
-        if (user && (await user.matchPassword(password))) {
-            res.json({
-                _id: user._id,
-                name: user.name,
-                email: user.email,
-                role: user.role,
-                token: generateToken(user._id),
-            });
+        if (user) {
+            console.log(`User found: ${user.email}`);
+            const isMatch = await user.matchPassword(password);
+            console.log(`Password match: ${isMatch}`);
+
+            if (isMatch) {
+                return res.json({
+                    _id: user._id,
+                    name: user.name,
+                    email: user.email,
+                    role: user.role,
+                    token: generateToken(user._id),
+                });
+            }
         } else {
-            res.status(401).json({ message: 'Invalid email or password' });
+            console.log(`User not found: ${email}`);
         }
+
+        res.status(401).json({ message: 'Invalid email or password' });
     } catch (error) {
+        console.error('Login Error:', error);
         res.status(500).json({ message: error.message });
     }
 };
@@ -36,7 +50,8 @@ const authUser = async (req, res) => {
 // @route   POST /api/users
 // @access  Public
 const registerUser = async (req, res) => {
-    const { name, email, password } = req.body;
+    let { name, email, password } = req.body;
+    email = email ? email.trim() : '';
 
     try {
         const userExists = await User.findOne({ email });
@@ -76,24 +91,25 @@ const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 const googleLogin = async (req, res) => {
     const { tokenId } = req.body;
 
+    console.log('Google Login attempt with token length:', tokenId ? tokenId.length : 0);
+
     try {
         const ticket = await client.verifyIdToken({
             idToken: tokenId,
             audience: process.env.GOOGLE_CLIENT_ID,
         });
 
-        const { name, email, sub } = ticket.getPayload(); // sub is the unique Google ID
+        const { name, email, sub } = ticket.getPayload();
+        console.log(`Google Auth Success for: ${email}`);
 
         let user = await User.findOne({ email });
 
         if (user) {
-            // Update user with googleId if not present (linking accounts)
             if (!user.googleId) {
                 user.googleId = sub;
                 await user.save();
             }
         } else {
-            // Create new user
             user = await User.create({
                 name,
                 email,
@@ -114,7 +130,12 @@ const googleLogin = async (req, res) => {
             stack: error.stack,
             name: error.name
         });
-        res.status(401).json({ message: 'Google authentication failed', detail: error.message });
+        // Send the SPECIFIC error message back to help the user debug on mobile
+        res.status(401).json({
+            message: 'Google authentication failed',
+            detail: error.message,
+            suggestion: 'Please check your Google account settings or clear browser cache.'
+        });
     }
 };
 

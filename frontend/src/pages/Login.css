@@ -49,11 +49,14 @@
 .error-message {
     color: #ff6b6b;
     background: rgba(255, 87, 87, 0.1);
-    padding: 0.8rem;
+    padding: 1rem;
     border-radius: 8px;
     margin-bottom: 1.5rem;
     font-size: 0.9rem;
     border: 1px solid rgba(255, 87, 87, 0.2);
+    white-space: pre-line;
+    text-align: left;
+    line-height: 1.4;
 }
 
 .google-login-wrapper {

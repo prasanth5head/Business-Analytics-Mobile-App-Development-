@@ -31,7 +31,9 @@ const Login = () => {
             localStorage.setItem('userInfo', JSON.stringify(res.data));
             navigate('/');
         } catch (err) {
-            setError(err.response?.data?.message || 'Invalid email or password');
+            const msg = err.response?.data?.message || 'Invalid email or password';
+            const detail = err.response?.data?.detail ? ` (${err.response.data.detail})` : '';
+            setError(msg + detail);
         } finally {
             setLoading(false);
         }
@@ -39,6 +41,7 @@ const Login = () => {
 
     const handleGoogleSuccess = async (credentialResponse) => {
         try {
+            setError('');
             const { credential } = credentialResponse;
             const res = await api.post(`/api/users/google-login`, {
                 tokenId: credential,
@@ -48,7 +51,10 @@ const Login = () => {
             navigate('/');
         } catch (err) {
             console.error(err);
-            setError(err.response?.data?.message || 'Google Login Failed');
+            const msg = err.response?.data?.message || 'Google Login Failed';
+            const detail = err.response?.data?.detail ? `\nDetail: ${err.response.data.detail}` : '';
+            const suggestion = err.response?.data?.suggestion ? `\nHint: ${err.response.data.suggestion}` : '';
+            setError(msg + detail + suggestion);
         }
     };
 
