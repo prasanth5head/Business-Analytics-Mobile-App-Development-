@@ -42,7 +42,7 @@ const chatWithGemini = async (req, res) => {
         res.json({ text });
     } catch (error) {
         console.error("Gemini Error:", error);
-        res.status(500).json({ error: "Failed to connect to Gemini AI. Check your API key or connection." });
+        res.status(500).json({ error: "Failed to connect to GeminiAI. Check your API key or connection." });
     }
 };
 
