@@ -70,8 +70,12 @@ self.addEventListener('message', (event) => {
 });
 
 // Cache the API responses for market data with a StaleWhileRevalidate strategy
+// EXCLUDE login and register from caching
 registerRoute(
-    ({ url }) => url.pathname.startsWith('/api/'),
+    ({ url }) => url.pathname.startsWith('/api/') &&
+        !url.pathname.includes('/login') &&
+        !url.pathname.includes('/register') &&
+        !url.pathname.includes('/google-login'),
     new StaleWhileRevalidate({
         cacheName: 'api-cache',
         plugins: [
