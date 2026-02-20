@@ -33,6 +33,7 @@ app.get('/', (req, res) => {
 
 app.use('/api/users', require('./routes/userRoutes'));
 app.use('/api/market', require('./routes/marketRoutes'));
+app.use('/api/chat', require('./routes/chatRoutes'));
 
 const PORT = process.env.PORT || 5000;
 
