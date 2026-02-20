@@ -93,6 +93,11 @@ const googleLogin = async (req, res) => {
 
     console.log('Google Login attempt with token length:', tokenId ? tokenId.length : 0);
 
+    if (!process.env.GOOGLE_CLIENT_ID) {
+        console.error('CRITICAL: GOOGLE_CLIENT_ID is not defined in environment variables');
+        return res.status(500).json({ message: 'Server configuration error: Google Client ID missing' });
+    }
+
     try {
         const ticket = await client.verifyIdToken({
             idToken: tokenId,
@@ -102,11 +107,12 @@ const googleLogin = async (req, res) => {
         const payload = ticket.getPayload();
         const { name, email, sub, aud } = payload;
 
-        console.log('Token Audience:', aud);
-        console.log('Server Client ID:', process.env.GOOGLE_CLIENT_ID);
+        console.log(`Token verification success for: ${email}`);
+        console.log(`Audience check: Token(${aud}) vs Server(${process.env.GOOGLE_CLIENT_ID})`);
 
         if (aud !== process.env.GOOGLE_CLIENT_ID) {
-            console.error('AUDIENCE MISMATCH detected!');
+            console.error('AUDIENCE MISMATCH: Token was not issued for this client ID');
+            return res.status(401).json({ message: 'Token audience mismatch' });
         }
 
         const normalizedEmail = email ? email.trim().toLowerCase() : '';
