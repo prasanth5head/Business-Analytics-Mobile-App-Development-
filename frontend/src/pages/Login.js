@@ -94,22 +94,22 @@ const Login = () => {
                 position: 'absolute',
                 top: '-10%',
                 left: '-10%',
-                width: 500,
-                height: 500,
+                width: 600,
+                height: 600,
                 borderRadius: '50%',
-                background: `radial-gradient(circle, ${theme.palette.primary.main}20 0%, transparent 70%)`,
-                filter: 'blur(100px)',
+                background: `radial-gradient(circle, ${theme.palette.primary.main}15 0%, transparent 70%)`,
+                filter: 'blur(120px)',
                 zIndex: 0
             }} />
             <Box sx={{
                 position: 'absolute',
                 bottom: '10%',
                 right: '10%',
-                width: 400,
-                height: 400,
+                width: 500,
+                height: 500,
                 borderRadius: '50%',
-                background: `radial-gradient(circle, ${theme.palette.secondary.main}15 0%, transparent 70%)`,
-                filter: 'blur(80px)',
+                background: `radial-gradient(circle, ${theme.palette.secondary.main}10 0%, transparent 70%)`,
+                filter: 'blur(100px)',
                 zIndex: 0
             }} />
 

@@ -253,7 +253,7 @@ const Dashboard = () => {
                         value={`₹${summary.avgProfit.toLocaleString()}`}
                         percentage={summary.profitGrowth}
                         icon={<TrendingUp />}
-                        color="#00E6FF" // Ice Cyan
+                        color={theme.palette.success.main} // Bright Lime
                         up={true}
                     />
                 </Grid>
@@ -263,7 +263,7 @@ const Dashboard = () => {
                         value="Stable"
                         percentage="Low"
                         icon={<NotificationsActive />}
-                        color={theme.palette.error.main}
+                        color="#FF3D00" // Bright Red-Orange
                         up={false}
                     />
                 </Grid>
@@ -284,18 +284,18 @@ const Dashboard = () => {
                                 </defs>
                                 <XAxis dataKey="p" stroke={theme.palette.text.secondary} />
                                 <YAxis stroke={theme.palette.text.secondary} />
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={theme.palette.divider} />
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
                                 <Tooltip
                                     contentStyle={{
-                                        borderRadius: 8,
-                                        border: 'none',
-                                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                                        backgroundColor: theme.palette.background.paper,
-                                        color: theme.palette.text.primary
+                                        borderRadius: 16,
+                                        border: '1px solid rgba(255,255,255,0.1)',
+                                        boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
+                                        backgroundColor: '#121212',
+                                        color: '#fff'
                                     }}
                                 />
-                                <Area type="monotone" dataKey="sales" stroke={theme.palette.primary.main} strokeWidth={3} fillOpacity={1} fill="url(#colorSales)" name="Sales (₹)" />
-                                <Area type="monotone" dataKey="profit" stroke={theme.palette.success.main} strokeWidth={2} fill="transparent" name="Profit (₹)" />
+                                <Area type="monotone" dataKey="sales" stroke={theme.palette.primary.main} strokeWidth={4} fillOpacity={1} fill="url(#colorSales)" name="Sales (₹)" />
+                                <Area type="monotone" dataKey="profit" stroke={theme.palette.secondary.main} strokeWidth={3} fill="transparent" name="Profit (₹)" />
                             </AreaChart>
                         </ResponsiveContainer>
                     </Paper>
