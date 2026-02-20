@@ -30,6 +30,9 @@ import {
 } from '@mui/icons-material';
 import { useColorMode } from '../context/ThemeContext';
 
+import ChatAssistantIcon from '@mui/icons-material/Chat';
+import ChatBot from './ChatBot';
+
 const drawerWidth = 260;
 
 const Layout = () => {
@@ -38,10 +41,13 @@ const Layout = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const [mobileOpen, setMobileOpen] = useState(false);
+    const [chatOpen, setChatOpen] = useState(false);
 
     const handleDrawerToggle = () => {
         setMobileOpen(!mobileOpen);
     };
+
+    const toggleChat = () => setChatOpen(!chatOpen);
 
     const menuItems = [
         { text: 'Dashboard', icon: <DashboardIcon />, path: '/' },
@@ -109,14 +115,31 @@ const Layout = () => {
                     ))}
                 </List>
             </Box>
-            <List>
+            <List sx={{ pb: 2 }}>
+                <ListItem disablePadding>
+                    <ListItemButton
+                        onClick={toggleChat}
+                        sx={{
+                            mx: 2,
+                            borderRadius: 3,
+                            bgcolor: chatOpen ? 'primary.main' : 'transparent',
+                            color: chatOpen ? 'white' : 'inherit',
+                            '&:hover': {
+                                bgcolor: chatOpen ? 'primary.dark' : 'rgba(255,255,255,0.03)',
+                            }
+                        }}
+                    >
+                        <ListItemIcon sx={{ color: chatOpen ? 'white' : 'inherit' }}><ChatAssistantIcon /></ListItemIcon>
+                        <ListItemText primary="Ask AI Assistant" primaryTypographyProps={{ fontWeight: 800 }} />
+                    </ListItemButton>
+                </ListItem>
                 <ListItem disablePadding>
                     <ListItemButton
                         onClick={() => {
                             localStorage.removeItem('userInfo');
                             navigate('/login');
                         }}
-                        sx={{ mx: 1, borderRadius: 2 }}
+                        sx={{ mx: 2, borderRadius: 3 }}
                     >
                         <ListItemIcon><LogoutIcon /></ListItemIcon>
                         <ListItemText primary="Logout" />
@@ -206,6 +229,7 @@ const Layout = () => {
                 <Toolbar />
                 <Outlet />
             </Box>
+            <ChatBot open={chatOpen} onClose={() => setChatOpen(false)} />
         </Box>
     );
 };
