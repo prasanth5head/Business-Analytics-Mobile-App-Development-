@@ -55,7 +55,7 @@ app.post("/chat", auth, async (req, res) => {
     if (!prompt || prompt.trim() === "")
       return res.status(400).json({ message: "Prompt required" });
 
-    // Using gemini-1.5-flash
+    // Using gemini-1.5-flash (Standard model)
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     // Generate content
@@ -67,12 +67,25 @@ app.post("/chat", auth, async (req, res) => {
   }
   catch (err) {
     console.error("AI Chat Error Details:", err);
-    if (err.status === 403 || err.message?.includes("PERMISSION_DENIED")) {
-      return res.status(503).json({ message: "Gemini API key is invalid or restricted. Please check your API key settings." });
+
+    // Handle Permission/Auth errors (403/401)
+    if (err.status === 403 || err.status === 401 || err.message?.includes("PERMISSION_DENIED") || err.message?.includes("API key not found")) {
+      return res.status(503).json({
+        message: "Gemini API Key Error: Your key is either invalid, disabled, or restricted. Please verify it in Google AI Studio."
+      });
     }
+
+    // Handle Model Not Found (404)
+    if (err.status === 404 || err.message?.includes("not found")) {
+      return res.status(503).json({
+        message: "Model Error: 'gemini-1.5-flash' not found. Your API key might not have access to this model yet."
+      });
+    }
+
     res.status(500).json({ message: "Chat error: " + (err.message || "Unknown error") });
   }
 });
+
 
 app.get('/', (req, res) => {
   res.send('API is running...');
