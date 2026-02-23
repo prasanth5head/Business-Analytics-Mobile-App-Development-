@@ -1,8 +1,4 @@
-const { GoogleGenerativeAI } = require("@google/generative-ai");
 const Revenue = require("../models/Revenue");
-
-// Initialize Gemini
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 // Helper to generate noisy data around a baseline
 const generateTrendData = (baseSales, count, persistentRevenue = []) => {
@@ -96,100 +92,7 @@ const addRevenue = async (req, res) => {
     }
 };
 
-const getAiRecommendations = async (req, res) => {
-    try {
-        const { salesData, productData, summary } = req.body;
-
-        if (!process.env.GEMINI_API_KEY) {
-            throw new Error("Missing Gemini API Key");
-        }
-
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-
-        const prompt = `
-            You are a Senior Business Analytics Expert. 
-            Analyze the following business data and provide 3 highly strategic recommendations.
-            
-            Current Data Summary:
-            - Yearly Sales Data: ${JSON.stringify(salesData)}
-            - Category Performance: ${JSON.stringify(productData)}
-            - Totals: ${JSON.stringify(summary)}
-            
-            Return ONLY a JSON object with the following structure:
-            {
-              "aiAnalysis": "Brief executive summary of findings",
-              "recommendations": [
-                {
-                  "type": "Critical/Strategy/Market",
-                  "title": "Short title",
-                  "insight": "Data-backed observation",
-                  "recommendation": "Specific actionable step",
-                  "confidence": 0-100
-                }
-              ]
-            }
-        `;
-
-        const result = await model.generateContent(prompt);
-        const response = await result.response;
-        let text = response.text();
-
-        // Clean text if Gemini wraps it in markdown backticks
-        text = text.replace(/```json|```/g, "").trim();
-
-        // Final cleaning: Ensure no leading/trailing junk
-        const jsonStart = text.indexOf('{');
-        const jsonEnd = text.lastIndexOf('}');
-        if (jsonStart !== -1 && jsonEnd !== -1) {
-            text = text.substring(jsonStart, jsonEnd + 1);
-        }
-
-        const aiResponse = JSON.parse(text);
-
-        res.json({
-            ...aiResponse,
-            timestamp: new Date().toISOString()
-        });
-    } catch (error) {
-        console.error('Gemini AI error:', error.message);
-
-        // LOCAL FALLBACK: Return smart static recommendations if AI fails
-        // This prevents the whole dashboard from crashing
-        const fallback = {
-            aiAnalysis: "Our local heuristic engine has detected critical patterns in your sales volatility and category margins.",
-            recommendations: [
-                {
-                    type: "Critical",
-                    title: "Margin Protection",
-                    insight: "High return rates in Clothing (12%+) are eroding your 40% gross margins.",
-                    recommendation: "Implement a 48-hour quality review cycle for the top-returned SKU in the Clothing category.",
-                    confidence: 85
-                },
-                {
-                    type: "Strategy",
-                    title: "Inventory Optimization",
-                    insight: "Beauty products maintain 50%+ margins with near-zero price sensitivity.",
-                    recommendation: "Increase Beauty inventory buffer by 20% to avoid stockouts during high-volume periods.",
-                    confidence: 92
-                },
-                {
-                    type: "Market",
-                    title: "Retention Warning",
-                    insight: "Predictive churn model indicates a potential 5% loss in high-value customers.",
-                    recommendation: "Deploy a personalized loyalty offer to users with 0 purchases in the last 30 days.",
-                    confidence: 78
-                }
-            ],
-            timestamp: new Date().toISOString(),
-            isFallback: true
-        };
-
-        res.json(fallback);
-    }
-};
-
 module.exports = {
     getMarketData,
-    addRevenue,
-    getAiRecommendations
+    addRevenue
 };

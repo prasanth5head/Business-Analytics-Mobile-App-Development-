@@ -1,26 +1,23 @@
 const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
-const jwt = require('jsonwebtoken');
 const connectDB = require('./config/db');
+const { GoogleGenerativeAI } = require("@google/generative-ai");
+const jwt = require('jsonwebtoken');
 
 dotenv.config();
 
+const app = express();
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+
+// Database Connection
 connectDB();
 
-const app = express();
-
-// Set security headers for Google OAuth compatibility on mobile
-app.use((req, res, next) => {
-  res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
-  next();
-});
-
+// Middleware - Apply BEFORE routes
 app.use(cors({
   origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
-    return callback(null, true); // Allow all origins for now but in a more compliant way
+    return callback(null, true);
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -28,51 +25,45 @@ app.use(cors({
 }));
 app.use(express.json());
 
-app.get('/', (req, res) => {
-  res.send('API is running...');
+// Set security headers for Google OAuth compatibility on mobile
+app.use((req, res, next) => {
+  res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
+  next();
 });
 
-const { GoogleGenerativeAI } = require("@google/generative-ai");
-
-app.use('/api/users', require('./routes/userRoutes'));
-app.use('/api/market', require('./routes/marketRoutes'));
-
-// AI Chat Logic
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-
-// Auth Middleware (as provided in snippet)
+// Simple Auth Middleware
 const auth = (req, res, next) => {
-  const token = req.headers.authorization?.startsWith('Bearer ')
-    ? req.headers.authorization.split(' ')[1]
-    : req.headers.authorization;
-
-  if (!token) return res.status(401).json({ message: "No token" });
-
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.userId = decoded.id;
-    next();
-  } catch (err) {
-    res.status(403).json({ message: "Invalid token" });
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith('Bearer')) {
+    const token = authHeader.split(' ')[1];
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      req.user = decoded;
+      next();
+    } catch (error) {
+      res.status(401).json({ message: 'Not authorized, token failed' });
+    }
+  } else {
+    res.status(401).json({ message: 'Not authorized, no token' });
   }
 };
 
+// Chat Route
 app.post("/chat", auth, async (req, res) => {
   try {
     const { prompt } = req.body;
     if (!prompt || prompt.trim() === "")
       return res.status(400).json({ message: "Prompt required" });
 
-    // Using gemini-1.5-flash with a system instruction for friendliness and professional tone
-    const model = genAI.getGenerativeModel({
-      model: "gemini-1.5-flash",
-      systemInstruction: "You are a friendly, professional, and helpful business analytics assistant. You provide clear, data-driven insights in a polite and encouraging manner. Your goal is to help users grow their business."
-    });
+    // Using gemini-1.5-flash
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
+    // Generate content
     const result = await model.generateContent(prompt);
-    const response = result.response;
+    const response = await result.response;
+    const text = response.text();
 
-    res.json({ response: response.text() });
+    res.json({ response: text });
   }
   catch (err) {
     console.error("AI Chat Error Details:", err);
@@ -83,6 +74,14 @@ app.post("/chat", auth, async (req, res) => {
   }
 });
 
+app.get('/', (req, res) => {
+  res.send('API is running...');
+});
+
+app.use('/api/users', require('./routes/userRoutes'));
+app.use('/api/market', require('./routes/marketRoutes'));
+
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
