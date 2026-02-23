@@ -65,7 +65,7 @@ const chatHandler = async (req, res) => {
     const ai = new GoogleGenAI({ apiKey: key });
 
     const response = await ai.models.generateContent({
-      model: "gemini-2.0-flash",
+      model: "gemini-2.0-flash-lite",
       contents: prompt,
     });
 

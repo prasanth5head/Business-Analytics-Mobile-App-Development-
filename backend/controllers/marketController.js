@@ -113,7 +113,7 @@ const getAIRecommendations = async (req, res) => {
         Return ONLY the JSON.`;
 
         const aiResult = await ai.models.generateContent({
-            model: "gemini-2.0-flash",
+            model: "gemini-2.0-flash-lite",
             contents: prompt,
         });
 
