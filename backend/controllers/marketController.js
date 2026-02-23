@@ -1,5 +1,6 @@
 const Revenue = require("../models/Revenue");
-const { GoogleGenerativeAI } = require("@google/generative-ai");
+const { GoogleGenAI } = require("@google/genai");
+
 
 
 // Helper to generate noisy data around a baseline
@@ -98,8 +99,8 @@ const getAIRecommendations = async (req, res) => {
     try {
         const { salesData, productData, summary } = req.body;
 
-        const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+        const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+
 
         const prompt = `Analyze this business data and provide 3 strategic recommendations.
         Sales Summary: ${JSON.stringify(summary)}
@@ -111,11 +112,15 @@ const getAIRecommendations = async (req, res) => {
         2. "recommendations": an array of 3 objects, each with "title", "recommendation", "type" (Critical/Actionable), and "confidence" (0-100).
         Return ONLY the JSON.`;
 
-        const result = await model.generateContent(prompt);
-        const response = await result.response;
-        const text = response.text().replace(/```json|```/g, "").trim();
+        const aiResult = await ai.models.generateContent({
+            model: "gemini-2.0-flash",
+            contents: prompt,
+        });
+
+        const text = aiResult.text.replace(/```json|```/g, "").trim();
 
         const parsedData = JSON.parse(text);
+
         res.json(parsedData);
     } catch (error) {
         console.error('AI Recommendation Error:', error);

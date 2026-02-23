@@ -2,7 +2,7 @@ const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
 const connectDB = require('./config/db');
-const { GoogleGenerativeAI } = require("@google/generative-ai");
+const { GoogleGenAI } = require("@google/genai");
 const jwt = require('jsonwebtoken');
 
 dotenv.config();
@@ -61,63 +61,25 @@ const chatHandler = async (req, res) => {
       return res.status(503).json({ message: "Server configuration error: API Key missing." });
     }
 
-    const genAI = new GoogleGenerativeAI(key);
-    let result;
+    // Using the new @google/genai SDK
+    const ai = new GoogleGenAI({ apiKey: key });
 
-    const modelsToTry = ["gemini-2.0-flash", "gemini-2.5-flash", "gemini-2.0-flash-lite", "gemini-flash-latest"];
-    let lastError = null;
+    const response = await ai.models.generateContent({
+      model: "gemini-2.0-flash",
+      contents: prompt,
+    });
 
-    for (const modelName of modelsToTry) {
-      try {
-        console.log(`DEBUG: Trying model ${modelName}...`);
-        const model = genAI.getGenerativeModel({ model: modelName });
-        result = await model.generateContent(prompt);
-        console.log(`DEBUG: Success with model ${modelName}!`);
-        break; // Success! Exit the loop.
-      } catch (e) {
-        lastError = e;
-        if (e.status === 404 || e.message?.toLowerCase().includes("not found")) {
-          console.log(`DEBUG: Model ${modelName} not found or not allowed. Trying next...`);
-          continue;
-        } else {
-          throw e; // Rethrow if it's a completely different error e.g. 403
-        }
-      }
-    }
-
-    if (!result) {
-      throw lastError; // All models failed or loop ended without result
-    }
-
-    const response = await result.response;
-    res.json({ response: response.text() });
+    res.json({ response: response.text });
   }
   catch (err) {
     console.error("AI Chat Error:", err);
-
-    // If it's STILL a 404 after trying everything, let's fetch what models are actually available!
-    let availableModelsDetails = "";
-    if (err.status === 404 || err.message?.toLowerCase().includes("not found")) {
-      try {
-        const axios = require('axios');
-        const key = process.env.GEMINI_API_KEY;
-        const modelsResponse = await axios.get(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`);
-        const modelsList = modelsResponse.data.models.map(m => m.name.replace('models/', '')).join(', ');
-        availableModelsDetails = ` We checked your key. The models available to you are: ${modelsList}.`;
-        console.log("DEBUG Available Models:", modelsList);
-      } catch (diagError) {
-        console.log("DEBUG: Diagnosis failed", diagError.message);
-        availableModelsDetails = " Could not fetch the exact list of available models.";
-      }
-    }
-
-    const errStatus = err.status || 500;
+    const errStatus = err.status || err.httpError || 500;
     res.status(errStatus).json({
-      message: "Chat Error: " + (err.message || "Unknown error") + availableModelsDetails,
-      status: errStatus
+      message: "Chat Error: " + (err.message || "Unknown error")
     });
   }
 };
+
 
 // Support both routes for compatibility with cached frontend versions
 app.post("/api/chat", auth, chatHandler);
