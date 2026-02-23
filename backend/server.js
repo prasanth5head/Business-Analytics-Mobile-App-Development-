@@ -49,15 +49,14 @@ const auth = (req, res, next) => {
   }
 };
 
-// Chat Route
-app.post("/api/chat", auth, async (req, res) => {
+// Chat Handler Function
+const chatHandler = async (req, res) => {
   try {
     const { prompt } = req.body;
     if (!prompt || prompt.trim() === "")
       return res.status(400).json({ message: "Prompt required" });
 
     // Initialize inside handler to ensure it picks up fresh env variables
-    const { GoogleGenerativeAI } = require("@google/generative-ai");
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
@@ -72,24 +71,26 @@ app.post("/api/chat", auth, async (req, res) => {
     console.error("AI Chat Error Details:", err);
 
     const errorMsg = err.message || "Unknown error";
-
     if (err.status === 403 || err.status === 401 || errorMsg.includes("PERMISSION_DENIED")) {
       return res.status(503).json({
-        message: "Gemini Auth Error: Key restricted or API not enabled. Check Google AI Studio.",
+        message: "Gemini Auth Error: Key restricted or API not enabled.",
         detail: errorMsg
       });
     }
-
     if (err.status === 404 || errorMsg.includes("not found")) {
       return res.status(503).json({
-        message: "Model Error: 'gemini-1.5-flash' not accessible with this key.",
+        message: "Model Error: 'gemini-1.5-flash' not found.",
         detail: errorMsg
       });
     }
-
     res.status(500).json({ message: "Chat Error: " + errorMsg });
   }
-});
+};
+
+// Compatible Routes (Supports both old and new addresses)
+app.post("/api/chat", auth, chatHandler);
+app.post("/chat", auth, chatHandler);
+
 
 
 
