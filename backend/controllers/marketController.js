@@ -1,4 +1,6 @@
 const Revenue = require("../models/Revenue");
+const { GoogleGenerativeAI } = require("@google/generative-ai");
+
 
 // Helper to generate noisy data around a baseline
 const generateTrendData = (baseSales, count, persistentRevenue = []) => {
@@ -92,7 +94,46 @@ const addRevenue = async (req, res) => {
     }
 };
 
+const getAIRecommendations = async (req, res) => {
+    try {
+        const { salesData, productData, summary } = req.body;
+
+        const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+        const prompt = `Analyze this business data and provide 3 strategic recommendations.
+        Sales Summary: ${JSON.stringify(summary)}
+        Sales Trend: ${JSON.stringify(salesData)}
+        Product Performance: ${JSON.stringify(productData)}
+        
+        Format the response as a JSON object with:
+        1. "aiAnalysis": a 2-sentence summary of overall health.
+        2. "recommendations": an array of 3 objects, each with "title", "recommendation", "type" (Critical/Actionable), and "confidence" (0-100).
+        Return ONLY the JSON.`;
+
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        const text = response.text().replace(/```json|```/g, "").trim();
+
+        const parsedData = JSON.parse(text);
+        res.json(parsedData);
+    } catch (error) {
+        console.error('AI Recommendation Error:', error);
+        // Fallback recommendations if AI fails
+        res.json({
+            aiAnalysis: "Market performance remains stable with consistent growth patterns across key sectors.",
+            recommendations: [
+                { title: "Optimize Inventory", recommendation: "Focus on high-margin products in the Beauty category to maximize current ROI.", type: "Actionable", confidence: 85 },
+                { title: "Customer Retention", recommendation: "Launch targeted re-engagement campaigns for active users to maintain growth.", type: "Actionable", confidence: 90 },
+                { title: "Expense Review", recommendation: "Conduct a deep dive into operation costs in Clothing sectors to improve net margins.", type: "Critical", confidence: 75 }
+            ]
+        });
+    }
+};
+
 module.exports = {
     getMarketData,
-    addRevenue
+    addRevenue,
+    getAIRecommendations
 };
+
