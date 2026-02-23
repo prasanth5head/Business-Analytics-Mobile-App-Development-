@@ -1,15 +1,8 @@
 import React from "react";
 import ReactMarkdown from "react-markdown";
-
 import {
-    Box,
-    Paper,
-    TextField,
-    IconButton,
-    Typography,
-    Avatar,
-    useTheme,
-    Fade
+    Box, Paper, TextField, IconButton,
+    Typography, Avatar, Fade
 } from "@mui/material";
 import SendIcon from "@mui/icons-material/Send";
 import SmartToyIcon from "@mui/icons-material/SmartToy";
@@ -17,17 +10,24 @@ import PersonIcon from "@mui/icons-material/Person";
 import api from "../api";
 
 export default function Chatai() {
-    const theme = useTheme();
     const [prompt, setPrompt] = React.useState("");
     const [messages, setMessages] = React.useState([
-        { role: "ai", text: "Hello! I'm your friendly Business Bot. How can I help you with your analytics today?" }
+        { role: "ai", text: "Hello! I'm your Business Bot 🤖 How can I help with your analytics today?" }
     ]);
     const chatEndRef = React.useRef(null);
+    const inputRef = React.useRef(null);
 
-    // auto scroll
+    // Auto-scroll to bottom after every new message
     React.useEffect(() => {
         chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messages]);
+
+    // Auto-focus and scroll input into view on page load
+    React.useEffect(() => {
+        setTimeout(() => {
+            inputRef.current?.focus();
+        }, 400);
+    }, []);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -38,157 +38,107 @@ export default function Chatai() {
         const currentPrompt = prompt;
         setPrompt("");
 
+        // Re-focus input immediately after sending
+        setTimeout(() => inputRef.current?.focus(), 100);
+
         try {
-            // Get token from userInfo since that's how it's stored in this app
             const userInfo = JSON.parse(localStorage.getItem("userInfo"));
             const token = userInfo?.token;
 
             const res = await api.post("/api/chat",
                 { prompt: currentPrompt },
-
-                {
-                    headers: {
-                        "Authorization": token ? `Bearer ${token}` : "",
-                    }
-                }
+                { headers: { "Authorization": token ? `Bearer ${token}` : "" } }
             );
 
-            const aiMsg = {
-                role: "ai",
-                text: res.data.response || "No reply",
-            };
-
-            setMessages((prev) => [...prev, aiMsg]);
+            setMessages((prev) => [...prev, { role: "ai", text: res.data.response || "No reply" }]);
         } catch (err) {
             console.error("Chat fetch error:", err);
-            const errorMsg = err.response?.data?.message || "Connection error. Please check if the server is running.";
-
-            const aiMsg = {
-                role: "ai",
-                text: `⚠️ **System Message:** ${errorMsg}`,
-            };
-
-            setMessages((prev) => [...prev, aiMsg]);
+            const errorMsg = err.response?.data?.message || "Connection error. Please check server.";
+            setMessages((prev) => [...prev, { role: "ai", text: `⚠️ **System Message:** ${errorMsg}` }]);
         }
     };
 
     return (
-        <Box
-            display="flex"
-            flexDirection="column"
-            alignItems="center"
-            justifyContent="center"
-            sx={{
-                minHeight: '80vh',
-                py: 4
-            }}
-        >
-            <Fade in={true} timeout={800}>
-                <Paper
-                    elevation={12}
-                    sx={{
-                        width: { xs: '95%', sm: 600 },
-                        height: 700,
-                        display: "flex",
-                        flexDirection: "column",
-                        borderRadius: 6,
-                        overflow: 'hidden',
-                        background: 'rgba(20, 20, 20, 0.8)',
-                        backdropFilter: 'blur(20px)',
-                        border: '1px solid rgba(255, 255, 255, 0.05)',
-                        position: 'relative'
-                    }}
-                >
-                    {/* Header */}
-                    <Box
-                        p={3}
-                        display="flex"
-                        alignItems="center"
-                        gap={2}
-                        sx={{
-                            background: 'linear-gradient(135deg, rgba(255, 94, 0, 0.15) 0%, rgba(255, 184, 0, 0.05) 100%)',
-                            borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
-                        }}
-                    >
-                        <Avatar
-                            sx={{
-                                bgcolor: 'primary.main',
-                                width: 48,
-                                height: 48,
-                                boxShadow: '0 0 20px rgba(255, 94, 0, 0.4)'
-                            }}
-                        >
+        <Box sx={{
+            height: '100vh',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            p: { xs: 0, sm: 2 },
+            boxSizing: 'border-box',
+            overflow: 'hidden'
+        }}>
+            <Fade in={true} timeout={500}>
+                <Paper elevation={12} sx={{
+                    width: { xs: '100%', sm: '95%', md: 650 },
+                    height: { xs: '100vh', sm: 'calc(100vh - 32px)', md: '88vh' },
+                    maxHeight: 900,
+                    display: "flex",
+                    flexDirection: "column",
+                    borderRadius: { xs: 0, sm: 4, md: 6 },
+                    overflow: 'hidden',
+                    background: 'rgba(15, 15, 15, 0.97)',
+                    backdropFilter: 'blur(20px)',
+                    border: '1px solid rgba(255, 255, 255, 0.07)',
+                }}>
+
+                    {/* ── Header ── */}
+                    <Box display="flex" alignItems="center" gap={2} px={2.5} py={2} sx={{
+                        background: 'linear-gradient(135deg, rgba(255,94,0,0.15) 0%, rgba(255,184,0,0.05) 100%)',
+                        borderBottom: '1px solid rgba(255,255,255,0.06)',
+                        flexShrink: 0
+                    }}>
+                        <Avatar sx={{ bgcolor: 'primary.main', width: 42, height: 42, boxShadow: '0 0 18px rgba(255,94,0,0.5)' }}>
                             <SmartToyIcon />
                         </Avatar>
                         <Box>
-                            <Typography variant="h6" sx={{ fontWeight: 800, color: 'white' }}>
+                            <Typography sx={{ fontWeight: 800, color: 'white', fontSize: '1rem', lineHeight: 1.2 }}>
                                 Business Bot
                             </Typography>
-                            <Box display="flex" alignItems="center" gap={0.5}>
-                                <Box sx={{ width: 8, height: 8, bgcolor: 'success.main', borderRadius: '50%' }} />
-                                <Typography variant="caption" color="text.secondary">
-                                    Online & Ready to Help
-                                </Typography>
+                            <Box display="flex" alignItems="center" gap={0.6}>
+                                <Box sx={{ width: 7, height: 7, bgcolor: '#4caf50', borderRadius: '50%' }} />
+                                <Typography variant="caption" color="text.secondary">Online & Ready</Typography>
                             </Box>
                         </Box>
                     </Box>
 
-                    {/* Messages Body */}
-                    <Box
-                        flex={1}
-                        p={3}
-                        sx={{
-                            overflowY: "auto",
-                            background: "transparent",
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: 2
-                        }}
-                    >
+                    {/* ── Messages ── */}
+                    <Box flex={1} p={2} sx={{
+                        overflowY: "auto",
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: 1.5,
+                        '&::-webkit-scrollbar': { width: '4px' },
+                        '&::-webkit-scrollbar-thumb': { background: 'rgba(255,255,255,0.1)', borderRadius: 4 },
+                    }}>
                         {messages.map((msg, i) => (
-                            <Box
-                                key={i}
-                                display="flex"
+                            <Box key={i} display="flex"
                                 flexDirection={msg.role === "user" ? "row-reverse" : "row"}
-                                alignItems="flex-start"
-                                gap={1.5}
-                            >
-                                <Avatar
-                                    sx={{
-                                        width: 32,
-                                        height: 32,
-                                        fontSize: '1rem',
-                                        bgcolor: msg.role === "user" ? 'secondary.main' : 'primary.dark'
-                                    }}
-                                >
-                                    {msg.role === "user" ? <PersonIcon fontSize="small" /> : <SmartToyIcon fontSize="small" />}
+                                alignItems="flex-start" gap={1.2}>
+                                <Avatar sx={{
+                                    width: 28, height: 28, flexShrink: 0,
+                                    bgcolor: msg.role === "user" ? 'secondary.main' : 'primary.dark'
+                                }}>
+                                    {msg.role === "user" ? <PersonIcon sx={{ fontSize: 16 }} /> : <SmartToyIcon sx={{ fontSize: 16 }} />}
                                 </Avatar>
-                                <Paper
-                                    sx={{
-                                        p: 2,
-                                        maxWidth: "80%",
-                                        background: msg.role === "user"
-                                            ? 'linear-gradient(135deg, #FF5E00 0%, #FF8A00 100%)'
-                                            : 'rgba(255, 255, 255, 0.05)',
-                                        color: msg.role === "user" ? "white" : "white",
-                                        borderRadius: msg.role === "user" ? "20px 4px 20px 20px" : "4px 20px 20px 20px",
-                                        border: msg.role === "user" ? 'none' : '1px solid rgba(255, 255, 255, 0.1)',
-                                        boxShadow: msg.role === "user" ? '0 4px 15px rgba(255, 94, 0, 0.2)' : 'none'
-                                    }}
-                                >
+                                <Paper sx={{
+                                    p: '10px 14px',
+                                    maxWidth: "78%",
+                                    background: msg.role === "user"
+                                        ? 'linear-gradient(135deg, #FF5E00, #FF8A00)'
+                                        : 'rgba(255,255,255,0.05)',
+                                    color: "white",
+                                    borderRadius: msg.role === "user" ? "18px 4px 18px 18px" : "4px 18px 18px 18px",
+                                    border: msg.role === "user" ? 'none' : '1px solid rgba(255,255,255,0.08)',
+                                    boxShadow: msg.role === "user" ? '0 3px 12px rgba(255,94,0,0.25)' : 'none',
+                                    wordBreak: 'break-word'
+                                }}>
                                     {msg.role === "ai" ? (
-                                        <Box sx={{
-                                            '& p': { m: 0 },
-                                            '& ul': { mt: 1, mb: 0 },
-                                            fontSize: '0.95rem',
-                                            lineHeight: 1.6
-                                        }}>
+                                        <Box sx={{ '& p': { m: 0 }, '& ul': { mt: 0.5, mb: 0 }, fontSize: '0.88rem', lineHeight: 1.6 }}>
                                             <ReactMarkdown>{msg.text}</ReactMarkdown>
                                         </Box>
                                     ) : (
-                                        <Typography variant="body2" sx={{ lineHeight: 1.6 }}>
-                                            {msg.text}
-                                        </Typography>
+                                        <Typography sx={{ fontSize: '0.88rem', lineHeight: 1.6 }}>{msg.text}</Typography>
                                     )}
                                 </Paper>
                             </Box>
@@ -196,57 +146,55 @@ export default function Chatai() {
                         <div ref={chatEndRef} />
                     </Box>
 
-                    {/* Input Area */}
-                    <Box
-                        component="form"
-                        onSubmit={handleSubmit}
-                        p={3}
-                        sx={{
-                            background: 'rgba(0,0,0,0.2)',
-                            borderTop: '1px solid rgba(255, 255, 255, 0.05)',
-                            display: 'flex',
-                            gap: 1.5,
-                            alignItems: 'center'
-                        }}
-                    >
+                    {/* ── Input Bar ── */}
+                    <Box component="form" onSubmit={handleSubmit} px={2} py={1.5} sx={{
+                        background: 'rgba(0,0,0,0.35)',
+                        borderTop: '1px solid rgba(255,255,255,0.06)',
+                        display: 'flex',
+                        gap: 1.2,
+                        alignItems: 'center',
+                        flexShrink: 0
+                    }}>
                         <TextField
                             fullWidth
-                            placeholder="Ask Business Bot something..."
+                            inputRef={inputRef}
+                            placeholder="Type your message..."
                             value={prompt}
                             onChange={(e) => setPrompt(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter' && !e.shiftKey) {
+                                    e.preventDefault();
+                                    handleSubmit(e);
+                                }
+                            }}
                             variant="outlined"
                             autoComplete="off"
+                            size="small"
                             sx={{
                                 "& .MuiOutlinedInput-root": {
-                                    borderRadius: 4,
-                                    background: 'rgba(255, 255, 255, 0.03)',
+                                    borderRadius: 3,
+                                    background: 'rgba(255,255,255,0.04)',
+                                    fontSize: '0.9rem',
+                                    '& fieldset': { borderColor: 'rgba(255,255,255,0.1)' },
+                                    '&:hover fieldset': { borderColor: 'rgba(255,94,0,0.4)' },
+                                    '&.Mui-focused fieldset': { borderColor: '#FF5E00' },
                                 }
                             }}
                         />
-
-                        <IconButton
-                            color="primary"
-                            type="submit"
-                            disabled={!prompt.trim()}
-                            sx={{
-                                width: 56,
-                                height: 56,
-                                background: 'linear-gradient(135deg, #FF5E00 0%, #B88600 100%)',
-                                color: 'white',
-                                '&:hover': {
-                                    background: 'linear-gradient(135deg, #FF8A00 0%, #FF5E00 100%)',
-                                    transform: 'scale(1.05)'
-                                },
-                                '&.Mui-disabled': {
-                                    background: 'rgba(255, 255, 255, 0.1)',
-                                    color: 'rgba(255, 255, 255, 0.3)'
-                                },
-                                transition: 'all 0.2s'
-                            }}
-                        >
-                            <SendIcon />
+                        <IconButton type="submit" disabled={!prompt.trim()} sx={{
+                            width: 44, height: 44, flexShrink: 0,
+                            background: prompt.trim()
+                                ? 'linear-gradient(135deg, #FF5E00, #FF8A00)'
+                                : 'rgba(255,255,255,0.06)',
+                            color: prompt.trim() ? 'white' : 'rgba(255,255,255,0.25)',
+                            borderRadius: 2,
+                            transition: 'all 0.2s',
+                            '&:hover': { transform: 'scale(1.08)' }
+                        }}>
+                            <SendIcon sx={{ fontSize: 18 }} />
                         </IconButton>
                     </Box>
+
                 </Paper>
             </Fade>
         </Box>
