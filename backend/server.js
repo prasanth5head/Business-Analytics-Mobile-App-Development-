@@ -8,7 +8,8 @@ const jwt = require('jsonwebtoken');
 dotenv.config();
 
 const app = express();
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+// Moved genAI initialization inside routes to ensure it picks up Render's environment updates
+
 
 // Database Connection
 connectDB();
@@ -49,13 +50,15 @@ const auth = (req, res, next) => {
 };
 
 // Chat Route
-app.post("/chat", auth, async (req, res) => {
+app.post("/api/chat", auth, async (req, res) => {
   try {
     const { prompt } = req.body;
     if (!prompt || prompt.trim() === "")
       return res.status(400).json({ message: "Prompt required" });
 
-    // Using gemini-1.5-flash (Standard model)
+    // Initialize inside handler to ensure it picks up fresh env variables
+    const { GoogleGenerativeAI } = require("@google/generative-ai");
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     // Generate content
@@ -68,23 +71,26 @@ app.post("/chat", auth, async (req, res) => {
   catch (err) {
     console.error("AI Chat Error Details:", err);
 
-    // Handle Permission/Auth errors (403/401)
-    if (err.status === 403 || err.status === 401 || err.message?.includes("PERMISSION_DENIED") || err.message?.includes("API key not found")) {
+    const errorMsg = err.message || "Unknown error";
+
+    if (err.status === 403 || err.status === 401 || errorMsg.includes("PERMISSION_DENIED")) {
       return res.status(503).json({
-        message: "Gemini API Key Error: Your key is either invalid, disabled, or restricted. Please verify it in Google AI Studio."
+        message: "Gemini Auth Error: Key restricted or API not enabled. Check Google AI Studio.",
+        detail: errorMsg
       });
     }
 
-    // Handle Model Not Found (404)
-    if (err.status === 404 || err.message?.includes("not found")) {
+    if (err.status === 404 || errorMsg.includes("not found")) {
       return res.status(503).json({
-        message: "Model Error: 'gemini-1.5-flash' not found. Your API key might not have access to this model yet."
+        message: "Model Error: 'gemini-1.5-flash' not accessible with this key.",
+        detail: errorMsg
       });
     }
 
-    res.status(500).json({ message: "Chat error: " + (err.message || "Unknown error") });
+    res.status(500).json({ message: "Chat Error: " + errorMsg });
   }
 });
+
 
 
 app.get('/', (req, res) => {

@@ -43,8 +43,9 @@ export default function Chatai() {
             const userInfo = JSON.parse(localStorage.getItem("userInfo"));
             const token = userInfo?.token;
 
-            const res = await api.post("/chat",
+            const res = await api.post("/api/chat",
                 { prompt: currentPrompt },
+
                 {
                     headers: {
                         "Authorization": token ? `Bearer ${token}` : "",
