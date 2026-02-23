@@ -8,6 +8,7 @@ import Predictive from './pages/Predictive';
 import Prescriptive from './pages/Prescriptive';
 import Register from './pages/Register';
 import Reports from './pages/Reports';
+import RevenueEntry from './pages/RevenueEntry';
 
 import Login from './pages/Login';
 import Chatai from './pages/Chatai';
@@ -38,6 +39,7 @@ function App() {
                 <Route path="predictive" element={<Predictive />} />
                 <Route path="prescriptive" element={<Prescriptive />} />
                 <Route path="reports" element={<Reports />} />
+                <Route path="revenue" element={<RevenueEntry />} />
                 <Route path="chat" element={<Chatai />} />
                 <Route path="*" element={<Dashboard />} />
               </Route>

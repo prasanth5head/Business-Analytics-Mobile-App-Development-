@@ -1,67 +1,94 @@
 const Revenue = require("../models/Revenue");
 const { GoogleGenAI } = require("@google/genai");
 
+const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
+// Generate data starting from current month (past 6) + next 6 predictive months
+const generateTrendData = (baseSales, persistentRevenue = []) => {
+    const now = new Date();
+    const currentMonthIndex = now.getMonth(); // 0=Jan
 
-// Helper to generate noisy data around a baseline
-const generateTrendData = (baseSales, count, persistentRevenue = []) => {
-    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
-    // Create a map of persistent revenue by month
     const revenueMap = persistentRevenue.reduce((acc, rev) => {
         acc[rev.month] = (acc[rev.month] || 0) + rev.amount;
         return acc;
     }, {});
 
-    return Array.from({ length: count }, (_, i) => {
-        const month = monthNames[i % 12];
-        const volatility = Math.random() * 0.4 - 0.2; // -20% to +20%
-        const base = baseSales * (1 + volatility);
+    return Array.from({ length: 12 }, (_, i) => {
+        // Start 6 months back, go to 5 months ahead
+        const monthOffset = i - 6;
+        const monthIndex = ((currentMonthIndex + monthOffset) % 12 + 12) % 12;
+        const month = MONTH_NAMES[monthIndex];
+        const isPredictive = monthOffset > 0;
 
-        // Add persistent revenue from DB for this month
+        // Predictive months trend slightly upward with less noise
+        const trendMultiplier = isPredictive ? (1 + monthOffset * 0.04) : 1;
+        const volatility = isPredictive
+            ? Math.random() * 0.15 - 0.05  // Prediction: gentler range
+            : Math.random() * 0.4 - 0.2;   // Historical: wider range
+
+        const base = baseSales * (1 + volatility) * trendMultiplier;
         const persistentAmount = revenueMap[month] || 0;
         const sales = Math.round(base + persistentAmount);
 
-        const profit = Math.round(sales * (0.3 + Math.random() * 0.3)); // 30-60% margin
+        const profit = Math.round(sales * (0.3 + Math.random() * 0.3));
+        const loss = Math.round(sales * (0.05 + Math.random() * 0.1));
         const price = 90 + Math.floor(Math.random() * 80);
-        // Simulate high price causing low sales link
         const adjustedSales = price > 130 ? Math.round(sales * 0.7) : sales;
 
         return {
             p: month,
             sales: adjustedSales,
             profit,
+            loss,
             price,
             complaints: Math.floor(Math.random() * (price > 130 ? 30 : 10)),
-            competitorCheck: Math.random() > 0.7 ? 1 : 0
+            competitorCheck: Math.random() > 0.7 ? 1 : 0,
+            isPredictive  // Flag so frontend can render differently
         };
     });
 };
 
+// Risk score formula for a product
+// Risk = (returnRate * 0.5) + ((100 - profitMargin) * 0.3) + (complaints * 0.2)
+// Scale: 0-100 (higher = riskier)
+const calculateRisk = (profitMargin, returnRate, complaints = 5) => {
+    const raw = (returnRate * 0.5) + ((100 - profitMargin) * 0.3) + (complaints * 0.2);
+    const score = Math.min(100, Math.max(0, Math.round(raw)));
+    const formula = `(ReturnRate×0.5) + ((100-ProfitMargin)×0.3) + (Complaints×0.2)`;
+    const calculation = `(${returnRate.toFixed(1)}×0.5) + ((100-${profitMargin})×0.3) + (${complaints}×0.2) = ${score}`;
+    let level = score < 30 ? 'Low' : score < 60 ? 'Medium' : 'High';
+    return { score, formula, calculation, level };
+};
+
 const getMarketData = async (req, res) => {
     try {
-        // Fetch persistent revenue from DB
         const persistentRevenue = await Revenue.find({});
+        const liveData = generateTrendData(4000, persistentRevenue);
 
-        // Generating dynamic recent market data with persistent additions
-        const liveData = generateTrendData(4000, 12, persistentRevenue);
-
-        const products = [
-            { name: 'Electronics', profitMargin: 15 + Math.floor(Math.random() * 20), returnRate: 3 + Math.random() * 7 },
-            { name: 'Clothing', profitMargin: 35 + Math.floor(Math.random() * 25), returnRate: 10 + Math.random() * 10 },
-            { name: 'Home', profitMargin: 25 + Math.floor(Math.random() * 15), returnRate: 5 + Math.random() * 8 },
-            { name: 'Beauty', profitMargin: 50 + Math.floor(Math.random() * 20), returnRate: 1 + Math.random() * 5 },
+        const productsRaw = [
+            { name: 'Electronics', profitMargin: 15 + Math.floor(Math.random() * 20), returnRate: parseFloat((3 + Math.random() * 7).toFixed(1)), complaints: Math.floor(Math.random() * 20 + 5) },
+            { name: 'Clothing', profitMargin: 35 + Math.floor(Math.random() * 25), returnRate: parseFloat((10 + Math.random() * 10).toFixed(1)), complaints: Math.floor(Math.random() * 30 + 8) },
+            { name: 'Home', profitMargin: 25 + Math.floor(Math.random() * 15), returnRate: parseFloat((5 + Math.random() * 8).toFixed(1)), complaints: Math.floor(Math.random() * 15 + 3) },
+            { name: 'Beauty', profitMargin: 50 + Math.floor(Math.random() * 20), returnRate: parseFloat((1 + Math.random() * 5).toFixed(1)), complaints: Math.floor(Math.random() * 10 + 1) },
         ];
+
+        const products = productsRaw.map(p => ({
+            ...p,
+            risk: calculateRisk(p.profitMargin, p.returnRate, p.complaints)
+        }));
 
         const totalSales = liveData.reduce((acc, curr) => acc + curr.sales, 0);
         const avgProfit = Math.round(liveData.reduce((acc, curr) => acc + curr.profit, 0) / liveData.length);
+        const totalLoss = liveData.reduce((acc, curr) => acc + curr.loss, 0);
 
         res.json({
             timestamp: new Date().toISOString(),
+            currentMonth: MONTH_NAMES[new Date().getMonth()],
             salesData: liveData,
             productData: products,
             summary: {
                 totalSales,
+                totalLoss,
                 growthRate: (Math.random() * 15).toFixed(1) + "%",
                 activeUsers: 2000 + Math.floor(Math.random() * 500),
                 customerGrowth: "+" + (Math.random() * 5).toFixed(1) + "%",
@@ -82,11 +109,7 @@ const addRevenue = async (req, res) => {
             return res.status(400).json({ message: 'Amount and month are required' });
         }
 
-        const newRevenue = new Revenue({
-            amount: Number(amount),
-            month
-        });
-
+        const newRevenue = new Revenue({ amount: Number(amount), month });
         await newRevenue.save();
         res.status(201).json({ message: 'Revenue added successfully', data: newRevenue });
     } catch (error) {
@@ -100,7 +123,6 @@ const getAIRecommendations = async (req, res) => {
         const { salesData, productData, summary } = req.body;
 
         const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-
 
         const prompt = `Analyze this business data and provide 3 strategic recommendations.
         Sales Summary: ${JSON.stringify(summary)}
@@ -125,7 +147,6 @@ const getAIRecommendations = async (req, res) => {
         res.json(parsedData);
     } catch (error) {
         console.error('AI Recommendation Error:', error);
-        // Fallback recommendations if AI fails
         res.json({
             aiAnalysis: "Market performance remains stable with consistent growth patterns across key sectors.",
             recommendations: [
@@ -142,4 +163,3 @@ module.exports = {
     addRevenue,
     getAIRecommendations
 };
-

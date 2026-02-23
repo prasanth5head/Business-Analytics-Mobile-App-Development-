@@ -27,6 +27,7 @@ import {
     Lightbulb as PrescriptiveIcon,
     Brightness4 as DarkModeIcon,
     Brightness7 as LightModeIcon,
+    Receipt as ReceiptIcon,
 } from '@mui/icons-material';
 import { useColorMode } from '../context/ThemeContext';
 
@@ -52,6 +53,7 @@ const Layout = () => {
         { text: 'Predictive', icon: <PredictiveIcon />, path: '/predictive' },
         { text: 'Prescriptive', icon: <PrescriptiveIcon />, path: '/prescriptive' },
         { text: 'Reports', icon: <AssessmentIcon />, path: '/reports' },
+        { text: 'Revenue Entry', icon: <ReceiptIcon />, path: '/revenue' },
     ];
 
     const drawer = (
