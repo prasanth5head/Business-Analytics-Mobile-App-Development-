@@ -175,9 +175,12 @@ export default function Chatai() {
                                     borderRadius: 3,
                                     background: 'rgba(255,255,255,0.04)',
                                     fontSize: '0.9rem',
+                                    color: 'white',
                                     '& fieldset': { borderColor: 'rgba(255,255,255,0.1)' },
                                     '&:hover fieldset': { borderColor: 'rgba(255,94,0,0.4)' },
                                     '&.Mui-focused fieldset': { borderColor: '#FF5E00' },
+                                    '& input': { color: 'white' },
+                                    '& input::placeholder': { color: 'rgba(255,255,255,0.45)', opacity: 1 },
                                 }
                             }}
                         />
