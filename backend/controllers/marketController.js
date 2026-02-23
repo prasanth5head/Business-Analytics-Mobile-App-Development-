@@ -3,7 +3,7 @@ const { GoogleGenAI } = require("@google/genai");
 
 const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-// Generate data starting from current month (past 6) + next 6 predictive months
+// Generate data starting from current month + next 6 predictive months
 const generateTrendData = (baseSales, persistentRevenue = []) => {
     const now = new Date();
     const currentMonthIndex = now.getMonth(); // 0=Jan
@@ -13,18 +13,19 @@ const generateTrendData = (baseSales, persistentRevenue = []) => {
         return acc;
     }, {});
 
-    return Array.from({ length: 12 }, (_, i) => {
-        // Start 6 months back, go to 5 months ahead
-        const monthOffset = i - 6;
-        const monthIndex = ((currentMonthIndex + monthOffset) % 12 + 12) % 12;
+    // 7 months total: Current month + 6 future months
+    return Array.from({ length: 7 }, (_, i) => {
+        const monthOffset = i; // Starts at 0 (current month)
+        const monthIndex = (currentMonthIndex + monthOffset) % 12;
         const month = MONTH_NAMES[monthIndex];
         const isPredictive = monthOffset > 0;
 
-        // Predictive months trend slightly upward with less noise
+        // Predictive months trend slightly upward
         const trendMultiplier = isPredictive ? (1 + monthOffset * 0.04) : 1;
         const volatility = isPredictive
             ? Math.random() * 0.15 - 0.05  // Prediction: gentler range
-            : Math.random() * 0.4 - 0.2;   // Historical: wider range
+            : Math.random() * 0.2 - 0.1;   // Current month
+
 
         const base = baseSales * (1 + volatility) * trendMultiplier;
         const persistentAmount = revenueMap[month] || 0;

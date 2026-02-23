@@ -293,7 +293,7 @@ const Dashboard = () => {
             <Grid container spacing={3} sx={{ mb: 4 }}>
                 <Grid item xs={12} md={8}>
                     <Paper sx={{ p: 3, borderRadius: 4, height: '100%', border: `1px solid ${theme.palette.divider}` }}>
-                        <Typography variant="h6" sx={{ mb: 3, fontWeight: 800, color: 'text.primary' }}>Sales vs. Profit Performance</Typography>
+                        <Typography variant="h6" sx={{ mb: 3, fontWeight: 800, color: 'text.primary' }}>Projected Sales Growth (Next 6 Months)</Typography>
                         <ResponsiveContainer width="100%" height={350}>
                             <AreaChart data={salesData}>
                                 <defs>
