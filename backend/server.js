@@ -58,56 +58,43 @@ const chatHandler = async (req, res) => {
 
     const key = process.env.GEMINI_API_KEY;
     if (!key) {
-      console.error("DEBUG: GEMINI_API_KEY is missing from environment variables!");
       return res.status(503).json({ message: "Server configuration error: API Key missing." });
     }
 
-    console.log(`DEBUG: Chat attempt with key starting with: ${key.substring(0, 6)}...`);
-
-    // Initialize Gemini
     const genAI = new GoogleGenerativeAI(key);
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    let result;
 
-    // Generate content
-    const result = await model.generateContent(prompt);
+    try {
+      // Try 1.5 Flash first (Faster)
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+      result = await model.generateContent(prompt);
+    } catch (e) {
+      // If Flash is not found (404), fall back to Gemini Pro
+      if (e.status === 404 || e.message?.toLowerCase().includes("not found")) {
+        console.log("DEBUG: Fallback to gemini-pro...");
+        const fallbackModel = genAI.getGenerativeModel({ model: "gemini-pro" });
+        result = await fallbackModel.generateContent(prompt);
+      } else {
+        throw e;
+      }
+    }
+
     const response = await result.response;
-    const text = response.text();
-
-    res.json({ response: text });
+    res.json({ response: response.text() });
   }
   catch (err) {
-    console.error("AI Chat FULL ERROR:", err);
-
-    // Extract status and message safely
-    const errStatus = err.status || (err.response && err.response.status);
-    const errorMsg = err.message || "Unknown error";
-
-    if (errStatus === 403 || errStatus === 401 || errorMsg.includes("PERMISSION_DENIED") || errorMsg.includes("API_KEY_INVALID")) {
-      return res.status(503).json({
-        message: "Gemini Auth Error: Your API key is rejected. Check Render Env Variables.",
-        detail: errorMsg,
-        status: errStatus
-      });
-    }
-
-    if (errStatus === 404 || errorMsg.includes("not found")) {
-      return res.status(503).json({
-        message: "Model Error: 'gemini-1.5-flash' not found for this key.",
-        detail: errorMsg,
-        status: errStatus
-      });
-    }
-
-    res.status(500).json({ message: "Chat Error: " + errorMsg, detail: err });
+    console.error("AI Chat Error:", err);
+    const errStatus = err.status || 500;
+    res.status(errStatus).json({
+      message: "Chat Error: " + (err.message || "Unknown error"),
+      status: errStatus
+    });
   }
 };
 
-// Compatible Routes (Supports both old and new addresses)
+// Support both routes for compatibility with cached frontend versions
 app.post("/api/chat", auth, chatHandler);
 app.post("/chat", auth, chatHandler);
-
-
-
 
 app.get('/', (req, res) => {
   res.send('API is running...');
