@@ -99,7 +99,7 @@ const getAIRecommendations = async (req, res) => {
         const { salesData, productData, summary } = req.body;
 
         const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
         const prompt = `Analyze this business data and provide 3 strategic recommendations.
         Sales Summary: ${JSON.stringify(summary)}
