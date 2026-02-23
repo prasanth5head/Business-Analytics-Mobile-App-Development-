@@ -64,19 +64,29 @@ const chatHandler = async (req, res) => {
     const genAI = new GoogleGenerativeAI(key);
     let result;
 
-    try {
-      // Try 1.5 Flash first (Faster)
-      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-      result = await model.generateContent(prompt);
-    } catch (e) {
-      // If Flash is not found (404), fall back to Gemini Pro
-      if (e.status === 404 || e.message?.toLowerCase().includes("not found")) {
-        console.log("DEBUG: Fallback to gemini-pro...");
-        const fallbackModel = genAI.getGenerativeModel({ model: "gemini-pro" });
-        result = await fallbackModel.generateContent(prompt);
-      } else {
-        throw e;
+    const modelsToTry = ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-1.0-pro", "gemini-pro"];
+    let lastError = null;
+
+    for (const modelName of modelsToTry) {
+      try {
+        console.log(`DEBUG: Trying model ${modelName}...`);
+        const model = genAI.getGenerativeModel({ model: modelName });
+        result = await model.generateContent(prompt);
+        console.log(`DEBUG: Success with model ${modelName}!`);
+        break; // Success! Exit the loop.
+      } catch (e) {
+        lastError = e;
+        if (e.status === 404 || e.message?.toLowerCase().includes("not found")) {
+          console.log(`DEBUG: Model ${modelName} not found or not allowed. Trying next...`);
+          continue;
+        } else {
+          throw e; // Rethrow if it's a completely different error e.g. 403
+        }
       }
+    }
+
+    if (!result) {
+      throw lastError; // All models failed or loop ended without result
     }
 
     const response = await result.response;
@@ -84,9 +94,26 @@ const chatHandler = async (req, res) => {
   }
   catch (err) {
     console.error("AI Chat Error:", err);
+
+    // If it's STILL a 404 after trying everything, let's fetch what models are actually available!
+    let availableModelsDetails = "";
+    if (err.status === 404 || err.message?.toLowerCase().includes("not found")) {
+      try {
+        const axios = require('axios');
+        const key = process.env.GEMINI_API_KEY;
+        const modelsResponse = await axios.get(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`);
+        const modelsList = modelsResponse.data.models.map(m => m.name.replace('models/', '')).join(', ');
+        availableModelsDetails = ` We checked your key. The models available to you are: ${modelsList}.`;
+        console.log("DEBUG Available Models:", modelsList);
+      } catch (diagError) {
+        console.log("DEBUG: Diagnosis failed", diagError.message);
+        availableModelsDetails = " Could not fetch the exact list of available models.";
+      }
+    }
+
     const errStatus = err.status || 500;
     res.status(errStatus).json({
-      message: "Chat Error: " + (err.message || "Unknown error"),
+      message: "Chat Error: " + (err.message || "Unknown error") + availableModelsDetails,
       status: errStatus
     });
   }
