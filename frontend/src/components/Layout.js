@@ -47,27 +47,32 @@ const Layout = () => {
         setMobileOpen(!mobileOpen);
     };
 
-    const menuItems = [
-        { type: 'subheader', text: 'Actual World Business Analytics' },
-        { text: 'Dashboard', icon: <DashboardIcon />, path: '/' },
-        { text: 'Descriptive', icon: <DescriptiveIcon />, path: '/descriptive' },
-        { text: 'Diagnostic', icon: <DiagnosticIcon />, path: '/diagnostic' },
-        { text: 'Predictive', icon: <PredictiveIcon />, path: '/predictive' },
-        { text: 'Prescriptive', icon: <PrescriptiveIcon />, path: '/prescriptive' },
-        { text: 'Reports', icon: <AssessmentIcon />, path: '/reports' },
+    const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
+    const businessRole = userInfo.businessRole || 'learner';
 
-        { type: 'subheader', text: 'My Business Analytics' },
-        { text: 'Dashboard', icon: <DashboardIcon />, path: '/my-business/dashboard' },
-        { text: 'Descriptive', icon: <DescriptiveIcon />, path: '/my-business/descriptive' },
-        { text: 'Diagnostic', icon: <DiagnosticIcon />, path: '/my-business/diagnostic' },
-        { text: 'Predictive', icon: <PredictiveIcon />, path: '/my-business/predictive' },
-        { text: 'Prescriptive', icon: <PrescriptiveIcon />, path: '/my-business/prescriptive' },
-        { text: 'Reports', icon: <AssessmentIcon />, path: '/my-business/reports' },
+    const allMenuItems = [
+        { type: 'subheader', text: 'Actual World Business Analytics', role: 'learner' },
+        { text: 'Dashboard', icon: <DashboardIcon />, path: '/actual-world/dashboard', role: 'learner' },
+        { text: 'Descriptive', icon: <DescriptiveIcon />, path: '/descriptive', role: 'learner' },
+        { text: 'Diagnostic', icon: <DiagnosticIcon />, path: '/diagnostic', role: 'learner' },
+        { text: 'Predictive', icon: <PredictiveIcon />, path: '/predictive', role: 'learner' },
+        { text: 'Prescriptive', icon: <PrescriptiveIcon />, path: '/prescriptive', role: 'learner' },
+        { text: 'Reports', icon: <AssessmentIcon />, path: '/reports', role: 'learner' },
 
-        { type: 'subheader', text: 'Data Management' },
-        { text: 'Revenue Entry', icon: <ReceiptIcon />, path: '/revenue' },
-        { text: 'Entry History', icon: <HistoryIcon />, path: '/entry-history' },
+        { type: 'subheader', text: 'My Business Analytics', role: 'manorwoman' },
+        { text: 'Dashboard', icon: <DashboardIcon />, path: '/my-business/dashboard', role: 'manorwoman' },
+        { text: 'Descriptive', icon: <DescriptiveIcon />, path: '/my-business/descriptive', role: 'manorwoman' },
+        { text: 'Diagnostic', icon: <DiagnosticIcon />, path: '/my-business/diagnostic', role: 'manorwoman' },
+        { text: 'Predictive', icon: <PredictiveIcon />, path: '/my-business/predictive', role: 'manorwoman' },
+        { text: 'Prescriptive', icon: <PrescriptiveIcon />, path: '/my-business/prescriptive', role: 'manorwoman' },
+        { text: 'Reports', icon: <AssessmentIcon />, path: '/my-business/reports', role: 'manorwoman' },
+
+        { type: 'subheader', text: 'Data Management', role: 'manorwoman' },
+        { text: 'Revenue Entry', icon: <ReceiptIcon />, path: '/revenue', role: 'manorwoman' },
+        { text: 'Entry History', icon: <HistoryIcon />, path: '/entry-history', role: 'manorwoman' },
     ];
+
+    const menuItems = allMenuItems.filter(item => item.role === businessRole);
 
     const drawer = (
         <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', bgcolor: 'background.paper', borderRight: '1px solid rgba(255,255,255,0.05)' }}>
@@ -86,7 +91,10 @@ const Layout = () => {
                         <Typography variant="h6" sx={{ color: 'white', fontWeight: 900 }}>BA</Typography>
                     </Box>
                     <Typography variant="h5" color="text.primary" sx={{ fontWeight: 900, letterSpacing: '-0.04em' }}>
-                        Analytics <span style={{ color: theme.palette.primary.main }}>Pro</span>
+                        {businessRole === 'manorwoman' ? 'Business ' : 'Analytics '}
+                        <span style={{ color: theme.palette.primary.main }}>
+                            {businessRole === 'manorwoman' ? 'Manor' : 'Learner'}
+                        </span>
                     </Typography>
                 </Box>
             </Toolbar>

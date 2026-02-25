@@ -25,6 +25,7 @@ const Register = () => {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [businessRole, setBusinessRole] = useState('learner');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
@@ -37,6 +38,7 @@ const Register = () => {
                 name,
                 email,
                 password,
+                businessRole
             });
             localStorage.setItem('userInfo', JSON.stringify(data));
             navigate('/');
@@ -167,6 +169,31 @@ const Register = () => {
                                 required
                                 sx={{ mb: 3 }}
                             />
+
+                            <Typography variant="subtitle2" sx={{ textAlign: 'left', mb: 1, fontWeight: 'bold', color: 'text.secondary' }}>
+                                I am a...
+                            </Typography>
+                            <Box sx={{ display: 'flex', gap: 2, mb: 4 }}>
+                                <Button
+                                    fullWidth
+                                    variant={businessRole === 'manorwoman' ? 'contained' : 'outlined'}
+                                    color="secondary"
+                                    onClick={() => setBusinessRole('manorwoman')}
+                                    sx={{ borderRadius: 2, py: 1 }}
+                                >
+                                    Business Manor/Woman
+                                </Button>
+                                <Button
+                                    fullWidth
+                                    variant={businessRole === 'learner' ? 'contained' : 'outlined'}
+                                    color="secondary"
+                                    onClick={() => setBusinessRole('learner')}
+                                    sx={{ borderRadius: 2, py: 1 }}
+                                >
+                                    Business Learner
+                                </Button>
+                            </Box>
+
                             <Button
                                 fullWidth
                                 size="large"

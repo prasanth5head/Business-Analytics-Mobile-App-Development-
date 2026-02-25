@@ -25,7 +25,7 @@ const Login = () => {
     const navigate = useNavigate();
     const theme = useTheme();
     const { toggleColorMode } = useColorMode();
-    const [credentials, setCredentials] = useState({ email: '', password: '' });
+    const [credentials, setCredentials] = useState({ email: '', password: '', businessRole: 'learner' });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
@@ -64,6 +64,7 @@ const Login = () => {
             const { credential } = credentialResponse;
             const res = await api.post(`/api/users/google-login`, {
                 tokenId: credential,
+                businessRole: credentials.businessRole
             });
 
             localStorage.setItem('userInfo', JSON.stringify(res.data));
@@ -191,6 +192,31 @@ const Login = () => {
                                 required
                                 sx={{ mb: 3 }}
                             />
+
+                            <Typography variant="subtitle2" sx={{ textAlign: 'left', mb: 1, fontWeight: 'bold', color: 'text.secondary' }}>
+                                Sign in as...
+                            </Typography>
+                            <Box sx={{ display: 'flex', gap: 2, mb: 4 }}>
+                                <Button
+                                    fullWidth
+                                    variant={credentials.businessRole === 'manorwoman' ? 'contained' : 'outlined'}
+                                    color="primary"
+                                    onClick={() => setCredentials({ ...credentials, businessRole: 'manorwoman' })}
+                                    sx={{ borderRadius: 2, py: 1 }}
+                                >
+                                    Business Man or Woman
+                                </Button>
+                                <Button
+                                    fullWidth
+                                    variant={credentials.businessRole === 'learner' ? 'contained' : 'outlined'}
+                                    color="primary"
+                                    onClick={() => setCredentials({ ...credentials, businessRole: 'learner' })}
+                                    sx={{ borderRadius: 2, py: 1 }}
+                                >
+                                    Business Learner
+                                </Button>
+                            </Box>
+
                             <Button
                                 fullWidth
                                 size="large"

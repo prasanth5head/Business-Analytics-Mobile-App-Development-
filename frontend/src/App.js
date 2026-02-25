@@ -1,5 +1,4 @@
-import React from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
 import Descriptive from './pages/Descriptive';
@@ -31,6 +30,16 @@ import { MarketProvider } from './context/MarketContext';
 import { MyBusinessProvider } from './context/MyBusinessContext';
 import { CustomThemeProvider } from './context/ThemeContext';
 
+const RoleBasedRedirect = () => {
+  const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
+  const role = userInfo.businessRole || 'learner';
+
+  if (role === 'manorwoman') {
+    return <Navigate to="/my-business/dashboard" replace />;
+  }
+  return <Navigate to="/actual-world/dashboard" replace />;
+};
+
 function App() {
   return (
     <CustomThemeProvider>
@@ -46,7 +55,8 @@ function App() {
               {/* Protected Routes */}
               <Route element={<ProtectedRoute />}>
                 <Route path="/" element={<Layout />}>
-                  <Route index element={<Dashboard />} />
+                  <Route index element={<RoleBasedRedirect />} />
+                  <Route path="actual-world/dashboard" element={<Dashboard />} />
                   <Route path="descriptive" element={<Descriptive />} />
                   <Route path="diagnostic" element={<Diagnostic />} />
                   <Route path="predictive" element={<Predictive />} />

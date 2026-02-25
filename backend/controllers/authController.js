@@ -11,7 +11,7 @@ const generateToken = (id) => {
 // @route   POST /api/users/login
 // @access  Public
 const authUser = async (req, res) => {
-    let { email, password } = req.body;
+    let { email, password, businessRole } = req.body;
 
     // Trimming and lowercasing email for mobile users
     email = email ? email.trim().toLowerCase() : '';
@@ -27,11 +27,16 @@ const authUser = async (req, res) => {
             console.log(`Password match: ${isMatch}`);
 
             if (isMatch) {
+                if (businessRole) {
+                    user.businessRole = businessRole;
+                    await user.save();
+                }
                 return res.json({
                     _id: user._id,
                     name: user.name,
                     email: user.email,
                     role: user.role,
+                    businessRole: user.businessRole,
                     token: generateToken(user._id),
                 });
             }
@@ -50,7 +55,7 @@ const authUser = async (req, res) => {
 // @route   POST /api/users
 // @access  Public
 const registerUser = async (req, res) => {
-    let { name, email, password } = req.body;
+    let { name, email, password, businessRole } = req.body;
     email = email ? email.trim().toLowerCase() : '';
 
     try {
@@ -64,6 +69,7 @@ const registerUser = async (req, res) => {
             name,
             email,
             password,
+            businessRole: businessRole || 'learner',
         });
 
         if (user) {
@@ -72,6 +78,7 @@ const registerUser = async (req, res) => {
                 name: user.name,
                 email: user.email,
                 role: user.role,
+                businessRole: user.businessRole,
                 token: generateToken(user._id),
             });
         } else {
@@ -89,7 +96,7 @@ const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 // @route   POST /api/users/google-login
 // @access  Public
 const googleLogin = async (req, res) => {
-    const { tokenId } = req.body;
+    const { tokenId, businessRole } = req.body;
 
     console.log('Google Login attempt with token length:', tokenId ? tokenId.length : 0);
 
@@ -115,15 +122,17 @@ const googleLogin = async (req, res) => {
         let user = await User.findOne({ email: normalizedEmail });
 
         if (user) {
+            user.businessRole = businessRole || user.businessRole;
             if (!user.googleId) {
                 user.googleId = sub;
-                await user.save();
             }
+            await user.save();
         } else {
             user = await User.create({
                 name,
                 email: normalizedEmail,
                 googleId: sub,
+                businessRole: businessRole || 'learner'
             });
         }
 
@@ -132,6 +141,7 @@ const googleLogin = async (req, res) => {
             name: user.name,
             email: user.email,
             role: user.role,
+            businessRole: user.businessRole,
             token: generateToken(user._id),
         });
     } catch (error) {
