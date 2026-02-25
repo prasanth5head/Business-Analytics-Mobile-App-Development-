@@ -28,6 +28,7 @@ import {
     Brightness4 as DarkModeIcon,
     Brightness7 as LightModeIcon,
     Receipt as ReceiptIcon,
+    History as HistoryIcon,
 } from '@mui/icons-material';
 import { useColorMode } from '../context/ThemeContext';
 
@@ -54,6 +55,7 @@ const Layout = () => {
         { text: 'Prescriptive', icon: <PrescriptiveIcon />, path: '/prescriptive' },
         { text: 'Reports', icon: <AssessmentIcon />, path: '/reports' },
         { text: 'Revenue Entry', icon: <ReceiptIcon />, path: '/revenue' },
+        { text: 'Entry History', icon: <HistoryIcon />, path: '/entry-history' },
         { text: 'Manual Report', icon: <AssessmentIcon />, path: '/manual-report' },
     ];
 

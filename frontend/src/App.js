@@ -13,6 +13,7 @@ import RevenueEntry from './pages/RevenueEntry';
 import Login from './pages/Login';
 import Chatai from './pages/Chatai';
 import ManualReport from './pages/ManualReport';
+import EntryHistory from './pages/EntryHistory';
 import ReactiveCursor from './components/ReactiveCursor';
 import PWAUpdateHandler from './components/PWAUpdateHandler';
 
@@ -41,6 +42,7 @@ function App() {
                 <Route path="prescriptive" element={<Prescriptive />} />
                 <Route path="reports" element={<Reports />} />
                 <Route path="revenue" element={<RevenueEntry />} />
+                <Route path="entry-history" element={<EntryHistory />} />
                 <Route path="manual-report" element={<ManualReport />} />
                 <Route path="chat" element={<Chatai />} />
                 <Route path="*" element={<Dashboard />} />
