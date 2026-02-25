@@ -110,8 +110,8 @@ const Descriptive = () => {
 
             {/* Charts Row 1 */}
             <Grid container spacing={3} sx={{ mb: 4 }}>
-                <Grid item xs={12} md={8}>
-                    <Paper sx={{ p: 3, height: '100%', borderRadius: 3 }}>
+                <Grid item xs={12} md={12}>
+                    <Paper sx={{ p: 4, height: '100%', borderRadius: 3 }}>
                         <Typography variant="h6" gutterBottom fontWeight="bold" color="text.primary">Live Sales & Profit Trend</Typography>
                         <ResponsiveContainer width="100%" height={350}>
                             <BarChart data={salesData}>
@@ -126,12 +126,12 @@ const Descriptive = () => {
                         </ResponsiveContainer>
                     </Paper>
                 </Grid>
-                <Grid item xs={12} md={4}>
-                    <Paper sx={{ p: 3, height: '100%', borderRadius: 3 }}>
+                <Grid item xs={12} md={12}>
+                    <Paper sx={{ p: 5, height: '100%', borderRadius: 3 }}>
                         <Typography variant="h6" gutterBottom fontWeight="bold" color="text.primary">Category Contribution</Typography>
                         <ResponsiveContainer width="100%" height={250}>
                             <PieChart>
-                                <Pie data={productData} cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={5} dataKey="profitMargin"
+                                <Pie data={productData} cx="50%" cy="50%" innerRadius={80} outerRadius={120} paddingAngle={5} dataKey="profitMargin"
                                     label={({ name }) => name}>
                                     {productData.map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
@@ -140,14 +140,14 @@ const Descriptive = () => {
                                 <Tooltip />
                             </PieChart>
                         </ResponsiveContainer>
-                        <Box sx={{ mt: 2 }}>
+                        <Box sx={{ mt: 4, display: 'flex', flexWrap: 'wrap', gap: 2, justifyContent: 'center' }}>
                             {productData.map((item, i) => (
-                                <Box key={item.name} sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                        <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: COLORS[i] }} />
+                                <Box key={item.name} sx={{ display: 'flex', alignItems: 'center', mb: 0.5, p: 1, border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 150 }}>
+                                        <Box sx={{ width: 14, height: 14, borderRadius: '50%', bgcolor: COLORS[i % COLORS.length] }} />
                                         <Typography variant="body2" color="text.primary">{item.name}</Typography>
                                     </Box>
-                                    <Typography variant="body2" fontWeight="bold" color="text.primary">{item.profitMargin.toFixed(1)}%</Typography>
+                                    <Typography variant="body2" fontWeight="bold" color="text.primary" sx={{ ml: 2 }}>{item.profitMargin.toFixed(1)}%</Typography>
                                 </Box>
                             ))}
                         </Box>

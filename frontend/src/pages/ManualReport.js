@@ -6,8 +6,9 @@ import {
 } from '@mui/material';
 import {
     Assessment, TrendingUp, TrendingDown, AccountBalanceWallet,
-    EventNote, AccessTime
+    EventNote, AccessTime, Print as PrintIcon
 } from '@mui/icons-material';
+import { Button as MuiButton } from '@mui/material';
 import api from '../api';
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -79,6 +80,10 @@ export default function ManualReport() {
         }
     };
 
+    const handlePrint = () => {
+        window.print();
+    };
+
     if (loading) {
         return (
             <Box sx={{ p: 4 }}>
@@ -95,17 +100,43 @@ export default function ManualReport() {
     }
 
     return (
-        <Box sx={{ p: { xs: 2, md: 4 }, maxWidth: 1200, mx: 'auto' }}>
+        <Box sx={{
+            p: { xs: 2, md: 4 },
+            maxWidth: 1200,
+            mx: 'auto',
+            '@media print': {
+                p: 0,
+                m: 0,
+                maxWidth: '100%',
+                '& .no-print': { display: 'none' },
+                'header, .MuiAppBar-root, .MuiDrawer-root, nav': { display: 'none' },
+                main: { p: 0, m: 0 },
+                '.MuiToolbar-root': { display: 'none' },
+                color: 'black !important',
+                background: 'white !important',
+                '.MuiPaper-root': { boxShadow: 'none', border: '1px solid #eee', background: 'white !important' },
+                '.MuiTypography-root': { color: 'black !important' },
+                '.MuiChip-root': { border: '1px solid #ccc', background: 'none !important', color: 'black !important' }
+            }
+        }}>
             <Box mb={4} display="flex" justifyContent="space-between" alignItems="center">
                 <Box>
-                    <Typography variant="h3" sx={{ fontWeight: 900, color: 'white', letterSpacing: '-0.02em', mb: 1 }}>
+                    <Typography variant="h3" sx={{ fontWeight: 900, color: 'text.primary', letterSpacing: '-0.02em', mb: 1 }}>
                         Manual Revenue <span style={{ color: theme.palette.primary.main }}>Report</span>
                     </Typography>
                     <Typography color="text.secondary" variant="body1">
                         Comprehensive analysis of your manually entered financial data.
                     </Typography>
                 </Box>
-                <Chip icon={<Assessment />} label="Real-time Data" sx={{ bgcolor: 'rgba(255,255,255,0.05)', color: 'white', fontWeight: 700, p: 2 }} />
+                <MuiButton
+                    variant="contained"
+                    startIcon={<PrintIcon />}
+                    onClick={handlePrint}
+                    className="no-print"
+                    sx={{ borderRadius: 3, fontWeight: 800, px: 3 }}
+                >
+                    Print Report
+                </MuiButton>
             </Box>
 
             {/* Stats Cards */}
@@ -118,9 +149,9 @@ export default function ManualReport() {
                 ].map((stat, i) => (
                     <Grid item xs={12} sm={6} md={3} key={i}>
                         <Card sx={{
-                            background: 'rgba(20,20,20,0.6)',
+                            background: theme.palette.mode === 'dark' ? 'rgba(20,20,20,0.6)' : theme.palette.background.paper,
                             backdropFilter: 'blur(10px)',
-                            border: '1px solid rgba(255,255,255,0.05)',
+                            border: `1px solid ${theme.palette.divider}`,
                             borderRadius: 4,
                             transition: 'transform 0.3s',
                             '&:hover': { transform: 'translateY(-5px)' }
@@ -140,7 +171,7 @@ export default function ManualReport() {
                                         {stat.label}
                                     </Typography>
                                 </Box>
-                                <Typography variant="h4" sx={{ fontWeight: 900, color: 'white' }}>
+                                <Typography variant="h4" sx={{ fontWeight: 900, color: 'text.primary' }}>
                                     ₹{stat.value.toLocaleString()}
                                 </Typography>
                             </CardContent>
@@ -153,8 +184,8 @@ export default function ManualReport() {
             <Grid container spacing={3} mb={4}>
                 <Grid item xs={12} md={8}>
                     <Paper sx={{
-                        p: 3, borderRadius: 4, background: 'rgba(20,20,20,0.6)',
-                        border: '1px solid rgba(255,255,255,0.05)'
+                        p: 3, borderRadius: 4, background: theme.palette.mode === 'dark' ? 'rgba(20,20,20,0.6)' : theme.palette.background.paper,
+                        border: `1px solid ${theme.palette.divider}`
                     }}>
                         <Typography variant="h6" sx={{ fontWeight: 800, mb: 3 }}>Revenue vs Profit Performance</Typography>
                         <Box sx={{ height: 350, width: '100%' }}>
@@ -170,11 +201,11 @@ export default function ManualReport() {
                                             <stop offset="95%" stopColor="#4caf50" stopOpacity={0} />
                                         </linearGradient>
                                     </defs>
-                                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                                    <XAxis dataKey="month" stroke="rgba(255,255,255,0.3)" fontSize={12} fontWeight={700} />
-                                    <YAxis stroke="rgba(255,255,255,0.3)" fontSize={12} fontWeight={700} />
+                                    <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
+                                    <XAxis dataKey="month" stroke={theme.palette.text.secondary} fontSize={12} fontWeight={700} />
+                                    <YAxis stroke={theme.palette.text.secondary} fontSize={12} fontWeight={700} />
                                     <Tooltip
-                                        contentStyle={{ backgroundColor: 'rgba(0,0,0,0.8)', border: 'none', borderRadius: 8 }}
+                                        contentStyle={{ backgroundColor: theme.palette.background.paper, border: 'none', borderRadius: 8 }}
                                         itemStyle={{ fontWeight: 700 }}
                                     />
                                     <Legend />
@@ -187,18 +218,18 @@ export default function ManualReport() {
                 </Grid>
                 <Grid item xs={12} md={4}>
                     <Paper sx={{
-                        p: 3, borderRadius: 4, background: 'rgba(20,20,20,0.6)',
-                        border: '1px solid rgba(255,255,255,0.05)', height: '100%'
+                        p: 3, borderRadius: 4, background: theme.palette.mode === 'dark' ? 'rgba(20,20,20,0.6)' : theme.palette.background.paper,
+                        border: `1px solid ${theme.palette.divider}`, height: '100%'
                     }}>
                         <Typography variant="h6" sx={{ fontWeight: 800, mb: 3 }}>Loss Analysis</Typography>
                         <Box sx={{ height: 350, width: '100%' }}>
                             <ResponsiveContainer>
                                 <BarChart data={chartData}>
-                                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                                    <XAxis dataKey="month" stroke="rgba(255,255,255,0.3)" fontSize={12} fontWeight={700} />
-                                    <YAxis stroke="rgba(255,255,255,0.3)" fontSize={12} fontWeight={700} />
+                                    <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
+                                    <XAxis dataKey="month" stroke={theme.palette.text.secondary} fontSize={12} fontWeight={700} />
+                                    <YAxis stroke={theme.palette.text.secondary} fontSize={12} fontWeight={700} />
                                     <Tooltip
-                                        contentStyle={{ backgroundColor: 'rgba(0,0,0,0.8)', border: 'none', borderRadius: 8 }}
+                                        contentStyle={{ backgroundColor: theme.palette.background.paper, border: 'none', borderRadius: 8 }}
                                     />
                                     <Bar dataKey="loss" name="Loss Amount" fill="#f44336" radius={[4, 4, 0, 0]} />
                                 </BarChart>
@@ -210,31 +241,31 @@ export default function ManualReport() {
 
             {/* Detailed Table */}
             <TableContainer component={Paper} sx={{
-                borderRadius: 4, background: 'rgba(20,20,20,0.6)',
-                border: '1px solid rgba(255,255,255,0.05)', overflow: 'hidden'
+                borderRadius: 4, background: theme.palette.mode === 'dark' ? 'rgba(20,20,20,0.6)' : theme.palette.background.paper,
+                border: `1px solid ${theme.palette.divider}`, overflow: 'hidden'
             }}>
                 <Table>
-                    <TableHead sx={{ bgcolor: 'rgba(255,255,255,0.02)' }}>
+                    <TableHead sx={{ bgcolor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)' }}>
                         <TableRow>
-                            <TableCell sx={{ fontWeight: 800, color: 'white', py: 2.5 }}>MONTH</TableCell>
-                            <TableCell sx={{ fontWeight: 800, color: 'white' }}>CATEGORY</TableCell>
-                            <TableCell sx={{ fontWeight: 800, color: 'white' }}>REVENUE (₹)</TableCell>
-                            <TableCell sx={{ fontWeight: 800, color: 'white' }}>PROFIT (₹)</TableCell>
-                            <TableCell sx={{ fontWeight: 800, color: 'white' }}>LOSS (₹)</TableCell>
-                            <TableCell sx={{ fontWeight: 800, color: 'white' }}>NET (₹)</TableCell>
-                            <TableCell sx={{ fontWeight: 800, color: 'white' }}>DATE</TableCell>
+                            <TableCell sx={{ fontWeight: 800, color: 'text.primary', py: 2.5 }}>MONTH</TableCell>
+                            <TableCell sx={{ fontWeight: 800, color: 'text.primary' }}>CATEGORY</TableCell>
+                            <TableCell sx={{ fontWeight: 800, color: 'text.primary' }}>REVENUE (₹)</TableCell>
+                            <TableCell sx={{ fontWeight: 800, color: 'text.primary' }}>PROFIT (₹)</TableCell>
+                            <TableCell sx={{ fontWeight: 800, color: 'text.primary' }}>LOSS (₹)</TableCell>
+                            <TableCell sx={{ fontWeight: 800, color: 'text.primary' }}>NET (₹)</TableCell>
+                            <TableCell sx={{ fontWeight: 800, color: 'text.primary' }}>DATE</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
                         {data.map((row) => (
-                            <TableRow key={row._id} sx={{ '&:hover': { bgcolor: 'rgba(255,255,255,0.03)' } }}>
+                            <TableRow key={row._id} sx={{ '&:hover': { bgcolor: theme.palette.action.hover } }}>
                                 <TableCell>
                                     <Chip label={row.month} size="small" sx={{ bgcolor: 'primary.main', fontWeight: 800, color: 'white' }} />
                                 </TableCell>
                                 <TableCell sx={{ color: 'text.secondary', fontWeight: 600 }}>
                                     {row.product || 'All'}
                                 </TableCell>
-                                <TableCell sx={{ fontWeight: 700, color: 'white' }}>₹{(row.amount || 0).toLocaleString()}</TableCell>
+                                <TableCell sx={{ fontWeight: 700, color: 'text.primary' }}>₹{(row.amount || 0).toLocaleString()}</TableCell>
                                 <TableCell sx={{ fontWeight: 700, color: '#4caf50' }}>₹{(row.profit || 0).toLocaleString()}</TableCell>
                                 <TableCell sx={{ fontWeight: 700, color: '#f44336' }}>₹{(row.loss || 0).toLocaleString()}</TableCell>
                                 <TableCell sx={{ fontWeight: 900, color: (row.profit - row.loss) >= 0 ? '#4caf50' : '#f44336' }}>

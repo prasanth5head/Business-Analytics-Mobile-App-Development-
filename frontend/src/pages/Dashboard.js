@@ -166,54 +166,6 @@ const Dashboard = () => {
                 </Box>
             </Box>
 
-            {/* Quick Action Bar / Input Revenue */}
-            <Paper sx={{
-                p: { xs: 3, md: 4 },
-                mb: 4,
-                borderRadius: 4,
-                border: `1px solid ${theme.palette.divider}`,
-                background: theme.palette.mode === 'dark'
-                    ? `linear-gradient(135deg, ${theme.palette.background.paper} 0%, rgba(255, 94, 0, 0.05) 100%)`
-                    : `linear-gradient(135deg, #ffffff 0%, rgba(255, 94, 0, 0.05) 100%)`
-            }}>
-                <Typography variant="h6" sx={{ mb: 3, fontWeight: 800, display: 'flex', alignItems: 'center', gap: 1.5, color: 'primary.main' }}>
-                    <AddCircleOutline /> Manual Revenue Entry
-                </Typography>
-                <Box component="form" onSubmit={handleAddRevenue} sx={{ display: 'flex', gap: 3, alignItems: 'center', flexWrap: 'wrap' }}>
-                    <TextField
-                        size="medium"
-                        label="Revenue Amount"
-                        variant="outlined"
-                        value={revAmount}
-                        onChange={(e) => setRevAmount(e.target.value)}
-                        placeholder="e.g. 5000"
-                        InputProps={{
-                            startAdornment: <InputAdornment position="start" sx={{ color: 'primary.main' }}>₹</InputAdornment>,
-                        }}
-                        sx={{ flexGrow: 1, minWidth: '240px' }}
-                    />
-                    <TextField
-                        select
-                        size="medium"
-                        label="Month"
-                        value={revMonth}
-                        onChange={(e) => setRevMonth(e.target.value)}
-                        sx={{ width: '180px' }}
-                    >
-                        {months.map((m) => (
-                            <MenuItem key={m} value={m}>{m}</MenuItem>
-                        ))}
-                    </TextField>
-                    <Button
-                        type="submit"
-                        variant="contained"
-                        disabled={submitting}
-                        sx={{ height: '56px', px: 5, borderRadius: 3, fontWeight: 900, fontSize: '1rem' }}
-                    >
-                        {submitting ? 'Adding...' : 'Add Data'}
-                    </Button>
-                </Box>
-            </Paper>
 
             {/* AI Top Alert Bar */}
             {aiAnalysis && (
@@ -439,6 +391,10 @@ const Dashboard = () => {
                                         <Box display="flex" justifyContent="space-between">
                                             <Typography variant="caption" color="text.secondary">Profit Margin</Typography>
                                             <Typography variant="caption" sx={{ fontWeight: 700, color: '#4caf50' }}>{prod.profitMargin}%</Typography>
+                                        </Box>
+                                        <Box display="flex" justifyContent="space-between">
+                                            <Typography variant="caption" color="text.secondary">GST Rate</Typography>
+                                            <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.primary' }}>{prod.gst}%</Typography>
                                         </Box>
                                         <Box display="flex" justifyContent="space-between">
                                             <Typography variant="caption" color="text.secondary">Return Rate</Typography>

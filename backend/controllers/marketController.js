@@ -67,10 +67,33 @@ const getMarketData = async (req, res) => {
         const liveData = generateTrendData(4000, persistentRevenue);
 
         const productsRaw = [
-            { name: 'Electronics', profitMargin: 15 + Math.floor(Math.random() * 20), returnRate: parseFloat((3 + Math.random() * 7).toFixed(1)), complaints: Math.floor(Math.random() * 20 + 5) },
-            { name: 'Clothing', profitMargin: 35 + Math.floor(Math.random() * 25), returnRate: parseFloat((10 + Math.random() * 10).toFixed(1)), complaints: Math.floor(Math.random() * 30 + 8) },
-            { name: 'Home', profitMargin: 25 + Math.floor(Math.random() * 15), returnRate: parseFloat((5 + Math.random() * 8).toFixed(1)), complaints: Math.floor(Math.random() * 15 + 3) },
-            { name: 'Beauty', profitMargin: 50 + Math.floor(Math.random() * 20), returnRate: parseFloat((1 + Math.random() * 5).toFixed(1)), complaints: Math.floor(Math.random() * 10 + 1) },
+            { name: 'Retail Clothing (<₹1k)', profitMargin: 20, returnRate: 5.2, complaints: 15, gst: 5 },
+            { name: 'Retail Clothing (>₹1k)', profitMargin: 25, returnRate: 6.0, complaints: 12, gst: 12 },
+            { name: 'Electronics (Mobiles)', profitMargin: 12, returnRate: 2.1, complaints: 25, gst: 18 },
+            { name: 'Electronics (Laptops)', profitMargin: 15, returnRate: 1.5, complaints: 10, gst: 18 },
+            { name: 'Supermarket (Grocery)', profitMargin: 8, returnRate: 0.5, complaints: 5, gst: 5 },
+            { name: 'Restaurant / Food Court', profitMargin: 55, returnRate: 1.0, complaints: 20, gst: 5 },
+            { name: 'Cinema Theatre', profitMargin: 40, returnRate: 0.5, complaints: 8, gst: 18 },
+            { name: 'Gaming Zone', profitMargin: 65, returnRate: 0.1, complaints: 2, gst: 18 },
+            { name: 'Salon / Spa', profitMargin: 50, returnRate: 0.5, complaints: 5, gst: 18 },
+            { name: 'Jewellery Shop', profitMargin: 18, returnRate: 0.2, complaints: 3, gst: 3 },
+            { name: 'Footwear', profitMargin: 35, returnRate: 4.5, complaints: 14, gst: 18 },
+            { name: 'Parking (Mall Income)', profitMargin: 85, returnRate: 0.0, complaints: 10, gst: 18 },
+            { name: 'Mobile Accessories', profitMargin: 60, returnRate: 3.5, complaints: 12, gst: 18 },
+            { name: 'Book Store', profitMargin: 30, returnRate: 1.0, complaints: 2, gst: 12 },
+            { name: 'Toy Store', profitMargin: 45, returnRate: 3.0, complaints: 6, gst: 12 },
+            { name: 'Optical Shop', profitMargin: 70, returnRate: 2.0, complaints: 4, gst: 12 },
+            { name: 'Watch Store', profitMargin: 50, returnRate: 1.0, complaints: 3, gst: 18 },
+            { name: 'Gym / Fitness Center', profitMargin: 40, returnRate: 1.0, complaints: 5, gst: 18 },
+            { name: 'Gift Shop', profitMargin: 45, returnRate: 2.5, complaints: 4, gst: 18 },
+            { name: 'Ice Cream Shop', profitMargin: 55, returnRate: 0.2, complaints: 3, gst: 18 },
+            { name: 'Pharmacy', profitMargin: 22, returnRate: 0.5, complaints: 2, gst: 12 },
+            { name: 'ATM / Banking', profitMargin: 100, returnRate: 0.0, complaints: 15, gst: 18 },
+            { name: 'Tattoo Shop', profitMargin: 75, returnRate: 1.0, complaints: 1, gst: 18 },
+            { name: 'Photo Studio', profitMargin: 60, returnRate: 0.5, complaints: 2, gst: 18 },
+            { name: 'Pet Shop', profitMargin: 30, returnRate: 1.5, complaints: 5, gst: 12 },
+            { name: 'Sweet Shop', profitMargin: 40, returnRate: 0.5, complaints: 3, gst: 5 },
+            { name: 'Flower Shop', profitMargin: 50, returnRate: 2.0, complaints: 1, gst: 0 }
         ];
 
         const products = productsRaw.map(p => ({
@@ -154,9 +177,9 @@ const getAIRecommendations = async (req, res) => {
         const prompt = `Analyze this business data and provide 3 strategic recommendations.
         Sales Summary: ${JSON.stringify(summary)}
         Sales Trend: ${JSON.stringify(salesData)}
-        Product Performance: ${JSON.stringify(productData)}
+        Product Performance (including GST %): ${JSON.stringify(productData)}
         
-        Format the response as a JSON object with:
+        Consider the impact of GST rates on the profit margins when making recommendations. Format the response as a JSON object with:
         1. "aiAnalysis": a 2-sentence summary of overall health.
         2. "recommendations": an array of 3 objects, each with "title", "recommendation", "type" (Critical/Actionable), and "confidence" (0-100).
         Return ONLY the JSON.`;

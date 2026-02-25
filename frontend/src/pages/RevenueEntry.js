@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import {
     Box, Paper, Typography, TextField, Button, Table,
     TableBody, TableCell, TableContainer, TableHead, TableRow,
-    Alert, Snackbar, MenuItem, Chip, Divider
+    Alert, Snackbar, MenuItem, Chip, Divider, useTheme
 } from '@mui/material';
 import { AddCircleOutline, Save } from '@mui/icons-material';
 import api from '../api';
@@ -10,13 +10,21 @@ import api from '../api';
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
     'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-const PRODUCTS = ['Electronics', 'Clothing', 'Home', 'Beauty'];
+const PRODUCTS = [
+    'Retail Clothing (<₹1k)', 'Retail Clothing (>₹1k)', 'Electronics (Mobiles)', 'Electronics (Laptops)',
+    'Supermarket (Grocery)', 'Restaurant / Food Court', 'Cinema Theatre', 'Gaming Zone',
+    'Salon / Spa', 'Jewellery Shop', 'Footwear', 'Parking (Mall Income)',
+    'Mobile Accessories', 'Book Store', 'Toy Store', 'Optical Shop', 'Watch Store',
+    'Gym / Fitness Center', 'Gift Shop', 'Ice Cream Shop', 'Pharmacy', 'ATM / Banking',
+    'Tattoo Shop', 'Photo Studio', 'Pet Shop', 'Sweet Shop', 'Flower Shop'
+];
 
 const emptyRow = () => ({
     month: '', product: '', revenue: '', profit: '', loss: ''
 });
 
 export default function RevenueEntry() {
+    const theme = useTheme();
     const [rows, setRows] = useState(
         MONTHS.map(m => ({ month: m, product: '', revenue: '', profit: '', loss: '' }))
     );
@@ -31,29 +39,12 @@ export default function RevenueEntry() {
         });
     };
 
-    const handleClear = async () => {
-        if (!window.confirm("⚠️ This will permanently delete ALL old manual report data. Are you sure?")) return;
-        setSaving(true);
-        try {
-            const userInfo = JSON.parse(localStorage.getItem('userInfo'));
-            const headers = { Authorization: `Bearer ${userInfo?.token}` };
-            await api.delete('/api/market/revenue', { headers });
-            setSnack({ open: true, msg: '🗑️ Old data cleared successfully!', severity: 'info' });
-        } catch (err) {
-            setSnack({ open: true, msg: '❌ Failed to clear old data.', severity: 'error' });
-        }
-        setSaving(false);
-    };
-
     const handleSave = async () => {
         setSaving(true);
         try {
             const userInfo = JSON.parse(localStorage.getItem('userInfo'));
             const token = userInfo?.token;
             const headers = { Authorization: `Bearer ${token}` };
-
-            // Clear old data first to "Refresh" the report as per user request
-            await api.delete('/api/market/revenue', { headers });
 
             const toSave = rows.filter(r => r.revenue && r.month);
             for (const row of toSave) {
@@ -65,9 +56,12 @@ export default function RevenueEntry() {
                     loss: Number(row.loss) || 0
                 }, { headers });
             }
-            setSnack({ open: true, msg: `✅ Report refreshed with ${toSave.length} months!`, severity: 'success' });
+            setSnack({ open: true, msg: `✅ ${toSave.length} records added successfully!`, severity: 'success' });
+
+            // Clear the form fields after successful save
+            setRows(MONTHS.map(m => ({ month: m, product: '', revenue: '', profit: '', loss: '' })));
         } catch (err) {
-            setSnack({ open: true, msg: '❌ Failed to refresh report. Please try again.', severity: 'error' });
+            setSnack({ open: true, msg: '❌ Failed to add records. Please try again.', severity: 'error' });
         }
         setSaving(false);
     };
@@ -82,7 +76,7 @@ export default function RevenueEntry() {
         <Box sx={{ p: { xs: 2, md: 4 }, maxWidth: 1100, mx: 'auto' }}>
             {/* Header */}
             <Box mb={3}>
-                <Typography variant="h4" sx={{ fontWeight: 900, color: 'white', mb: 0.5 }}>
+                <Typography variant="h4" sx={{ fontWeight: 900, color: 'text.primary', mb: 0.5 }}>
                     📊 Annual Revenue Entry
                 </Typography>
                 <Typography color="text.secondary" variant="body2">
@@ -114,13 +108,18 @@ export default function RevenueEntry() {
             </Box>
 
             {/* Table */}
-            <Paper sx={{ borderRadius: 3, overflow: 'hidden', background: 'rgba(20,20,20,0.9)', border: '1px solid rgba(255,255,255,0.07)' }}>
+            <Paper sx={{
+                borderRadius: 3,
+                overflow: 'hidden',
+                background: theme.palette.mode === 'dark' ? 'rgba(20,20,20,0.9)' : theme.palette.background.paper,
+                border: `1px solid ${theme.palette.divider}`
+            }}>
                 <TableContainer>
                     <Table size="small">
                         <TableHead>
-                            <TableRow sx={{ background: 'rgba(255,94,0,0.12)' }}>
+                            <TableRow sx={{ background: theme.palette.mode === 'dark' ? 'rgba(255,94,0,0.12)' : 'rgba(255,94,0,0.08)' }}>
                                 {['Month', 'Product Category', 'Revenue (₹)', 'Profit (₹)', 'Loss (₹)'].map(h => (
-                                    <TableCell key={h} sx={{ fontWeight: 800, color: 'white', py: 1.5, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                    <TableCell key={h} sx={{ fontWeight: 800, color: 'text.primary', py: 1.5, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                                         {h}
                                     </TableCell>
                                 ))}
@@ -144,7 +143,7 @@ export default function RevenueEntry() {
                                             value={row.product}
                                             onChange={e => handleChange(i, 'product', e.target.value)}
                                             variant="standard"
-                                            InputProps={{ disableUnderline: true, sx: { color: 'white', fontSize: '0.85rem' } }}
+                                            InputProps={{ disableUnderline: true, sx: { color: 'text.primary', fontSize: '0.85rem' } }}
                                         >
                                             <MenuItem value=""><em>All</em></MenuItem>
                                             {PRODUCTS.map(p => <MenuItem key={p} value={p}>{p}</MenuItem>)}
@@ -161,7 +160,7 @@ export default function RevenueEntry() {
                                                 InputProps={{
                                                     disableUnderline: true,
                                                     sx: {
-                                                        color: field === 'loss' ? '#f44336' : field === 'profit' ? '#4caf50' : 'white',
+                                                        color: field === 'loss' ? '#f44336' : field === 'profit' ? '#4caf50' : 'text.primary',
                                                         fontSize: '0.9rem', fontWeight: 700
                                                     }
                                                 }}
@@ -185,19 +184,6 @@ export default function RevenueEntry() {
             {/* Action Buttons */}
             <Box mt={3} display="flex" justifyContent="flex-end" gap={2}>
                 <Button
-                    variant="outlined"
-                    size="large"
-                    onClick={handleClear}
-                    disabled={saving}
-                    sx={{
-                        borderRadius: 3, fontWeight: 800, px: 4,
-                        borderColor: '#f44336', color: '#f44336',
-                        '&:hover': { borderColor: '#d32f2f', bgcolor: 'rgba(244,67,54,0.05)' }
-                    }}
-                >
-                    Clear Old Data
-                </Button>
-                <Button
                     variant="contained"
                     size="large"
                     startIcon={<Save />}
@@ -209,7 +195,7 @@ export default function RevenueEntry() {
                         '&:hover': { background: 'linear-gradient(135deg, #FF8A00, #FF5E00)' }
                     }}
                 >
-                    {saving ? 'Processing...' : 'Refresh Report'}
+                    {saving ? 'Processing...' : 'Save Records'}
                 </Button>
             </Box>
 
