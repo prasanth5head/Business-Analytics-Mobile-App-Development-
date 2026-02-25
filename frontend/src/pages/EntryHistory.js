@@ -58,6 +58,13 @@ export default function EntryHistory() {
         );
     }
 
+    const groupedData = data.reduce((acc, curr) => {
+        const year = new Date(curr.createdAt).getFullYear();
+        if (!acc[year]) acc[year] = [];
+        acc[year].push(curr);
+        return acc;
+    }, {});
+
     return (
         <Box sx={{ p: { xs: 2, md: 4 }, maxWidth: 1200, mx: 'auto' }}>
             <Box mb={4} display="flex" justifyContent="space-between" alignItems="flex-end">
@@ -91,48 +98,56 @@ export default function EntryHistory() {
                 </Typography>
             </Paper>
 
-            <TableContainer component={Paper} sx={{
-                borderRadius: 4, background: theme.palette.mode === 'dark' ? 'rgba(20,20,20,0.6)' : theme.palette.background.paper,
-                border: `1px solid ${theme.palette.divider}`, overflow: 'hidden',
-                boxShadow: theme.palette.mode === 'dark' ? '0 10px 40px rgba(0,0,0,0.5)' : '0 10px 30px rgba(0,0,0,0.05)'
-            }}>
-                <Table>
-                    <TableHead sx={{ bgcolor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)' }}>
-                        <TableRow>
-                            <TableCell sx={{ fontWeight: 900, color: 'text.primary', py: 2.5 }}>DATE LOGGED</TableCell>
-                            <TableCell sx={{ fontWeight: 900, color: 'text.primary' }}>TARGET MONTH</TableCell>
-                            <TableCell sx={{ fontWeight: 900, color: 'text.primary' }}>CATEGORY</TableCell>
-                            <TableCell sx={{ fontWeight: 900, color: 'text.primary' }}>REVENUE</TableCell>
-                            <TableCell sx={{ fontWeight: 900, color: 'text.primary' }}>PROFIT</TableCell>
-                            <TableCell sx={{ fontWeight: 900, color: 'text.primary' }}>LOSS</TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {data.map((row) => (
-                            <TableRow key={row._id} sx={{ '&:hover': { bgcolor: theme.palette.action.hover } }}>
-                                <TableCell sx={{ color: 'text.secondary', fontWeight: 600 }}>
-                                    <Box display="flex" alignItems="center" gap={1}>
-                                        <AccessTime fontSize="small" />
-                                        {new Date(row.createdAt).toLocaleString(undefined, {
-                                            year: 'numeric', month: 'short', day: 'numeric',
-                                            hour: '2-digit', minute: '2-digit'
-                                        })}
-                                    </Box>
-                                </TableCell>
-                                <TableCell>
-                                    <Chip label={row.month} size="small" variant="outlined" sx={{ fontWeight: 800, color: 'text.primary', borderColor: 'divider' }} />
-                                </TableCell>
-                                <TableCell sx={{ color: 'text.primary', fontWeight: 700 }}>
-                                    {row.product || 'All'}
-                                </TableCell>
-                                <TableCell sx={{ fontWeight: 800, color: theme.palette.primary.main }}>₹{(row.amount || 0).toLocaleString()}</TableCell>
-                                <TableCell sx={{ fontWeight: 800, color: '#4caf50' }}>₹{(row.profit || 0).toLocaleString()}</TableCell>
-                                <TableCell sx={{ fontWeight: 800, color: '#f44336' }}>₹{(row.loss || 0).toLocaleString()}</TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            </TableContainer>
+            {Object.keys(groupedData).sort((a, b) => b - a).map(year => (
+                <Box key={year} mb={6}>
+                    <Typography variant="h4" sx={{ fontWeight: 900, mb: 2, color: 'text.primary', display: 'inline-block', borderBottom: `4px solid ${theme.palette.primary.main}` }}>
+                        {year} Entries
+                    </Typography>
+
+                    <TableContainer component={Paper} sx={{
+                        borderRadius: 4, background: theme.palette.mode === 'dark' ? 'rgba(20,20,20,0.6)' : theme.palette.background.paper,
+                        border: `1px solid ${theme.palette.divider}`, overflow: 'hidden',
+                        boxShadow: theme.palette.mode === 'dark' ? '0 10px 40px rgba(0,0,0,0.5)' : '0 10px 30px rgba(0,0,0,0.05)'
+                    }}>
+                        <Table>
+                            <TableHead sx={{ bgcolor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)' }}>
+                                <TableRow>
+                                    <TableCell sx={{ fontWeight: 900, color: 'text.primary', py: 2.5 }}>DATE LOGGED</TableCell>
+                                    <TableCell sx={{ fontWeight: 900, color: 'text.primary' }}>TARGET MONTH</TableCell>
+                                    <TableCell sx={{ fontWeight: 900, color: 'text.primary' }}>CATEGORY</TableCell>
+                                    <TableCell sx={{ fontWeight: 900, color: 'text.primary' }}>REVENUE</TableCell>
+                                    <TableCell sx={{ fontWeight: 900, color: 'text.primary' }}>PROFIT</TableCell>
+                                    <TableCell sx={{ fontWeight: 900, color: 'text.primary' }}>LOSS</TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {groupedData[year].map((row) => (
+                                    <TableRow key={row._id} sx={{ '&:hover': { bgcolor: theme.palette.action.hover } }}>
+                                        <TableCell sx={{ color: 'text.secondary', fontWeight: 600 }}>
+                                            <Box display="flex" alignItems="center" gap={1}>
+                                                <AccessTime fontSize="small" />
+                                                {new Date(row.createdAt).toLocaleString(undefined, {
+                                                    month: 'short', day: 'numeric',
+                                                    hour: '2-digit', minute: '2-digit'
+                                                })}
+                                            </Box>
+                                        </TableCell>
+                                        <TableCell>
+                                            <Chip label={row.month} size="small" variant="outlined" sx={{ fontWeight: 800, color: 'text.primary', borderColor: 'divider' }} />
+                                        </TableCell>
+                                        <TableCell sx={{ color: 'text.primary', fontWeight: 700 }}>
+                                            {row.product || 'All'}
+                                        </TableCell>
+                                        <TableCell sx={{ fontWeight: 800, color: theme.palette.primary.main }}>₹{(row.amount || 0).toLocaleString()}</TableCell>
+                                        <TableCell sx={{ fontWeight: 800, color: '#4caf50' }}>₹{(row.profit || 0).toLocaleString()}</TableCell>
+                                        <TableCell sx={{ fontWeight: 800, color: '#f44336' }}>₹{(row.loss || 0).toLocaleString()}</TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
+                </Box>
+            ))}
 
             <Snackbar
                 open={snack.open}

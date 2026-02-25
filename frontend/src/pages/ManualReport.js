@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
     Box, Paper, Typography, Table, TableBody, TableCell,
     TableContainer, TableHead, TableRow, Chip, Skeleton,
-    Grid, Card, CardContent, Divider, useTheme
+    Grid, Card, CardContent, Divider, useTheme, Select, MenuItem, FormControl
 } from '@mui/material';
 import {
     Assessment, TrendingUp, TrendingDown, AccountBalanceWallet,
@@ -19,6 +19,10 @@ export default function ManualReport() {
     const theme = useTheme();
     const [loading, setLoading] = useState(true);
     const [data, setData] = useState([]);
+    const [rawData, setRawData] = useState([]);
+    const [availableYears, setAvailableYears] = useState([]);
+    const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+
     const [chartData, setChartData] = useState([]);
     const [summary, setSummary] = useState({
         totalRevenue: 0,
@@ -37,48 +41,66 @@ export default function ManualReport() {
             const headers = { Authorization: `Bearer ${userInfo?.token}` };
             const response = await api.get('/api/market/revenue', { headers });
 
-            // Format data - group by month if duplicates exist, or just show list
-            const sortedData = response.data.sort((a, b) => {
-                const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-                return months.indexOf(a.month) - months.indexOf(b.month);
-            });
+            const raw = response.data;
+            setRawData(raw);
 
-            setData(sortedData);
+            const years = [...new Set(raw.map(d => new Date(d.createdAt).getFullYear()))].sort((a, b) => b - a);
+            setAvailableYears(years);
 
-            // Aggregate data for charts (group by month)
-            const chartsMap = sortedData.reduce((acc, curr) => {
-                if (!acc[curr.month]) {
-                    acc[curr.month] = { month: curr.month, amount: 0, profit: 0, loss: 0 };
-                }
-                acc[curr.month].amount += curr.amount;
-                acc[curr.month].profit += (curr.profit || 0);
-                acc[curr.month].loss += (curr.loss || 0);
-                return acc;
-            }, {});
-
-            const monthsOrder = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-            const aggregatedData = monthsOrder
-                .filter(m => chartsMap[m])
-                .map(m => chartsMap[m]);
-
-            setChartData(aggregatedData);
-
-            const totals = sortedData.reduce((acc, curr) => ({
-                totalRevenue: acc.totalRevenue + curr.amount,
-                totalProfit: acc.totalProfit + (curr.profit || 0),
-                totalLoss: acc.totalLoss + (curr.loss || 0)
-            }), { totalRevenue: 0, totalProfit: 0, totalLoss: 0 });
-
-            setSummary({
-                ...totals,
-                netProfit: totals.totalProfit - totals.totalLoss
-            });
+            if (years.length > 0) {
+                setSelectedYear(years[0]);
+            }
         } catch (err) {
             console.error('Error fetching report:', err);
         } finally {
             setLoading(false);
         }
     };
+
+    useEffect(() => {
+        if (!rawData || rawData.length === 0) return;
+
+        let filteredData = selectedYear
+            ? rawData.filter(d => new Date(d.createdAt).getFullYear() === selectedYear)
+            : rawData;
+
+        // Format data - group by month if duplicates exist, or just show list
+        const sortedData = filteredData.sort((a, b) => {
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            return months.indexOf(a.month) - months.indexOf(b.month);
+        });
+
+        setData(sortedData);
+
+        // Aggregate data for charts (group by month)
+        const chartsMap = sortedData.reduce((acc, curr) => {
+            if (!acc[curr.month]) {
+                acc[curr.month] = { month: curr.month, amount: 0, profit: 0, loss: 0 };
+            }
+            acc[curr.month].amount += curr.amount;
+            acc[curr.month].profit += (curr.profit || 0);
+            acc[curr.month].loss += (curr.loss || 0);
+            return acc;
+        }, {});
+
+        const monthsOrder = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const aggregatedData = monthsOrder
+            .filter(m => chartsMap[m])
+            .map(m => chartsMap[m]);
+
+        setChartData(aggregatedData);
+
+        const totals = sortedData.reduce((acc, curr) => ({
+            totalRevenue: acc.totalRevenue + curr.amount,
+            totalProfit: acc.totalProfit + (curr.profit || 0),
+            totalLoss: acc.totalLoss + (curr.loss || 0)
+        }), { totalRevenue: 0, totalProfit: 0, totalLoss: 0 });
+
+        setSummary({
+            ...totals,
+            netProfit: totals.totalProfit - totals.totalLoss
+        });
+    }, [rawData, selectedYear]);
 
     const handlePrint = () => {
         window.print();
@@ -128,15 +150,30 @@ export default function ManualReport() {
                         Comprehensive analysis of your manually entered financial data.
                     </Typography>
                 </Box>
-                <MuiButton
-                    variant="contained"
-                    startIcon={<PrintIcon />}
-                    onClick={handlePrint}
-                    className="no-print"
-                    sx={{ borderRadius: 3, fontWeight: 800, px: 3 }}
-                >
-                    Print Report
-                </MuiButton>
+                <Box display="flex" gap={2} alignItems="center">
+                    {availableYears.length > 0 && (
+                        <FormControl size="small" className="no-print">
+                            <Select
+                                value={selectedYear}
+                                onChange={(e) => setSelectedYear(e.target.value)}
+                                sx={{ bgcolor: 'background.paper', borderRadius: 2, fontWeight: 'bold' }}
+                            >
+                                {availableYears.map(year => (
+                                    <MenuItem key={year} value={year}>{year} Reports</MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
+                    )}
+                    <MuiButton
+                        variant="contained"
+                        startIcon={<PrintIcon />}
+                        onClick={handlePrint}
+                        className="no-print"
+                        sx={{ borderRadius: 3, fontWeight: 800, px: 3 }}
+                    >
+                        Print Report
+                    </MuiButton>
+                </Box>
             </Box>
 
             {/* Stats Cards */}
