@@ -105,17 +105,33 @@ const getMarketData = async (req, res) => {
 
 const addRevenue = async (req, res) => {
     try {
-        const { amount, month } = req.body;
+        const { amount, profit, loss, month, product } = req.body;
         if (!amount || !month) {
             return res.status(400).json({ message: 'Amount and month are required' });
         }
 
-        const newRevenue = new Revenue({ amount: Number(amount), month });
+        const newRevenue = new Revenue({
+            amount: Number(amount),
+            product: product || 'All',
+            profit: Number(profit) || 0,
+            loss: Number(loss) || 0,
+            month
+        });
         await newRevenue.save();
         res.status(201).json({ message: 'Revenue added successfully', data: newRevenue });
     } catch (error) {
         console.error('Add revenue error:', error);
         res.status(500).json({ message: 'Error adding revenue' });
+    }
+};
+
+const getManualRevenue = async (req, res) => {
+    try {
+        const revenue = await Revenue.find({}).sort({ createdAt: -1 });
+        res.json(revenue);
+    } catch (error) {
+        console.error('Get manual revenue error:', error);
+        res.status(500).json({ message: 'Error fetching manual revenue report' });
     }
 };
 
@@ -162,5 +178,6 @@ const getAIRecommendations = async (req, res) => {
 module.exports = {
     getMarketData,
     addRevenue,
+    getManualRevenue,
     getAIRecommendations
 };

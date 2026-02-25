@@ -5,6 +5,18 @@ const revenueSchema = mongoose.Schema({
         type: Number,
         required: true
     },
+    product: {
+        type: String,
+        default: 'All'
+    },
+    profit: {
+        type: Number,
+        default: 0
+    },
+    loss: {
+        type: Number,
+        default: 0
+    },
     month: {
         type: String,
         required: true

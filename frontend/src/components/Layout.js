@@ -54,6 +54,7 @@ const Layout = () => {
         { text: 'Prescriptive', icon: <PrescriptiveIcon />, path: '/prescriptive' },
         { text: 'Reports', icon: <AssessmentIcon />, path: '/reports' },
         { text: 'Revenue Entry', icon: <ReceiptIcon />, path: '/revenue' },
+        { text: 'Manual Report', icon: <AssessmentIcon />, path: '/manual-report' },
     ];
 
     const drawer = (

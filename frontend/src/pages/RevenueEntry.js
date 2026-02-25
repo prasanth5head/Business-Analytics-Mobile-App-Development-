@@ -42,7 +42,10 @@ export default function RevenueEntry() {
             for (const row of toSave) {
                 await api.post('/api/market/revenue', {
                     month: row.month,
-                    amount: Number(row.revenue)
+                    product: row.product || 'All',
+                    amount: Number(row.revenue),
+                    profit: Number(row.profit) || 0,
+                    loss: Number(row.loss) || 0
                 }, { headers });
             }
             setSnack({ open: true, msg: `✅ ${toSave.length} months saved successfully!`, severity: 'success' });
