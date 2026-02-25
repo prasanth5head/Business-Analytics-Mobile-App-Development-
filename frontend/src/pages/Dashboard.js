@@ -326,9 +326,9 @@ const Dashboard = () => {
                     <Paper sx={{ p: 3, borderRadius: 4, border: `1px solid ${theme.palette.divider}` }}>
                         <Typography variant="h6" sx={{ mb: 2, fontWeight: 800, color: 'text.primary' }}>Recent Activity Feed</Typography>
                         {[
-                            { time: '2 mins ago', msg: 'Gemini AI recalculated Q2 forecast (+15% uplift projected)', icon: <TrendingUp />, color: theme.palette.primary.main },
-                            { time: '15 mins ago', msg: 'Market volatility detected in Electronics category', icon: <NotificationsActive />, color: theme.palette.warning.main },
-                            { time: '1 hour ago', msg: 'System refresh: Live market raw data synchronized', icon: <Refresh />, color: theme.palette.success.main }
+                            { time: 'Just now', msg: `Business Core: ${summary.totalSales > 0 ? 'Live ledger' : 'Awaiting'} manual inputs synchronized.`, icon: <Refresh />, color: theme.palette.success.main },
+                            { time: 'Recently', msg: aiAnalysis ? `AI Strategy: Operational intelligence recalculated.` : 'AI Strategy: Processing current business ledger...', icon: <TrendingUp />, color: theme.palette.primary.main },
+                            { time: 'Active', msg: `Data Audit: ${summary.totalLoss > 0 ? 'Negative variances' : 'Standard stability'} detected in logs.`, icon: <NotificationsActive />, color: summary.totalLoss > 0 ? theme.palette.error.main : theme.palette.warning.main }
                         ].map((item, i) => (
                             <Box key={i} sx={{ display: 'flex', gap: 2, mb: 2, p: 1.5, borderRadius: 2, '&:hover': { bgcolor: 'rgba(0,0,0,0.02)' } }}>
                                 <Avatar sx={{ bgcolor: `${item.color}15`, color: item.color, width: 40, height: 40, borderRadius: 2 }}>

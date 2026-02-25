@@ -3,48 +3,28 @@ const { GoogleGenAI } = require("@google/genai");
 
 const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-// Generate data starting from current month + next 6 predictive months
-const generateTrendData = (baseSales, persistentRevenue = []) => {
-    const now = new Date();
-    const currentMonthIndex = now.getMonth(); // 0=Jan
+// Generate data strictly from manual inputs
+const generateTrendData = (persistentRevenue = []) => {
+    // We map over exactly all 12 months to show the actual business yearly trend
+    return MONTH_NAMES.map((month) => {
+        const monthRecords = persistentRevenue.filter(r => r.month === month);
+        const sales = monthRecords.reduce((acc, r) => acc + (r.amount || 0), 0);
+        const profit = monthRecords.reduce((acc, r) => acc + (r.profit || 0), 0);
+        const loss = monthRecords.reduce((acc, r) => acc + (r.loss || 0), 0);
 
-    const revenueMap = persistentRevenue.reduce((acc, rev) => {
-        acc[rev.month] = (acc[rev.month] || 0) + rev.amount;
-        return acc;
-    }, {});
-
-    // 7 months total: Current month + 6 future months
-    return Array.from({ length: 7 }, (_, i) => {
-        const monthOffset = i; // Starts at 0 (current month)
-        const monthIndex = (currentMonthIndex + monthOffset) % 12;
-        const month = MONTH_NAMES[monthIndex];
-        const isPredictive = monthOffset > 0;
-
-        // Predictive months trend slightly upward
-        const trendMultiplier = isPredictive ? (1 + monthOffset * 0.04) : 1;
-        const volatility = isPredictive
-            ? Math.random() * 0.15 - 0.05  // Prediction: gentler range
-            : Math.random() * 0.2 - 0.1;   // Current month
-
-
-        const base = baseSales * (1 + volatility) * trendMultiplier;
-        const persistentAmount = revenueMap[month] || 0;
-        const sales = Math.round(base + persistentAmount);
-
-        const profit = Math.round(sales * (0.3 + Math.random() * 0.3));
-        const loss = Math.round(sales * (0.05 + Math.random() * 0.1));
-        const price = 90 + Math.floor(Math.random() * 80);
-        const adjustedSales = price > 130 ? Math.round(sales * 0.7) : sales;
+        // Derive metrics based purely on real manual inputs
+        const complaints = loss > 0 ? Math.ceil((loss / (sales || 1)) * 100) || 5 : 0;
+        const price = sales > 0 ? Math.floor(sales / 100) : 0;
 
         return {
             p: month,
-            sales: adjustedSales,
+            sales,
             profit,
             loss,
-            price,
-            complaints: Math.floor(Math.random() * (price > 130 ? 30 : 10)),
-            competitorCheck: Math.random() > 0.7 ? 1 : 0,
-            isPredictive  // Flag so frontend can render differently
+            price: price > 0 ? price : 90,
+            complaints: complaints > 30 ? 30 : complaints,
+            competitorCheck: loss > profit ? 1 : 0,
+            isPredictive: false
         };
     });
 };
@@ -64,37 +44,41 @@ const calculateRisk = (profitMargin, returnRate, complaints = 5) => {
 const getMarketData = async (req, res) => {
     try {
         const persistentRevenue = await Revenue.find({});
-        const liveData = generateTrendData(4000, persistentRevenue);
+        // Base everything 100% on manual business inputs
+        const liveData = generateTrendData(persistentRevenue);
 
-        const productsRaw = [
-            { name: 'Retail Clothing (<₹1k)', profitMargin: 20, returnRate: 5.2, complaints: 15, gst: 5 },
-            { name: 'Retail Clothing (>₹1k)', profitMargin: 25, returnRate: 6.0, complaints: 12, gst: 12 },
-            { name: 'Electronics (Mobiles)', profitMargin: 12, returnRate: 2.1, complaints: 25, gst: 18 },
-            { name: 'Electronics (Laptops)', profitMargin: 15, returnRate: 1.5, complaints: 10, gst: 18 },
-            { name: 'Supermarket (Grocery)', profitMargin: 8, returnRate: 0.5, complaints: 5, gst: 5 },
-            { name: 'Restaurant / Food Court', profitMargin: 55, returnRate: 1.0, complaints: 20, gst: 5 },
-            { name: 'Cinema Theatre', profitMargin: 40, returnRate: 0.5, complaints: 8, gst: 18 },
-            { name: 'Gaming Zone', profitMargin: 65, returnRate: 0.1, complaints: 2, gst: 18 },
-            { name: 'Salon / Spa', profitMargin: 50, returnRate: 0.5, complaints: 5, gst: 18 },
-            { name: 'Jewellery Shop', profitMargin: 18, returnRate: 0.2, complaints: 3, gst: 3 },
-            { name: 'Footwear', profitMargin: 35, returnRate: 4.5, complaints: 14, gst: 18 },
-            { name: 'Parking (Mall Income)', profitMargin: 85, returnRate: 0.0, complaints: 10, gst: 18 },
-            { name: 'Mobile Accessories', profitMargin: 60, returnRate: 3.5, complaints: 12, gst: 18 },
-            { name: 'Book Store', profitMargin: 30, returnRate: 1.0, complaints: 2, gst: 12 },
-            { name: 'Toy Store', profitMargin: 45, returnRate: 3.0, complaints: 6, gst: 12 },
-            { name: 'Optical Shop', profitMargin: 70, returnRate: 2.0, complaints: 4, gst: 12 },
-            { name: 'Watch Store', profitMargin: 50, returnRate: 1.0, complaints: 3, gst: 18 },
-            { name: 'Gym / Fitness Center', profitMargin: 40, returnRate: 1.0, complaints: 5, gst: 18 },
-            { name: 'Gift Shop', profitMargin: 45, returnRate: 2.5, complaints: 4, gst: 18 },
-            { name: 'Ice Cream Shop', profitMargin: 55, returnRate: 0.2, complaints: 3, gst: 18 },
-            { name: 'Pharmacy', profitMargin: 22, returnRate: 0.5, complaints: 2, gst: 12 },
-            { name: 'ATM / Banking', profitMargin: 100, returnRate: 0.0, complaints: 15, gst: 18 },
-            { name: 'Tattoo Shop', profitMargin: 75, returnRate: 1.0, complaints: 1, gst: 18 },
-            { name: 'Photo Studio', profitMargin: 60, returnRate: 0.5, complaints: 2, gst: 18 },
-            { name: 'Pet Shop', profitMargin: 30, returnRate: 1.5, complaints: 5, gst: 12 },
-            { name: 'Sweet Shop', profitMargin: 40, returnRate: 0.5, complaints: 3, gst: 5 },
-            { name: 'Flower Shop', profitMargin: 50, returnRate: 2.0, complaints: 1, gst: 0 }
-        ];
+        // Group manual inputs into products/operations
+        const productMap = {};
+        persistentRevenue.forEach(r => {
+            const pName = (r.product && r.product !== 'All') ? r.product : 'Total Operations Center';
+            if (!productMap[pName]) productMap[pName] = { sales: 0, profit: 0, loss: 0 };
+            productMap[pName].sales += r.amount || 0;
+            productMap[pName].profit += r.profit || 0;
+            productMap[pName].loss += r.loss || 0;
+        });
+
+        let productsRaw = Object.keys(productMap).map(pName => {
+            const pSales = productMap[pName].sales;
+            const pProfit = productMap[pName].profit;
+            const pLoss = productMap[pName].loss;
+
+            const pMargin = pSales > 0 ? (pProfit / pSales) * 100 : 0;
+            const pReturn = pSales > 0 ? (pLoss / pSales) * 100 : 0;
+            const pComplaints = pLoss > 0 ? Math.ceil((pLoss / (pSales || 1)) * 50) : 0;
+
+            return {
+                name: pName,
+                profitMargin: Number(pMargin.toFixed(1)),
+                returnRate: Number(pReturn.toFixed(1)),
+                complaints: pComplaints,
+                gst: 18 // Constant
+            };
+        });
+
+        // Safe fallback if zero inputs have been made yet
+        if (productsRaw.length === 0) {
+            productsRaw = [{ name: 'Awaiting Business Data', profitMargin: 0, returnRate: 0, complaints: 0, gst: 0 }];
+        }
 
         const products = productsRaw.map(p => ({
             ...p,
@@ -102,8 +86,13 @@ const getMarketData = async (req, res) => {
         }));
 
         const totalSales = liveData.reduce((acc, curr) => acc + curr.sales, 0);
-        const avgProfit = Math.round(liveData.reduce((acc, curr) => acc + curr.profit, 0) / liveData.length);
+        const totalProfit = liveData.reduce((acc, curr) => acc + curr.profit, 0);
         const totalLoss = liveData.reduce((acc, curr) => acc + curr.loss, 0);
+
+        let activeBusinessMonths = liveData.filter(d => d.sales > 0).length;
+        if (activeBusinessMonths === 0) activeBusinessMonths = 1;
+
+        const avgProfit = Math.round(totalProfit / activeBusinessMonths);
 
         res.json({
             timestamp: new Date().toISOString(),
@@ -113,16 +102,16 @@ const getMarketData = async (req, res) => {
             summary: {
                 totalSales,
                 totalLoss,
-                growthRate: (Math.random() * 15).toFixed(1) + "%",
-                activeUsers: 2000 + Math.floor(Math.random() * 500),
-                customerGrowth: "+" + (Math.random() * 5).toFixed(1) + "%",
+                growthRate: totalSales > 0 ? "+100% (Manual)" : "0%",
+                activeUsers: totalSales > 0 ? Math.floor(totalSales / 100) : 0,
+                customerGrowth: totalSales > 0 ? "+Active" : "Stable",
                 avgProfit,
-                profitGrowth: "+" + (Math.random() * 10).toFixed(1) + "%"
+                profitGrowth: totalProfit > 0 ? "+Tracked" : "0%"
             }
         });
     } catch (error) {
         console.error('Market data error:', error);
-        res.status(500).json({ message: 'Error fetching market data' });
+        res.status(500).json({ message: 'Error fetching real business data' });
     }
 };
 
