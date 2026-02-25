@@ -143,7 +143,7 @@ const Diagnostic = () => {
             <Grid container spacing={3}>
                 <Grid item xs={12}>
                     <Paper sx={{ p: 4, height: '100%', borderRadius: 3, border: `1px solid ${theme.palette.divider}` }}>
-                        <Typography variant="h6" gutterBottom fontWeight="900" color="text.primary">Complaint Trends</Typography>
+                        <Typography variant="h5" gutterBottom fontWeight="900" color="text.primary" mb={3}>Complaint Trends</Typography>
                         <ResponsiveContainer width="100%" height={400}>
                             <LineChart data={salesData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                                 <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
@@ -157,7 +157,7 @@ const Diagnostic = () => {
                 </Grid>
                 <Grid item xs={12}>
                     <Paper sx={{ p: 4, height: '100%', borderRadius: 3, border: `1px solid ${theme.palette.divider}` }}>
-                        <Typography variant="h6" gutterBottom fontWeight="900" color="text.primary">Product Risk Profile</Typography>
+                        <Typography variant="h5" gutterBottom fontWeight="900" color="text.primary" mb={3}>Product Risk Profile</Typography>
                         <ResponsiveContainer width="100%" height={500}>
                             <BarChart data={returnVsMargin} layout="vertical" margin={{ top: 20, right: 30, left: 50, bottom: 5 }}>
                                 <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
@@ -173,9 +173,9 @@ const Diagnostic = () => {
                 </Grid>
             </Grid>
 
-            {/* ── Product Risk Analysis (Mini Cards) ── */}
+            {/* ── Product Risk Analysis (Mini Cards, Wider) ── */}
             <Paper sx={{ p: { xs: 2, md: 3 }, borderRadius: 4, mt: 4, mb: 4, border: `1px solid ${theme.palette.divider}` }}>
-                <Box mb={3}>
+                <Box mb={2}>
                     <Typography variant="h6" sx={{ fontWeight: 900, color: 'text.primary' }}>
                         ⚠️ Detailed Product Risk Analysis
                     </Typography>
@@ -189,9 +189,9 @@ const Diagnostic = () => {
                         const riskColor = risk.level === 'High' ? '#f44336' : risk.level === 'Medium' ? '#FF9800' : '#4caf50';
                         const riskBg = risk.level === 'High' ? 'rgba(244,67,54,0.08)' : risk.level === 'Medium' ? 'rgba(255,152,0,0.08)' : 'rgba(76,175,80,0.08)';
                         return (
-                            <Grid item xs={12} sm={6} md={3} key={i}>
+                            <Grid item xs={12} sm={6} md={4} key={i}>
                                 <Paper sx={{
-                                    p: 2.5, borderRadius: 3,
+                                    p: 2, borderRadius: 3,
                                     border: `2px solid ${riskColor}`,
                                     background: riskBg,
                                     height: '100%',
@@ -199,7 +199,7 @@ const Diagnostic = () => {
                                     flexDirection: 'column',
                                 }}>
                                     {/* Product Name & Level */}
-                                    <Box display="flex" justifyContent="space-between" alignItems="center" mb={1.5}>
+                                    <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
                                         <Typography sx={{ fontWeight: 800, color: 'text.primary', fontSize: '1rem', lineHeight: 1.2 }}>
                                             {prod.name}
                                         </Typography>
@@ -215,42 +215,42 @@ const Diagnostic = () => {
                                         <Typography variant="h3" sx={{ fontWeight: 900, color: riskColor, lineHeight: 1 }}>
                                             {risk.score ?? '—'}
                                         </Typography>
-                                        <Typography variant="caption" color="text.secondary" fontWeight="700" sx={{ mt: 0.5, display: 'block' }}>
-                                            Risk Score / 100
+                                        <Typography variant="caption" color="text.secondary" fontWeight="700" sx={{ mt: 0.5, display: 'block', fontSize: '0.65rem' }}>
+                                            OVERALL RISK SCORE (0-100)
                                         </Typography>
                                     </Box>
 
                                     {/* Key Metrics */}
                                     <Box display="flex" flexDirection="column" gap={0.5} mb={2} sx={{ bgcolor: theme.palette.mode === 'dark' ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.6)', p: 1.5, borderRadius: 2 }}>
                                         <Box display="flex" justifyContent="space-between" alignItems="center">
-                                            <Typography variant="caption" color="text.secondary" fontWeight="600">Profit Margin</Typography>
-                                            <Typography variant="body2" sx={{ fontWeight: 800, color: '#4caf50' }}>{prod.profitMargin}%</Typography>
+                                            <Typography variant="caption" color="text.secondary" fontWeight="600" fontSize="0.7rem">Margin</Typography>
+                                            <Typography variant="body2" sx={{ fontWeight: 800, color: '#4caf50', fontSize: '0.8rem' }}>{prod.profitMargin}%</Typography>
                                         </Box>
                                         <Divider />
                                         <Box display="flex" justifyContent="space-between" alignItems="center">
-                                            <Typography variant="caption" color="text.secondary" fontWeight="600">GST Rate</Typography>
-                                            <Typography variant="body2" sx={{ fontWeight: 800, color: 'text.primary' }}>{prod.gst}%</Typography>
+                                            <Typography variant="caption" color="text.secondary" fontWeight="600" fontSize="0.7rem">GST Rate</Typography>
+                                            <Typography variant="body2" sx={{ fontWeight: 800, color: 'text.primary', fontSize: '0.8rem' }}>{prod.gst}%</Typography>
                                         </Box>
                                         <Divider />
                                         <Box display="flex" justifyContent="space-between" alignItems="center">
-                                            <Typography variant="caption" color="text.secondary" fontWeight="600">Return Rate</Typography>
-                                            <Typography variant="body2" sx={{ fontWeight: 800, color: '#FF9800' }}>{prod.returnRate}%</Typography>
+                                            <Typography variant="caption" color="text.secondary" fontWeight="600" fontSize="0.7rem">Returns</Typography>
+                                            <Typography variant="body2" sx={{ fontWeight: 800, color: '#FF9800', fontSize: '0.8rem' }}>{prod.returnRate}%</Typography>
                                         </Box>
                                         <Divider />
                                         <Box display="flex" justifyContent="space-between" alignItems="center">
-                                            <Typography variant="caption" color="text.secondary" fontWeight="600">Complaints</Typography>
-                                            <Typography variant="body2" sx={{ fontWeight: 800, color: '#f44336' }}>{prod.complaints}</Typography>
+                                            <Typography variant="caption" color="text.secondary" fontWeight="600" fontSize="0.7rem">Complaints</Typography>
+                                            <Typography variant="body2" sx={{ fontWeight: 800, color: '#f44336', fontSize: '0.8rem' }}>{prod.complaints}</Typography>
                                         </Box>
                                     </Box>
 
                                     {/* Formula Applied */}
                                     <Box sx={{
-                                        p: 1.5, borderRadius: 2,
+                                        p: 1, borderRadius: 2,
                                         background: theme.palette.mode === 'dark' ? 'rgba(0,0,0,0.4)' : 'rgba(0,0,0,0.05)',
                                         mt: 'auto'
                                     }}>
-                                        <Typography variant="body2" sx={{ color: riskColor, fontSize: '0.75rem', fontWeight: 700, wordBreak: 'break-word', fontFamily: 'monospace', textAlign: 'center' }}>
-                                            {risk.calculation || '—'}
+                                        <Typography variant="body2" sx={{ color: riskColor, fontSize: '0.7rem', fontWeight: 700, wordBreak: 'break-word', fontFamily: 'monospace', textAlign: 'center' }}>
+                                            Calculation: {risk.calculation || '—'}
                                         </Typography>
                                     </Box>
                                 </Paper>
