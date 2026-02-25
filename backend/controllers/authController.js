@@ -22,12 +22,13 @@ const authUser = async (req, res) => {
         const user = await User.findOne({ email });
 
         if (user) {
-            console.log(`User found: ${user.email}`);
+            console.log(`Mobile Debug: User record found for ${email}`);
             const isMatch = await user.matchPassword(password);
-            console.log(`Password match: ${isMatch}`);
+            console.log(`Mobile Debug: Password check result: ${isMatch}`);
 
             if (isMatch) {
                 if (businessRole) {
+                    console.log(`Mobile Debug: Updating businessRole to ${businessRole}`);
                     user.businessRole = businessRole;
                     await user.save();
                 }
@@ -41,13 +42,16 @@ const authUser = async (req, res) => {
                 });
             }
         } else {
-            console.log(`User not found: ${email}`);
+            console.log(`Mobile Debug: No user found for ${email}`);
         }
 
         res.status(401).json({ message: 'Invalid email or password' });
     } catch (error) {
-        console.error('Login Error:', error);
-        res.status(500).json({ message: error.message });
+        console.error('Mobile Debug: Login Error:', error);
+        res.status(500).json({
+            message: 'Server Error: ' + error.message,
+            detail: error.stack
+        });
     }
 };
 
