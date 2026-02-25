@@ -133,7 +133,7 @@ export default function MyReports() {
 
             {/* Charts Section */}
             <Grid container spacing={3} mb={4}>
-                <Grid item xs={12} md={8}>
+                <Grid item xs={12}>
                     <Paper sx={{
                         p: 3, borderRadius: 4, background: theme.palette.mode === 'dark' ? 'rgba(20,20,20,0.6)' : theme.palette.background.paper,
                         border: `1px solid ${theme.palette.divider}`
@@ -163,22 +163,29 @@ export default function MyReports() {
                         </Box>
                     </Paper>
                 </Grid>
-                <Grid item xs={12} md={4}>
+                <Grid item xs={12}>
                     <Paper sx={{
                         p: 3, borderRadius: 4, background: theme.palette.mode === 'dark' ? 'rgba(20,20,20,0.6)' : theme.palette.background.paper,
-                        border: `1px solid ${theme.palette.divider}`, height: '100%'
+                        border: `1px solid ${theme.palette.divider}`
                     }}>
-                        <Typography variant="h6" sx={{ fontWeight: 800, mb: 3 }}>Loss Composition</Typography>
-                        <Box sx={{ height: 350, width: '100%' }}>
+                        <Typography variant="h6" sx={{ fontWeight: 800, mb: 3 }}>Loss Composition Analysis</Typography>
+                        <Box sx={{ height: 400, width: '100%' }}>
                             <ResponsiveContainer>
-                                <BarChart data={salesData.filter(d => d.sales > 0)}>
-                                    <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
-                                    <XAxis dataKey="p" stroke={theme.palette.text.secondary} fontSize={12} fontWeight={700} />
+                                <BarChart data={salesData.filter(d => d.sales > 0)} margin={{ bottom: 20 }}>
+                                    <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} vertical={false} />
+                                    <XAxis
+                                        dataKey="p"
+                                        stroke={theme.palette.text.secondary}
+                                        fontSize={14}
+                                        fontWeight={900}
+                                        padding={{ left: 30, right: 30 }}
+                                    />
                                     <YAxis stroke={theme.palette.text.secondary} fontSize={12} fontWeight={700} />
                                     <Tooltip
                                         contentStyle={{ backgroundColor: theme.palette.background.paper, border: 'none', borderRadius: 8 }}
                                     />
-                                    <Bar dataKey="loss" name="Loss Amount" fill={theme.palette.error.main} radius={[4, 4, 0, 0]} />
+                                    <Legend />
+                                    <Bar dataKey="loss" name="Loss Amount (₹)" fill={theme.palette.error.main} radius={[6, 6, 0, 0]} barSize={60} />
                                 </BarChart>
                             </ResponsiveContainer>
                         </Box>
