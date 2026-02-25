@@ -1,6 +1,7 @@
 import React from 'react';
 import {
-    Box, Typography, Grid, Paper, Button, Divider, Chip, Avatar, Skeleton, Alert, useTheme
+    Box, Typography, Grid, Paper, Button, Divider, Chip, Avatar, Skeleton, Alert, useTheme,
+    Table, TableBody, TableCell, TableContainer, TableHead, TableRow
 } from '@mui/material';
 import {
     Assignment, LocalOffer, Storefront, People, AutoFixHigh, Refresh
@@ -65,6 +66,7 @@ const Prescriptive = () => {
     if (error) return <Alert severity="error">{error}</Alert>;
 
     const { recommendations } = aiRecommendations || {};
+    const { productData } = marketData || { productData: [] };
 
     const fallbackIcons = [<LocalOffer />, <People />, <Storefront />, <AutoFixHigh />];
     const fallbackColors = [
@@ -179,6 +181,55 @@ const Prescriptive = () => {
                     </Grid>
                 ))}
             </Grid>
+
+            {/* Category-Specific Prescriptive Actions */}
+            <Typography variant="h5" fontWeight="bold" sx={{ mb: 3, mt: 5, display: 'flex', alignItems: 'center', color: 'text.primary' }}>
+                <Storefront sx={{ mr: 1 }} color="primary" /> Comprehensive Category Directives
+            </Typography>
+            <Paper sx={{ mb: 4, borderRadius: 3, overflow: 'hidden', border: `1px solid ${theme.palette.divider}` }}>
+                <TableContainer sx={{ maxHeight: 600 }}>
+                    <Table stickyHeader>
+                        <TableHead>
+                            <TableRow>
+                                <TableCell sx={{ fontWeight: 'bold', bgcolor: theme.palette.mode === 'dark' ? '#1e1e1e' : '#f5f5f5', color: 'text.primary' }}>Mall Category</TableCell>
+                                <TableCell sx={{ fontWeight: 'bold', bgcolor: theme.palette.mode === 'dark' ? '#1e1e1e' : '#f5f5f5', color: 'text.primary' }}>Risk Level</TableCell>
+                                <TableCell sx={{ fontWeight: 'bold', bgcolor: theme.palette.mode === 'dark' ? '#1e1e1e' : '#f5f5f5', color: 'text.primary' }}>Root Cause / Metric</TableCell>
+                                <TableCell sx={{ fontWeight: 'bold', bgcolor: theme.palette.mode === 'dark' ? '#1e1e1e' : '#f5f5f5', color: 'text.primary' }}>Prescriptive Action</TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {productData.map((prod, idx) => {
+                                const riskColor = prod.risk.level === 'High' ? theme.palette.error.main : prod.risk.level === 'Medium' ? theme.palette.warning.main : theme.palette.success.main;
+
+                                let rootCause = "";
+                                let action = "";
+
+                                if (prod.risk.level === 'High') {
+                                    rootCause = prod.returnRate > 3 ? `High Returns (${prod.returnRate}%)` : `High Complaints (${prod.complaints})`;
+                                    action = `Initiate immediately quality assurance audit. Consider supplier renegotiation to buffer the ${prod.gst}% GST impact on your ${prod.profitMargin}% margin.`;
+                                } else if (prod.risk.level === 'Medium') {
+                                    rootCause = prod.profitMargin < 30 ? `Low Margin (${prod.profitMargin}%)` : `Moderate Returns (${prod.returnRate}%)`;
+                                    action = `Optimize pricing strategy to improve margins against the ${prod.gst}% GST bracket. Implement targeted promotions to boost volume.`;
+                                } else {
+                                    rootCause = `Stable Performer`;
+                                    action = `Allocate 15% more floor space or marketing budget. Capitalize on healthy ${prod.profitMargin}% margin and scale operations.`;
+                                }
+
+                                return (
+                                    <TableRow key={idx} hover>
+                                        <TableCell sx={{ fontWeight: 'bold', color: 'text.primary' }}>{prod.name}</TableCell>
+                                        <TableCell>
+                                            <Chip label={prod.risk.level} size="small" sx={{ bgcolor: riskColor + '20', color: riskColor, fontWeight: 'bold' }} />
+                                        </TableCell>
+                                        <TableCell sx={{ color: 'text.secondary' }}>{rootCause}</TableCell>
+                                        <TableCell sx={{ color: 'text.primary' }}>{action}</TableCell>
+                                    </TableRow>
+                                );
+                            })}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
+            </Paper>
         </Box>
     );
 };
