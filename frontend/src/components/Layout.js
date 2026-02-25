@@ -48,15 +48,25 @@ const Layout = () => {
     };
 
     const menuItems = [
+        { type: 'subheader', text: 'Actual World Business Analytics' },
         { text: 'Dashboard', icon: <DashboardIcon />, path: '/' },
         { text: 'Descriptive', icon: <DescriptiveIcon />, path: '/descriptive' },
         { text: 'Diagnostic', icon: <DiagnosticIcon />, path: '/diagnostic' },
         { text: 'Predictive', icon: <PredictiveIcon />, path: '/predictive' },
         { text: 'Prescriptive', icon: <PrescriptiveIcon />, path: '/prescriptive' },
         { text: 'Reports', icon: <AssessmentIcon />, path: '/reports' },
+
+        { type: 'subheader', text: 'My Business Analytics' },
+        { text: 'Dashboard', icon: <DashboardIcon />, path: '/my-business/dashboard' },
+        { text: 'Descriptive', icon: <DescriptiveIcon />, path: '/my-business/descriptive' },
+        { text: 'Diagnostic', icon: <DiagnosticIcon />, path: '/my-business/diagnostic' },
+        { text: 'Predictive', icon: <PredictiveIcon />, path: '/my-business/predictive' },
+        { text: 'Prescriptive', icon: <PrescriptiveIcon />, path: '/my-business/prescriptive' },
+        { text: 'Reports', icon: <AssessmentIcon />, path: '/my-business/reports' },
+
+        { type: 'subheader', text: 'Data Management' },
         { text: 'Revenue Entry', icon: <ReceiptIcon />, path: '/revenue' },
         { text: 'Entry History', icon: <HistoryIcon />, path: '/entry-history' },
-        { text: 'Manual Report', icon: <AssessmentIcon />, path: '/manual-report' },
     ];
 
     const drawer = (
@@ -82,37 +92,57 @@ const Layout = () => {
             </Toolbar>
             <Box sx={{ overflow: 'auto', flexGrow: 1 }}>
                 <List>
-                    {menuItems.map((item) => (
-                        <ListItem key={item.text} disablePadding>
-                            <ListItemButton
-                                selected={location.pathname === item.path}
-                                onClick={() => navigate(item.path)}
+                    {menuItems.map((item, index) => (
+                        item.type === 'subheader' ? (
+                            <Typography
+                                key={`header-${index}`}
+                                variant="caption"
                                 sx={{
-                                    mx: 2,
-                                    my: 0.5,
-                                    borderRadius: 3,
-                                    py: 1.5,
-                                    '&.Mui-selected': {
-                                        background: `linear-gradient(90deg, ${theme.palette.primary.main}25 0%, transparent 100%)`,
-                                        color: theme.palette.primary.main,
-                                        '& .MuiListItemIcon-root': {
-                                            color: theme.palette.primary.main,
-                                        },
-                                        '&:hover': {
-                                            background: `linear-gradient(90deg, ${theme.palette.primary.main}35 0%, transparent 100%)`,
-                                        },
-                                    },
-                                    '&:hover': {
-                                        bgcolor: 'rgba(255,255,255,0.03)',
-                                    }
+                                    px: 4,
+                                    pt: 3,
+                                    pb: 1,
+                                    display: 'block',
+                                    color: theme.palette.primary.main,
+                                    fontWeight: 900,
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.1em',
+                                    fontSize: '0.7rem'
                                 }}
                             >
-                                <ListItemIcon sx={{ minWidth: 45, color: location.pathname === item.path ? theme.palette.primary.main : 'text.secondary' }}>
-                                    {item.icon}
-                                </ListItemIcon>
-                                <ListItemText primary={item.text} primaryTypographyProps={{ fontWeight: 700, fontSize: '0.9rem' }} />
-                            </ListItemButton>
-                        </ListItem>
+                                {item.text}
+                            </Typography>
+                        ) : (
+                            <ListItem key={item.text} disablePadding>
+                                <ListItemButton
+                                    selected={location.pathname === item.path}
+                                    onClick={() => navigate(item.path)}
+                                    sx={{
+                                        mx: 2,
+                                        my: 0.5,
+                                        borderRadius: 3,
+                                        py: 1, // Slightly reduced to fit more items
+                                        '&.Mui-selected': {
+                                            background: `linear-gradient(90deg, ${theme.palette.primary.main}25 0%, transparent 100%)`,
+                                            color: theme.palette.primary.main,
+                                            '& .MuiListItemIcon-root': {
+                                                color: theme.palette.primary.main,
+                                            },
+                                            '&:hover': {
+                                                background: `linear-gradient(90deg, ${theme.palette.primary.main}35 0%, transparent 100%)`,
+                                            },
+                                        },
+                                        '&:hover': {
+                                            bgcolor: 'rgba(255,255,255,0.03)',
+                                        }
+                                    }}
+                                >
+                                    <ListItemIcon sx={{ minWidth: 40, color: location.pathname === item.path ? theme.palette.primary.main : 'text.secondary' }}>
+                                        {React.cloneElement(item.icon, { sx: { fontSize: '1.2rem' } })}
+                                    </ListItemIcon>
+                                    <ListItemText primary={item.text} primaryTypographyProps={{ fontWeight: 700, fontSize: '0.85rem' }} />
+                                </ListItemButton>
+                            </ListItem>
+                        )
                     ))}
                 </List>
             </Box>

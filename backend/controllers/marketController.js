@@ -4,14 +4,9 @@ const { GoogleGenAI } = require("@google/genai");
 const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 // Generate data starting from current month + next 6 predictive months
-const generateTrendData = (baseSales, persistentRevenue = []) => {
+const generateTrendData = (baseSales) => {
     const now = new Date();
     const currentMonthIndex = now.getMonth(); // 0=Jan
-
-    const revenueMap = persistentRevenue.reduce((acc, rev) => {
-        acc[rev.month] = (acc[rev.month] || 0) + rev.amount;
-        return acc;
-    }, {});
 
     // 7 months total: Current month + 6 future months
     return Array.from({ length: 7 }, (_, i) => {
@@ -28,8 +23,7 @@ const generateTrendData = (baseSales, persistentRevenue = []) => {
 
 
         const base = baseSales * (1 + volatility) * trendMultiplier;
-        const persistentAmount = revenueMap[month] || 0;
-        const sales = Math.round(base + persistentAmount);
+        const sales = Math.round(base);
 
         const profit = Math.round(sales * (0.3 + Math.random() * 0.3));
         const loss = Math.round(sales * (0.05 + Math.random() * 0.1));
@@ -49,6 +43,41 @@ const generateTrendData = (baseSales, persistentRevenue = []) => {
     });
 };
 
+// Generate My Business data from manual entries
+const generateMyBusinessData = (persistentRevenue = []) => {
+    const revenueMap = persistentRevenue.reduce((acc, rev) => {
+        if (!acc[rev.month]) {
+            acc[rev.month] = { sales: 0, profit: 0, loss: 0, count: 0 };
+        }
+        acc[rev.month].sales += rev.amount || 0;
+        acc[rev.month].profit += rev.profit || 0;
+        acc[rev.month].loss += rev.loss || 0;
+        acc[rev.month].count += 1;
+        return acc;
+    }, {});
+
+    const now = new Date();
+    const currentMonthIndex = now.getMonth();
+
+    // Show last 6 months check + next 6 months prediction
+    // For manual data, we'll show all 12 months in sequence
+    return MONTH_NAMES.map((month, idx) => {
+        const data = revenueMap[month] || { sales: 0, profit: 0, loss: 0, count: 0 };
+        const isPredictive = idx > currentMonthIndex;
+
+        return {
+            p: month,
+            sales: data.sales,
+            profit: data.profit,
+            loss: data.loss,
+            price: data.count > 0 ? Math.round(data.sales / data.count) : 0,
+            complaints: data.count > 0 ? Math.floor(Math.random() * 5) : 0,
+            competitorCheck: 0,
+            isPredictive
+        };
+    });
+};
+
 // Risk score formula for a product
 // Risk = (returnRate * 0.5) + ((100 - profitMargin) * 0.3) + (complaints * 0.2)
 // Scale: 0-100 (higher = riskier)
@@ -63,8 +92,7 @@ const calculateRisk = (profitMargin, returnRate, complaints = 5) => {
 
 const getMarketData = async (req, res) => {
     try {
-        const persistentRevenue = await Revenue.find({});
-        const liveData = generateTrendData(4000, persistentRevenue);
+        const liveData = generateTrendData(4000);
 
         const productsRaw = [
             { name: 'Retail Clothing (<₹1k)', profitMargin: 20, returnRate: 5.2, complaints: 15, gst: 5 },
@@ -123,6 +151,66 @@ const getMarketData = async (req, res) => {
     } catch (error) {
         console.error('Market data error:', error);
         res.status(500).json({ message: 'Error fetching market data' });
+    }
+};
+
+const getMyBusinessData = async (req, res) => {
+    try {
+        const persistentRevenue = await Revenue.find({});
+        const myData = generateMyBusinessData(persistentRevenue);
+
+        // Get unique products from revenue
+        const uniqueProducts = [...new Set(persistentRevenue.map(r => r.product))];
+        const productData = uniqueProducts.map(name => {
+            const prodRevenue = persistentRevenue.filter(r => r.product === name);
+            const totalAmt = prodRevenue.reduce((acc, r) => acc + r.amount, 0);
+            const totalProfit = prodRevenue.reduce((acc, r) => acc + r.profit, 0);
+            const totalLoss = prodRevenue.reduce((acc, r) => acc + r.loss, 0);
+            const profitMargin = totalAmt > 0 ? Math.round((totalProfit / totalAmt) * 100) : 0;
+            const returnRate = totalAmt > 0 ? (totalLoss / totalAmt) * 10 : 0; // Mocked return rate
+            return {
+                name,
+                profitMargin,
+                returnRate: parseFloat(returnRate.toFixed(1)),
+                complaints: Math.floor(Math.random() * 10),
+                gst: 18,
+                risk: calculateRisk(profitMargin, returnRate, Math.floor(Math.random() * 10))
+            };
+        });
+
+        // Add default "All" product if needed
+        if (productData.length === 0) {
+            productData.push({
+                name: 'General', profitMargin: 30, returnRate: 5, complaints: 2, gst: 18,
+                risk: calculateRisk(30, 5, 2)
+            });
+        }
+
+        const totalSales = myData.reduce((acc, curr) => acc + curr.sales, 0);
+        const totalProfit = myData.reduce((acc, curr) => acc + curr.profit, 0);
+        const totalLoss = myData.reduce((acc, curr) => acc + curr.loss, 0);
+        const avgProfit = myData.filter(d => d.sales > 0).length > 0
+            ? Math.round(totalProfit / myData.filter(d => d.sales > 0).length)
+            : 0;
+
+        res.json({
+            timestamp: new Date().toISOString(),
+            currentMonth: MONTH_NAMES[new Date().getMonth()],
+            salesData: myData,
+            productData: productData,
+            summary: {
+                totalSales,
+                totalLoss,
+                growthRate: totalSales > 0 ? "Calculated" : "0%",
+                activeUsers: persistentRevenue.length,
+                customerGrowth: "+0%",
+                avgProfit,
+                profitGrowth: "+0%"
+            }
+        });
+    } catch (error) {
+        console.error('My Business data error:', error);
+        res.status(500).json({ message: 'Error fetching my business data' });
     }
 };
 
@@ -210,6 +298,7 @@ const getAIRecommendations = async (req, res) => {
 
 module.exports = {
     getMarketData,
+    getMyBusinessData,
     addRevenue,
     getManualRevenue,
     clearRevenue,
