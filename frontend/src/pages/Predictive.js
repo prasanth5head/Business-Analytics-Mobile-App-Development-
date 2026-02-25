@@ -152,42 +152,43 @@ const Predictive = () => {
 
             {/* Churn Prediction */}
             <Grid container spacing={3}>
-                <Grid item xs={12} md={6}>
-                    <Paper sx={{ p: 3, height: '100%', borderRadius: 3 }}>
-                        <Typography variant="h6" gutterBottom fontWeight="bold" color="text.primary">Live Churn Risk Analysis</Typography>
+                <Grid item xs={12}>
+                    <Paper sx={{ p: 4, height: '100%', borderRadius: 3, border: `1px solid ${theme.palette.divider}` }}>
+                        <Typography variant="h5" gutterBottom fontWeight="900" color="text.primary" mb={3}>Live Churn Risk Analysis</Typography>
                         <Box sx={{ display: 'flex', justifyContent: 'center', my: 2 }}>
-                            <ResponsiveContainer width="100%" height={250}>
+                            <ResponsiveContainer width="100%" height={450}>
                                 <PieChart>
-                                    <Pie data={churnChartData} innerRadius={60} outerRadius={90} paddingAngle={5} dataKey="value"
+                                    <Pie data={churnChartData} innerRadius={100} outerRadius={160} paddingAngle={5} dataKey="value"
                                         label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
                                         {churnChartData.map((entry, index) => (
                                             <Cell key={`cell-${index}`} fill={entry.fill} />
                                         ))}
                                     </Pie>
-                                    <Tooltip />
+                                    <Tooltip contentStyle={{ backgroundColor: theme.palette.background.paper, border: `1px solid ${theme.palette.divider}`, borderRadius: 8, fontWeight: 700 }} />
+                                    <Legend wrapperStyle={{ fontWeight: 700, paddingTop: '30px' }} />
                                 </PieChart>
                             </ResponsiveContainer>
                         </Box>
                     </Paper>
                 </Grid>
-                <Grid item xs={12} md={6}>
-                    <Paper sx={{ p: 3, height: '100%', borderRadius: 3 }}>
-                        <Typography variant="h6" gutterBottom fontWeight="bold" color="text.primary">ML Risk Factor Importance</Typography>
+                <Grid item xs={12}>
+                    <Paper sx={{ p: 4, height: '100%', borderRadius: 3, border: `1px solid ${theme.palette.divider}` }}>
+                        <Typography variant="h5" gutterBottom fontWeight="900" color="text.primary" mb={3}>ML Risk Factor Importance</Typography>
                         {[
                             { factor: 'Price Sensitivity', weight: 88, color: theme.palette.error.main },
                             { factor: 'Interaction Latency', weight: 65, color: theme.palette.warning.main },
                             { factor: 'Competitor Switch Risk', weight: 52, color: theme.palette.primary.main },
                             { factor: 'Ticket Frequency', weight: 40, color: theme.palette.success.main },
                         ].map(item => (
-                            <Box key={item.factor} sx={{ mb: 2 }}>
-                                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                                    <Typography variant="body2" color="text.primary">{item.factor}</Typography>
-                                    <Typography variant="body2" fontWeight="bold" color="text.primary">{item.weight}%</Typography>
+                            <Box key={item.factor} sx={{ mb: 3 }}>
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                                    <Typography variant="body1" fontWeight="700" color="text.primary">{item.factor}</Typography>
+                                    <Typography variant="body1" fontWeight="900" color="text.primary">{item.weight}%</Typography>
                                 </Box>
                                 <LinearProgress
                                     variant="determinate"
                                     value={item.weight}
-                                    sx={{ height: 10, borderRadius: 5, bgcolor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.05)' : '#eee', '& .MuiLinearProgress-bar': { bgcolor: item.color } }}
+                                    sx={{ height: 14, borderRadius: 7, bgcolor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.05)' : '#eee', '& .MuiLinearProgress-bar': { bgcolor: item.color, borderRadius: 7 } }}
                                 />
                             </Box>
                         ))}
