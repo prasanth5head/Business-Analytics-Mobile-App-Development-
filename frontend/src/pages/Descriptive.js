@@ -112,16 +112,16 @@ const Descriptive = () => {
 
             {/* Charts Row 1 */}
             <Grid container spacing={3} sx={{ mb: 4 }}>
-                <Grid item xs={12} md={12}>
-                    <Paper sx={{ p: 4, height: '100%', borderRadius: 3 }}>
-                        <Typography variant="h6" gutterBottom fontWeight="bold" color="text.primary">Live Sales & Profit Trend</Typography>
-                        <ResponsiveContainer width="100%" height={350}>
-                            <BarChart data={salesData}>
+                <Grid item xs={12}>
+                    <Paper sx={{ p: 4, height: '100%', borderRadius: 3, border: `1px solid ${theme.palette.divider}` }}>
+                        <Typography variant="h5" gutterBottom fontWeight="900" color="text.primary" mb={3}>Live Sales & Profit Trend</Typography>
+                        <ResponsiveContainer width="100%" height={450}>
+                            <BarChart data={salesData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={theme.palette.divider} />
-                                <XAxis dataKey="p" stroke={theme.palette.text.secondary} />
-                                <YAxis stroke={theme.palette.text.secondary} />
-                                <Tooltip contentStyle={{ backgroundColor: theme.palette.background.paper, border: `1px solid ${theme.palette.divider}`, borderRadius: 8 }} />
-                                <Legend />
+                                <XAxis dataKey="p" stroke={theme.palette.text.secondary} fontWeight={700} />
+                                <YAxis stroke={theme.palette.text.secondary} fontWeight={700} />
+                                <Tooltip contentStyle={{ backgroundColor: theme.palette.background.paper, border: `1px solid ${theme.palette.divider}`, borderRadius: 8, fontWeight: 700 }} />
+                                <Legend wrapperStyle={{ fontWeight: 700, paddingTop: '20px' }} />
                                 <Bar dataKey="sales" fill={theme.palette.primary.main} name="Sales (₹)" radius={[4, 4, 0, 0]} />
                                 <Bar dataKey="profit" fill={theme.palette.secondary.main} name="Profit (₹)" radius={[4, 4, 0, 0]} />
                             </BarChart>
