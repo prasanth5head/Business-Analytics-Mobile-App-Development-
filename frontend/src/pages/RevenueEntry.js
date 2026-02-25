@@ -31,12 +31,29 @@ export default function RevenueEntry() {
         });
     };
 
+    const handleClear = async () => {
+        if (!window.confirm("⚠️ This will permanently delete ALL old manual report data. Are you sure?")) return;
+        setSaving(true);
+        try {
+            const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+            const headers = { Authorization: `Bearer ${userInfo?.token}` };
+            await api.delete('/api/market/revenue', { headers });
+            setSnack({ open: true, msg: '🗑️ Old data cleared successfully!', severity: 'info' });
+        } catch (err) {
+            setSnack({ open: true, msg: '❌ Failed to clear old data.', severity: 'error' });
+        }
+        setSaving(false);
+    };
+
     const handleSave = async () => {
         setSaving(true);
         try {
             const userInfo = JSON.parse(localStorage.getItem('userInfo'));
             const token = userInfo?.token;
             const headers = { Authorization: `Bearer ${token}` };
+
+            // Clear old data first to "Refresh" the report as per user request
+            await api.delete('/api/market/revenue', { headers });
 
             const toSave = rows.filter(r => r.revenue && r.month);
             for (const row of toSave) {
@@ -48,9 +65,9 @@ export default function RevenueEntry() {
                     loss: Number(row.loss) || 0
                 }, { headers });
             }
-            setSnack({ open: true, msg: `✅ ${toSave.length} months saved successfully!`, severity: 'success' });
+            setSnack({ open: true, msg: `✅ Report refreshed with ${toSave.length} months!`, severity: 'success' });
         } catch (err) {
-            setSnack({ open: true, msg: '❌ Failed to save data. Please try again.', severity: 'error' });
+            setSnack({ open: true, msg: '❌ Failed to refresh report. Please try again.', severity: 'error' });
         }
         setSaving(false);
     };
@@ -165,8 +182,21 @@ export default function RevenueEntry() {
                 </TableContainer>
             </Paper>
 
-            {/* Save Button */}
-            <Box mt={3} display="flex" justifyContent="flex-end">
+            {/* Action Buttons */}
+            <Box mt={3} display="flex" justifyContent="flex-end" gap={2}>
+                <Button
+                    variant="outlined"
+                    size="large"
+                    onClick={handleClear}
+                    disabled={saving}
+                    sx={{
+                        borderRadius: 3, fontWeight: 800, px: 4,
+                        borderColor: '#f44336', color: '#f44336',
+                        '&:hover': { borderColor: '#d32f2f', bgcolor: 'rgba(244,67,54,0.05)' }
+                    }}
+                >
+                    Clear Old Data
+                </Button>
                 <Button
                     variant="contained"
                     size="large"
@@ -179,7 +209,7 @@ export default function RevenueEntry() {
                         '&:hover': { background: 'linear-gradient(135deg, #FF8A00, #FF5E00)' }
                     }}
                 >
-                    {saving ? 'Saving...' : 'Save to Dashboard'}
+                    {saving ? 'Processing...' : 'Refresh Report'}
                 </Button>
             </Box>
 

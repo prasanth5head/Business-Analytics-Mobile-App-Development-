@@ -135,6 +135,16 @@ const getManualRevenue = async (req, res) => {
     }
 };
 
+const clearRevenue = async (req, res) => {
+    try {
+        await Revenue.deleteMany({});
+        res.json({ message: 'All manual revenue data cleared successfully' });
+    } catch (error) {
+        console.error('Clear revenue error:', error);
+        res.status(500).json({ message: 'Error clearing revenue data' });
+    }
+};
+
 const getAIRecommendations = async (req, res) => {
     try {
         const { salesData, productData, summary } = req.body;
@@ -179,5 +189,6 @@ module.exports = {
     getMarketData,
     addRevenue,
     getManualRevenue,
+    clearRevenue,
     getAIRecommendations
 };

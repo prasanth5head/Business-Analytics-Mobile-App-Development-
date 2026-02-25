@@ -18,6 +18,7 @@ export default function ManualReport() {
     const theme = useTheme();
     const [loading, setLoading] = useState(true);
     const [data, setData] = useState([]);
+    const [chartData, setChartData] = useState([]);
     const [summary, setSummary] = useState({
         totalRevenue: 0,
         totalProfit: 0,
@@ -42,6 +43,24 @@ export default function ManualReport() {
             });
 
             setData(sortedData);
+
+            // Aggregate data for charts (group by month)
+            const chartsMap = sortedData.reduce((acc, curr) => {
+                if (!acc[curr.month]) {
+                    acc[curr.month] = { month: curr.month, amount: 0, profit: 0, loss: 0 };
+                }
+                acc[curr.month].amount += curr.amount;
+                acc[curr.month].profit += (curr.profit || 0);
+                acc[curr.month].loss += (curr.loss || 0);
+                return acc;
+            }, {});
+
+            const monthsOrder = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const aggregatedData = monthsOrder
+                .filter(m => chartsMap[m])
+                .map(m => chartsMap[m]);
+
+            setChartData(aggregatedData);
 
             const totals = sortedData.reduce((acc, curr) => ({
                 totalRevenue: acc.totalRevenue + curr.amount,
@@ -140,7 +159,7 @@ export default function ManualReport() {
                         <Typography variant="h6" sx={{ fontWeight: 800, mb: 3 }}>Revenue vs Profit Performance</Typography>
                         <Box sx={{ height: 350, width: '100%' }}>
                             <ResponsiveContainer>
-                                <AreaChart data={data}>
+                                <AreaChart data={chartData}>
                                     <defs>
                                         <linearGradient id="colorAmount" x1="0" y1="0" x2="0" y2="1">
                                             <stop offset="5%" stopColor={theme.palette.primary.main} stopOpacity={0.3} />
@@ -174,7 +193,7 @@ export default function ManualReport() {
                         <Typography variant="h6" sx={{ fontWeight: 800, mb: 3 }}>Loss Analysis</Typography>
                         <Box sx={{ height: 350, width: '100%' }}>
                             <ResponsiveContainer>
-                                <BarChart data={data}>
+                                <BarChart data={chartData}>
                                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
                                     <XAxis dataKey="month" stroke="rgba(255,255,255,0.3)" fontSize={12} fontWeight={700} />
                                     <YAxis stroke="rgba(255,255,255,0.3)" fontSize={12} fontWeight={700} />
