@@ -19,9 +19,8 @@ export default function ManualReport() {
     const theme = useTheme();
     const [loading, setLoading] = useState(true);
     const [data, setData] = useState([]);
-    const [rawData, setRawData] = useState([]);
-    const [availableYears, setAvailableYears] = useState([]);
-    const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+    const [availableBatches, setAvailableBatches] = useState([]);
+    const [selectedBatchIndex, setSelectedBatchIndex] = useState(0);
 
     const [chartData, setChartData] = useState([]);
     const [summary, setSummary] = useState({
@@ -41,14 +40,18 @@ export default function ManualReport() {
             const headers = { Authorization: `Bearer ${userInfo?.token}` };
             const response = await api.get('/api/market/revenue', { headers });
 
-            const raw = response.data;
-            setRawData(raw);
+            // Data comes in, newest first for history sorting usually, but let's ensure desc timeline
+            const raw = response.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
-            const years = [...new Set(raw.map(d => new Date(d.createdAt).getFullYear()))].sort((a, b) => b - a);
-            setAvailableYears(years);
+            // Chunk into continuous batches of 12 months
+            const batches = [];
+            for (let i = 0; i < raw.length; i += 12) {
+                batches.push(raw.slice(i, i + 12));
+            }
+            setAvailableBatches(batches);
 
-            if (years.length > 0) {
-                setSelectedYear(years[0]);
+            if (batches.length > 0) {
+                setSelectedBatchIndex(0);
             }
         } catch (err) {
             console.error('Error fetching report:', err);
@@ -58,11 +61,9 @@ export default function ManualReport() {
     };
 
     useEffect(() => {
-        if (!rawData || rawData.length === 0) return;
+        if (!availableBatches || availableBatches.length === 0) return;
 
-        let filteredData = selectedYear
-            ? rawData.filter(d => new Date(d.createdAt).getFullYear() === selectedYear)
-            : rawData;
+        let filteredData = availableBatches[selectedBatchIndex] || [];
 
         // Format data - group by month if duplicates exist, or just show list
         const sortedData = filteredData.sort((a, b) => {
@@ -100,7 +101,7 @@ export default function ManualReport() {
             ...totals,
             netProfit: totals.totalProfit - totals.totalLoss
         });
-    }, [rawData, selectedYear]);
+    }, [availableBatches, selectedBatchIndex]);
 
     const handlePrint = () => {
         window.print();
@@ -151,15 +152,17 @@ export default function ManualReport() {
                     </Typography>
                 </Box>
                 <Box display="flex" gap={2} alignItems="center">
-                    {availableYears.length > 0 && (
+                    {availableBatches.length > 0 && (
                         <FormControl size="small" className="no-print">
                             <Select
-                                value={selectedYear}
-                                onChange={(e) => setSelectedYear(e.target.value)}
+                                value={selectedBatchIndex}
+                                onChange={(e) => setSelectedBatchIndex(e.target.value)}
                                 sx={{ bgcolor: 'background.paper', borderRadius: 2, fontWeight: 'bold' }}
                             >
-                                {availableYears.map(year => (
-                                    <MenuItem key={year} value={year}>{year} Reports</MenuItem>
+                                {availableBatches.map((batch, idx) => (
+                                    <MenuItem key={idx} value={idx}>
+                                        Report Batch {availableBatches.length - idx} ({new Date(batch[0]?.createdAt).toLocaleDateString()})
+                                    </MenuItem>
                                 ))}
                             </Select>
                         </FormControl>

@@ -58,12 +58,10 @@ export default function EntryHistory() {
         );
     }
 
-    const groupedData = data.reduce((acc, curr) => {
-        const year = new Date(curr.createdAt).getFullYear();
-        if (!acc[year]) acc[year] = [];
-        acc[year].push(curr);
-        return acc;
-    }, {});
+    const groupedData = [];
+    for (let i = 0; i < data.length; i += 12) {
+        groupedData.push(data.slice(i, i + 12));
+    }
 
     return (
         <Box sx={{ p: { xs: 2, md: 4 }, maxWidth: 1200, mx: 'auto' }}>
@@ -98,10 +96,15 @@ export default function EntryHistory() {
                 </Typography>
             </Paper>
 
-            {Object.keys(groupedData).sort((a, b) => b - a).map(year => (
-                <Box key={year} mb={6}>
-                    <Typography variant="h4" sx={{ fontWeight: 900, mb: 2, color: 'text.primary', display: 'inline-block', borderBottom: `4px solid ${theme.palette.primary.main}` }}>
-                        {year} Entries
+            {groupedData.map((batch, index) => (
+                <Box key={index} mb={6}>
+                    <Typography variant="h4" sx={{ fontWeight: 900, mb: 2, color: 'text.primary', display: 'flex', alignItems: 'center', gap: 2, borderBottom: `4px solid ${theme.palette.primary.main}`, paddingBottom: 1 }}>
+                        Entry Batch {groupedData.length - index}
+                        <Chip
+                            label={`Submitted: ${new Date(batch[0]?.createdAt).toLocaleString()}`}
+                            size="small"
+                            sx={{ fontWeight: 'bold', bgcolor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)' }}
+                        />
                     </Typography>
 
                     <TableContainer component={Paper} sx={{
@@ -121,7 +124,7 @@ export default function EntryHistory() {
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {groupedData[year].map((row) => (
+                                {batch.map((row) => (
                                     <TableRow key={row._id} sx={{ '&:hover': { bgcolor: theme.palette.action.hover } }}>
                                         <TableCell sx={{ color: 'text.secondary', fontWeight: 600 }}>
                                             <Box display="flex" alignItems="center" gap={1}>
