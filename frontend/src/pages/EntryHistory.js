@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import {
     Box, Paper, Typography, Table, TableBody, TableCell,
     TableContainer, TableHead, TableRow, Chip, Skeleton,
-    Button, Snackbar, Alert, useTheme
+    Button, Snackbar, Alert, useTheme, Grid, Card, CardContent
 } from '@mui/material';
-import { DeleteOutline, History as HistoryIcon, AccessTime } from '@mui/icons-material';
+import { DeleteOutline, History as HistoryIcon, AccessTime, Assessment, TrendingUp, TrendingDown, AccountBalanceWallet } from '@mui/icons-material';
 import api from '../api';
 
 export default function EntryHistory() {
@@ -96,61 +96,102 @@ export default function EntryHistory() {
                 </Typography>
             </Paper>
 
-            {groupedData.map((batch, index) => (
-                <Box key={index} mb={6}>
-                    <Typography variant="h4" sx={{ fontWeight: 900, mb: 2, color: 'text.primary', display: 'flex', alignItems: 'center', gap: 2, borderBottom: `4px solid ${theme.palette.primary.main}`, paddingBottom: 1 }}>
-                        Entry Batch {groupedData.length - index}
-                        <Chip
-                            label={`Submitted: ${new Date(batch[0]?.createdAt).toLocaleString()}`}
-                            size="small"
-                            sx={{ fontWeight: 'bold', bgcolor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)' }}
-                        />
-                    </Typography>
+            {groupedData.map((batch, index) => {
+                const batchSummary = batch.reduce((acc, curr) => ({
+                    totalRevenue: acc.totalRevenue + curr.amount,
+                    totalProfit: acc.totalProfit + (curr.profit || 0),
+                    totalLoss: acc.totalLoss + (curr.loss || 0)
+                }), { totalRevenue: 0, totalProfit: 0, totalLoss: 0 });
+                const netProfit = batchSummary.totalProfit - batchSummary.totalLoss;
 
-                    <TableContainer component={Paper} sx={{
-                        borderRadius: 4, background: theme.palette.mode === 'dark' ? 'rgba(20,20,20,0.6)' : theme.palette.background.paper,
-                        border: `1px solid ${theme.palette.divider}`, overflow: 'hidden',
-                        boxShadow: theme.palette.mode === 'dark' ? '0 10px 40px rgba(0,0,0,0.5)' : '0 10px 30px rgba(0,0,0,0.05)'
-                    }}>
-                        <Table>
-                            <TableHead sx={{ bgcolor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)' }}>
-                                <TableRow>
-                                    <TableCell sx={{ fontWeight: 900, color: 'text.primary', py: 2.5 }}>DATE LOGGED</TableCell>
-                                    <TableCell sx={{ fontWeight: 900, color: 'text.primary' }}>TARGET MONTH</TableCell>
-                                    <TableCell sx={{ fontWeight: 900, color: 'text.primary' }}>CATEGORY</TableCell>
-                                    <TableCell sx={{ fontWeight: 900, color: 'text.primary' }}>REVENUE</TableCell>
-                                    <TableCell sx={{ fontWeight: 900, color: 'text.primary' }}>PROFIT</TableCell>
-                                    <TableCell sx={{ fontWeight: 900, color: 'text.primary' }}>LOSS</TableCell>
-                                </TableRow>
-                            </TableHead>
-                            <TableBody>
-                                {batch.map((row) => (
-                                    <TableRow key={row._id} sx={{ '&:hover': { bgcolor: theme.palette.action.hover } }}>
-                                        <TableCell sx={{ color: 'text.secondary', fontWeight: 600 }}>
-                                            <Box display="flex" alignItems="center" gap={1}>
-                                                <AccessTime fontSize="small" />
-                                                {new Date(row.createdAt).toLocaleString(undefined, {
-                                                    month: 'short', day: 'numeric',
-                                                    hour: '2-digit', minute: '2-digit'
-                                                })}
+                return (
+                    <Box key={index} mb={6}>
+                        <Typography variant="h4" sx={{ fontWeight: 900, mb: 2, color: 'text.primary', display: 'flex', alignItems: 'center', gap: 2, borderBottom: `4px solid ${theme.palette.primary.main}`, paddingBottom: 1 }}>
+                            Entry Batch {groupedData.length - index}
+                            <Chip
+                                label={`Submitted: ${new Date(batch[0]?.createdAt).toLocaleString()}`}
+                                size="small"
+                                sx={{ fontWeight: 'bold', bgcolor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)' }}
+                            />
+                        </Typography>
+
+                        {/* Stats Cards for the Batch */}
+                        <Grid container spacing={2} mb={3}>
+                            {[
+                                { label: 'Total Revenue', value: batchSummary.totalRevenue, icon: <AccountBalanceWallet />, color: '#4caf50' },
+                                { label: 'Total Profit', value: batchSummary.totalProfit, icon: <TrendingUp />, color: '#2196f3' },
+                                { label: 'Total Loss', value: batchSummary.totalLoss, icon: <TrendingDown />, color: '#f44336' },
+                                { label: 'Net Earnings', value: netProfit, icon: <Assessment />, color: netProfit >= 0 ? '#4caf50' : '#f44336' }
+                            ].map((stat, i) => (
+                                <Grid item xs={12} sm={6} md={3} key={i}>
+                                    <Card sx={{
+                                        background: theme.palette.mode === 'dark' ? 'rgba(20,20,20,0.6)' : theme.palette.background.paper,
+                                        border: `1px solid ${theme.palette.divider}`,
+                                        borderRadius: 3,
+                                    }}>
+                                        <CardContent sx={{ p: '16px !important', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                            <Box>
+                                                <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                                    {stat.label}
+                                                </Typography>
+                                                <Typography variant="h6" sx={{ fontWeight: 900, color: 'text.primary' }}>
+                                                    ₹{stat.value.toLocaleString()}
+                                                </Typography>
                                             </Box>
-                                        </TableCell>
-                                        <TableCell>
-                                            <Chip label={row.month} size="small" variant="outlined" sx={{ fontWeight: 800, color: 'text.primary', borderColor: 'divider' }} />
-                                        </TableCell>
-                                        <TableCell sx={{ color: 'text.primary', fontWeight: 700 }}>
-                                            {row.product || 'All'}
-                                        </TableCell>
-                                        <TableCell sx={{ fontWeight: 800, color: theme.palette.primary.main }}>₹{(row.amount || 0).toLocaleString()}</TableCell>
-                                        <TableCell sx={{ fontWeight: 800, color: '#4caf50' }}>₹{(row.profit || 0).toLocaleString()}</TableCell>
-                                        <TableCell sx={{ fontWeight: 800, color: '#f44336' }}>₹{(row.loss || 0).toLocaleString()}</TableCell>
+                                            <Box sx={{ p: 1, borderRadius: 2, bgcolor: `${stat.color}15`, color: stat.color }}>
+                                                {stat.icon}
+                                            </Box>
+                                        </CardContent>
+                                    </Card>
+                                </Grid>
+                            ))}
+                        </Grid>
+
+                        <TableContainer component={Paper} sx={{
+                            borderRadius: 4, background: theme.palette.mode === 'dark' ? 'rgba(20,20,20,0.6)' : theme.palette.background.paper,
+                            border: `1px solid ${theme.palette.divider}`, overflow: 'hidden',
+                            boxShadow: theme.palette.mode === 'dark' ? '0 10px 40px rgba(0,0,0,0.5)' : '0 10px 30px rgba(0,0,0,0.05)'
+                        }}>
+                            <Table>
+                                <TableHead sx={{ bgcolor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)' }}>
+                                    <TableRow>
+                                        <TableCell sx={{ fontWeight: 900, color: 'text.primary', py: 2.5 }}>DATE LOGGED</TableCell>
+                                        <TableCell sx={{ fontWeight: 900, color: 'text.primary' }}>TARGET MONTH</TableCell>
+                                        <TableCell sx={{ fontWeight: 900, color: 'text.primary' }}>CATEGORY</TableCell>
+                                        <TableCell sx={{ fontWeight: 900, color: 'text.primary' }}>REVENUE</TableCell>
+                                        <TableCell sx={{ fontWeight: 900, color: 'text.primary' }}>PROFIT</TableCell>
+                                        <TableCell sx={{ fontWeight: 900, color: 'text.primary' }}>LOSS</TableCell>
                                     </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </TableContainer>
-                </Box>
-            ))}
+                                </TableHead>
+                                <TableBody>
+                                    {batch.map((row) => (
+                                        <TableRow key={row._id} sx={{ '&:hover': { bgcolor: theme.palette.action.hover } }}>
+                                            <TableCell sx={{ color: 'text.secondary', fontWeight: 600 }}>
+                                                <Box display="flex" alignItems="center" gap={1}>
+                                                    <AccessTime fontSize="small" />
+                                                    {new Date(row.createdAt).toLocaleString(undefined, {
+                                                        month: 'short', day: 'numeric',
+                                                        hour: '2-digit', minute: '2-digit'
+                                                    })}
+                                                </Box>
+                                            </TableCell>
+                                            <TableCell>
+                                                <Chip label={row.month} size="small" variant="outlined" sx={{ fontWeight: 800, color: 'text.primary', borderColor: 'divider' }} />
+                                            </TableCell>
+                                            <TableCell sx={{ color: 'text.primary', fontWeight: 700 }}>
+                                                {row.product || 'All'}
+                                            </TableCell>
+                                            <TableCell sx={{ fontWeight: 800, color: theme.palette.primary.main }}>₹{(row.amount || 0).toLocaleString()}</TableCell>
+                                            <TableCell sx={{ fontWeight: 800, color: '#4caf50' }}>₹{(row.profit || 0).toLocaleString()}</TableCell>
+                                            <TableCell sx={{ fontWeight: 800, color: '#f44336' }}>₹{(row.loss || 0).toLocaleString()}</TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
+                    </Box>
+                );
+            })}
 
             <Snackbar
                 open={snack.open}
