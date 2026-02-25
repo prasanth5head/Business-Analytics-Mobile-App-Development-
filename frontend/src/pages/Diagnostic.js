@@ -141,30 +141,30 @@ const Diagnostic = () => {
 
             {/* Risk Factors */}
             <Grid container spacing={3}>
-                <Grid item xs={12}>
-                    <Paper sx={{ p: 4, height: '100%', borderRadius: 3, border: `1px solid ${theme.palette.divider}` }}>
-                        <Typography variant="h5" gutterBottom fontWeight="900" color="text.primary" mb={3}>Complaint Trends</Typography>
-                        <ResponsiveContainer width="100%" height={400}>
-                            <LineChart data={salesData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                <Grid item xs={12} md={6}>
+                    <Paper sx={{ p: 3, height: '100%', borderRadius: 3 }}>
+                        <Typography variant="h6" gutterBottom fontWeight="bold" color="text.primary">Complaint Trends</Typography>
+                        <ResponsiveContainer width="100%" height={300}>
+                            <LineChart data={salesData}>
                                 <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
-                                <XAxis dataKey="p" stroke={theme.palette.text.secondary} fontWeight={700} />
-                                <YAxis stroke={theme.palette.text.secondary} fontWeight={700} />
-                                <Tooltip contentStyle={{ backgroundColor: theme.palette.background.paper, border: `1px solid ${theme.palette.divider}`, borderRadius: 8, fontWeight: 700 }} />
-                                <Line type="monotone" dataKey="complaints" stroke={theme.palette.error.main} strokeWidth={3} name="Complaints" dot={{ r: 6, fill: theme.palette.error.main }} activeDot={{ r: 8 }} />
+                                <XAxis dataKey="p" stroke={theme.palette.text.secondary} />
+                                <YAxis stroke={theme.palette.text.secondary} />
+                                <Tooltip contentStyle={{ backgroundColor: theme.palette.background.paper, border: `1px solid ${theme.palette.divider}`, borderRadius: 8 }} />
+                                <Line type="monotone" dataKey="complaints" stroke={theme.palette.error.main} strokeWidth={2} name="Complaints" dot={{ r: 4, fill: theme.palette.error.main }} />
                             </LineChart>
                         </ResponsiveContainer>
                     </Paper>
                 </Grid>
-                <Grid item xs={12}>
-                    <Paper sx={{ p: 4, height: '100%', borderRadius: 3, border: `1px solid ${theme.palette.divider}` }}>
-                        <Typography variant="h5" gutterBottom fontWeight="900" color="text.primary" mb={3}>Product Risk Profile</Typography>
-                        <ResponsiveContainer width="100%" height={500}>
-                            <BarChart data={returnVsMargin} layout="vertical" margin={{ top: 20, right: 30, left: 40, bottom: 5 }}>
+                <Grid item xs={12} md={6}>
+                    <Paper sx={{ p: 3, height: '100%', borderRadius: 3 }}>
+                        <Typography variant="h6" gutterBottom fontWeight="bold" color="text.primary">Product Risk Profile</Typography>
+                        <ResponsiveContainer width="100%" height={300}>
+                            <BarChart data={returnVsMargin} layout="vertical">
                                 <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
-                                <XAxis type="number" stroke={theme.palette.text.secondary} fontWeight={700} />
-                                <YAxis dataKey="name" type="category" width={150} stroke={theme.palette.text.secondary} fontWeight={700} />
-                                <Tooltip contentStyle={{ backgroundColor: theme.palette.background.paper, border: `1px solid ${theme.palette.divider}`, borderRadius: 8, fontWeight: 700 }} />
-                                <Legend wrapperStyle={{ fontWeight: 700, paddingTop: '20px' }} />
+                                <XAxis type="number" stroke={theme.palette.text.secondary} />
+                                <YAxis dataKey="name" type="category" width={80} stroke={theme.palette.text.secondary} />
+                                <Tooltip contentStyle={{ backgroundColor: theme.palette.background.paper, border: `1px solid ${theme.palette.divider}`, borderRadius: 8 }} />
+                                <Legend />
                                 <Bar dataKey="profitMargin" fill={theme.palette.success.main} name="Margin %" radius={[0, 4, 4, 0]} />
                                 <Bar dataKey="returnRate" fill={theme.palette.error.main} name="Returns %" radius={[0, 4, 4, 0]} />
                             </BarChart>
