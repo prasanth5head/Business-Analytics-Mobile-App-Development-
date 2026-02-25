@@ -15,7 +15,8 @@ import {
     TextField,
     MenuItem,
     InputAdornment,
-    Snackbar
+    Snackbar,
+    Divider
 } from '@mui/material';
 import {
     TrendingUp,
