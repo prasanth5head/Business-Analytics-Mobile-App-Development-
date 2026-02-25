@@ -24,8 +24,7 @@ import {
     Assignment
 } from '@mui/icons-material';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { useMarket } from '../context/MarketContext';
-import { Skeleton, Alert } from '@mui/material';
+import { salesData, insights } from '../data/analyticsData';
 
 const ReportSection = ({ title, children, icon }) => {
     const theme = useTheme();
@@ -52,21 +51,6 @@ const ReportSection = ({ title, children, icon }) => {
 
 const Reports = () => {
     const theme = useTheme();
-    const { marketData, aiRecommendations, loading, error } = useMarket();
-
-    if (loading && !marketData) {
-        return (
-            <Box sx={{ p: 4 }}>
-                <Skeleton variant="rectangular" height={800} sx={{ borderRadius: 4 }} />
-            </Box>
-        );
-    }
-
-    if (error) return <Alert severity="error">{error}</Alert>;
-
-    const { salesData, summary } = marketData;
-    const { aiAnalysis, recommendations } = aiRecommendations || {};
-
     const handlePrint = () => {
         window.print();
     };
@@ -74,11 +58,6 @@ const Reports = () => {
     const currentDate = new Date().toLocaleDateString('en-US', {
         weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
     });
-
-    // Derive actual performance metrics
-    const totalSales = salesData.reduce((acc, d) => acc + d.sales, 0);
-    const activeMonths = salesData.filter(d => d.sales > 0).length;
-    const avgMonthlySales = totalSales / (activeMonths || 1);
 
     return (
         <Box sx={{ maxWidth: '900px', mx: 'auto', p: 2 }}>
@@ -110,13 +89,13 @@ const Reports = () => {
                 {/* Header */}
                 <Box sx={{ textAlign: 'center', mb: 6 }}>
                     <Typography variant="h3" fontWeight="900" sx={{ mb: 1, color: 'text.primary', letterSpacing: '-0.02em' }}>
-                        BUSINESS <span style={{ color: theme.palette.primary.main }}>PRO</span> REPORT
+                        ANALYTICS <span style={{ color: theme.palette.primary.main }}>PRO</span> REPORT
                     </Typography>
                     <Typography variant="h6" color="text.secondary">
-                        Comprehensive Operational Analysis & Financial Recommendations
+                        Strategic Analysis & Financial Recommendations
                     </Typography>
                     <Typography variant="body2" sx={{ mt: 2, color: 'text.secondary' }}>
-                        Date: {currentDate} | Prepared by: Strategic Intelligence Module
+                        Date: {currentDate} | Prepared by: Analytics Pro Team
                     </Typography>
                 </Box>
 
@@ -125,130 +104,149 @@ const Reports = () => {
                 {/* 1. Introduction */}
                 <ReportSection title="1. Introduction" icon={<Description />}>
                     <Typography variant="body1" paragraph align="justify" color="text.primary">
-                        This report serves as a formal audit of recent business operations based on manual ledger entries and integrated market intelligence. The analysis focuses on performance trends, operational risk factors, and strategic maneuvers required to optimize professional growth.
+                        This report provides a comprehensive analysis of recent business performance, specifically focusing on sales volatility observed in Q1. Uses data-driven methodologies to identify root causes and proposes strategic interventions to restore growth trajectories.
                     </Typography>
                 </ReportSection>
 
-                {/* 2. Operational Health Summary */}
-                <ReportSection title="2. Operational Health" icon={<TrendingUp />}>
+                {/* 2. Problem Statement */}
+                <ReportSection title="2. Problem Statement" icon={<TrendingDown />}>
                     <Paper sx={{
                         p: 3,
-                        bgcolor: theme.palette.mode === 'dark' ? 'rgba(76, 175, 80, 0.05)' : '#e8f5e9',
-                        borderLeft: `4px solid ${theme.palette.success.main}`,
+                        bgcolor: theme.palette.mode === 'dark' ? 'rgba(255, 61, 0, 0.05)' : '#ffebee',
+                        borderLeft: `4px solid ${theme.palette.error.main}`,
                         borderRadius: 2
                     }}>
-                        <Typography variant="h6" fontWeight="bold" gutterBottom color="success.main">
-                            Status: Live Data Integrated
+                        <Typography variant="h6" fontWeight="bold" gutterBottom color="error.main">
+                            Core Issue: Unexplained Sales Decline
                         </Typography>
                         <Typography variant="body1" color="text.primary">
-                            Current aggregate revenue stands at <strong>₹{totalSales.toLocaleString()}</strong>.
-                            Average monthly performance is tracked at <strong>₹{Math.round(avgMonthlySales).toLocaleString()}</strong>.
-                            {summary.totalLoss > 0 ? (
-                                <Box component="span"> Total tracked losses/returns sum to ₹{summary.totalLoss.toLocaleString()}.</Box>
-                            ) : (
-                                <Box component="span"> No significant losses or returns have been logged in the current cycle.</Box>
-                            )}
+                            Despite a positive start to the year, sales revenue dropped by <strong>33%</strong> in March.
+                            Simultaneously, customer churn rates in the 'High Value' segment increased by <strong>12%</strong>.
+                            The primary objective is to diagnose the drivers of this decline and forecast recovery paths.
                         </Typography>
                     </Paper>
                 </ReportSection>
 
-                {/* 3. Data Integrity & Variables */}
+                {/* 3. Data Description */}
                 <ReportSection title="3. Data Description" icon={<Storage />}>
-                    <Typography variant="body1" paragraph color="text.primary">
-                        Analyzed parameters are derived 100% from verified business inputs:
-                    </Typography>
-                    <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 1 }}>
-                        {['Manual Revenue', 'Profit Tracking', 'Loss Validation', 'Product-Specific Performance', 'Yearly Trend Mapping'].map((tag) => (
-                            <Chip key={tag} label={tag} size="small" variant="outlined" sx={{ color: 'text.primary', borderColor: 'divider', fontWeight: 700 }} />
-                        ))}
-                    </Box>
+                    <Grid container spacing={2}>
+                        <Grid item xs={12} md={4}>
+                            <Box sx={{ p: 2, bgcolor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.03)' : '#f5f5f5', borderRadius: 2 }}>
+                                <Typography variant="subtitle2" fontWeight="bold" color="text.primary">Dataset Source</Typography>
+                                <Typography variant="body2" color="text.secondary">Internal ERP & CRM Systems</Typography>
+                            </Box>
+                        </Grid>
+                        <Grid item xs={12} md={8}>
+                            <Box sx={{ p: 2, bgcolor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.03)' : '#f5f5f5', borderRadius: 2 }}>
+                                <Typography variant="subtitle2" fontWeight="bold" color="text.primary">Key Variables Analyzed</Typography>
+                                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mt: 1 }}>
+                                    {['Sales Volume', 'Unit Price', 'Customer Complaints', 'Competitor Offers', 'Profit Margin'].map((tag) => (
+                                        <Chip key={tag} label={tag} size="small" variant="outlined" sx={{ color: 'text.primary', borderColor: 'divider' }} />
+                                    ))}
+                                </Box>
+                            </Box>
+                        </Grid>
+                    </Grid>
                 </ReportSection>
 
                 {/* 4. Methodology */}
-                <ReportSection title="4. Strategic Framework" icon={<Assignment />}>
+                <ReportSection title="4. Methodology" icon={<Assignment />}>
+                    <Typography variant="body1" paragraph color="text.primary">
+                        We employed a three-tiered analytical approach:
+                    </Typography>
                     <List dense>
                         <ListItem>
-                            <ListItemIcon><CheckCircleOutline sx={{ color: theme.palette.primary.main }} /></ListItemIcon>
+                            <ListItemIcon><CheckCircleOutline sx={{ color: theme.palette.success.main }} /></ListItemIcon>
                             <ListItemText
-                                primary={<Typography fontWeight="700" color="text.primary">Performance Descriptives</Typography>}
-                                secondary={<Typography variant="body2" color="text.secondary">Mapping raw financial entries to time-series trends.</Typography>}
+                                primary={<Typography fontWeight="700" color="text.primary">Descriptive Analytics</Typography>}
+                                secondary={<Typography variant="body2" color="text.secondary">Authorized historical trends to establish performance baselines.</Typography>}
                             />
                         </ListItem>
                         <ListItem>
-                            <ListItemIcon><CheckCircleOutline sx={{ color: theme.palette.primary.main }} /></ListItemIcon>
+                            <ListItemIcon><CheckCircleOutline sx={{ color: theme.palette.success.main }} /></ListItemIcon>
                             <ListItemText
-                                primary={<Typography fontWeight="700" color="text.primary">Diagnostic Correlates</Typography>}
-                                secondary={<Typography variant="body2" color="text.secondary">Identifying the relationship between product categories and return rates.</Typography>}
+                                primary={<Typography fontWeight="700" color="text.primary">Diagnostic Analytics</Typography>}
+                                secondary={<Typography variant="body2" color="text.secondary">Correlated price elasticity with sales volume and competitor activity.</Typography>}
                             />
                         </ListItem>
                         <ListItem>
-                            <ListItemIcon><CheckCircleOutline sx={{ color: theme.palette.primary.main }} /></ListItemIcon>
+                            <ListItemIcon><CheckCircleOutline sx={{ color: theme.palette.success.main }} /></ListItemIcon>
                             <ListItemText
-                                primary={<Typography fontWeight="700" color="text.primary">Predictive Modeling</Typography>}
-                                secondary={<Typography variant="body2" color="text.secondary">Extrapolating current growth rates into prospective fiscal scenarios.</Typography>}
+                                primary={<Typography fontWeight="700" color="text.primary">Predictive Analytics</Typography>}
+                                secondary={<Typography variant="body2" color="text.secondary">Utilized regression modeling to forecast Q2 performance under various pricing scenarios.</Typography>}
                             />
                         </ListItem>
                     </List>
                 </ReportSection>
 
-                {/* 5. Analysis & Trends */}
-                <ReportSection title="5. Visual Trend Analysis" icon={<TrendingUp />}>
+                {/* 5. Analysis */}
+                <ReportSection title="5. Analysis" icon={<TrendingUp />}>
                     <Typography variant="body1" paragraph color="text.primary">
-                        <strong>Yearly Revenue Progression:</strong> The visualization below maps exactly how business inputs have scaled over the current fiscal year.
+                        <strong>Q1 Performance Visualization:</strong> The chart below illustrates the correlation between the sales dip and the strategic price increase in March.
                     </Typography>
-                    <Box sx={{ height: 350, width: '100%', mb: 2 }}>
+                    <Box sx={{ height: 300, width: '100%', mb: 2 }}>
                         <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={salesData}>
+                            <BarChart data={salesData.slice(0, 6)}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={theme.palette.divider} />
-                                <XAxis dataKey="p" stroke={theme.palette.text.secondary} fontWeight={700} />
-                                <YAxis stroke={theme.palette.text.secondary} fontWeight={700} />
+                                <XAxis dataKey="p" stroke={theme.palette.text.secondary} />
+                                <YAxis stroke={theme.palette.text.secondary} />
                                 <Tooltip
                                     contentStyle={{
                                         bgcolor: theme.palette.background.paper,
                                         border: `1px solid ${theme.palette.divider}`,
-                                        borderRadius: 8,
-                                        fontWeight: 700
+                                        borderRadius: 8
                                     }}
                                 />
-                                <Bar dataKey="sales" fill={theme.palette.primary.main} name="Revenue (₹)" radius={[4, 4, 0, 0]} />
-                                <Bar dataKey="profit" fill={theme.palette.success.main} name="Profit (₹)" radius={[4, 4, 0, 0]} />
+                                <Bar dataKey="sales" fill={theme.palette.primary.main} name="Sales Volume" radius={[4, 4, 0, 0]} />
+                                <Bar dataKey="profit" fill={theme.palette.secondary.main} name="Profit" radius={[4, 4, 0, 0]} />
                             </BarChart>
                         </ResponsiveContainer>
                     </Box>
+                    <Typography variant="caption" align="center" display="block" color="text.secondary">
+                        Figure 1: Sales vs Profit Analysis (Jan - Jun)
+                    </Typography>
                 </ReportSection>
 
-                {/* 6. Strategic Intelligence (AI) */}
-                <ReportSection title="6. AI Strategic Recommendations" icon={<Psychology />}>
+                {/* 6. Findings */}
+                <ReportSection title="6. Findings" icon={<Psychology />}>
                     <Grid container spacing={2}>
-                        {recommendations && recommendations.length > 0 ? (
-                            recommendations.map((rec, idx) => (
-                                <Grid item xs={12} key={idx}>
-                                    <Paper sx={{
-                                        p: 2.5,
-                                        bgcolor: theme.palette.mode === 'dark' ? 'rgba(7, 131, 255, 0.05)' : '#f8f9fa',
-                                        borderLeft: `5px solid ${theme.palette.primary.main}`,
-                                        borderRadius: 3
-                                    }}>
-                                        <Box display="flex" justifyContent="space-between" mb={1}>
-                                            <Typography variant="subtitle1" fontWeight="900" color="text.primary">{rec.title}</Typography>
-                                            <Chip label={rec.type} size="small" sx={{ fontWeight: 800 }} />
-                                        </Box>
-                                        <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>
-                                            {rec.recommendation}
-                                        </Typography>
-                                    </Paper>
-                                </Grid>
-                            ))
-                        ) : (
-                            <Typography color="text.secondary">AI processing queued...</Typography>
-                        )}
+                        {insights.map((item, idx) => (
+                            <Grid item xs={12} key={idx}>
+                                <Paper sx={{
+                                    p: 2,
+                                    bgcolor: theme.palette.mode === 'dark' ? 'rgba(255,184,0,0.05)' : '#f8f9fa',
+                                    borderLeft: `4px solid ${theme.palette.secondary.main}`,
+                                    borderRadius: 2
+                                }}>
+                                    <Typography variant="subtitle1" fontWeight="bold" color="text.primary">{item.text}</Typography>
+                                    <Typography variant="body2" color="text.secondary">
+                                        <strong>Root Cause:</strong> {item.reason}
+                                    </Typography>
+                                </Paper>
+                            </Grid>
+                        ))}
                     </Grid>
                 </ReportSection>
 
-                {/* 7. Conclusion */}
-                <ReportSection title="7. Conclusion" icon={<Assignment />}>
+                {/* 7. Recommendations */}
+                <ReportSection title="7. Recommendations" icon={<CheckCircleOutline />}>
+                    <Box component="ul" sx={{ pl: 2, color: 'text.primary' }}>
+                        <Typography component="li" variant="body1" paragraph>
+                            <strong>Price Adjustment Strategy:</strong> Immediate reduction of unit price to <strong>₹110</strong> is recommended. Predictive models suggest this will recover sales volume by 20% within 30 days.
+                        </Typography>
+                        <Typography component="li" variant="body1" paragraph>
+                            <strong>Competitor Counter-Strategy:</strong> Launch a targeted loyalty bonus program during known competitor discount windows to insulate high-value customers.
+                        </Typography>
+                        <Typography component="li" variant="body1" paragraph>
+                            <strong>Inventory Optimization:</strong> Shift marketing budget towards the 'Beauty' category which currently yields the highest profit margin (60%).
+                        </Typography>
+                    </Box>
+                </ReportSection>
+
+                {/* 8. Conclusion */}
+                <ReportSection title="8. Conclusion" icon={<Assignment />}>
                     <Typography variant="body1" align="justify" color="text.primary">
-                        The integrity of this report relies on the high-fidelity manual inputs provided. Based on current trajectories, total yearly revenue is accurately tracked and mapped. Operational efficiency remains high as long as return rates (loss) are kept minimal relative to aggregate sales.
+                        The analysis confirms that the sales decline was a direct consequence of high price sensitivity which was exploited by competitor activity. The business remains fundamentally strong, with high demand potential. Implementing the recommended pricing adjustments and loyalty initiatives will likely reverse the negative trend and ensure Q2 targets are met.
                     </Typography>
                 </ReportSection>
 
@@ -256,16 +254,13 @@ const Reports = () => {
 
                 {/* Footer */}
                 <Box sx={{ mt: 4, textAlign: 'center', color: 'text.secondary' }}>
-                    <Typography variant="body2" fontWeight="700">
-                        OFFICIAL CONSOLIDATED BUSINESS AUDIT
-                    </Typography>
-                    <Typography variant="caption">
-                        Powered by Analytics Pro Intelligence Engine
+                    <Typography variant="body2">
+                        Official Report generated by Analytics Pro
                     </Typography>
                 </Box>
 
-            </Paper>
-        </Box>
+            </Paper >
+        </Box >
     );
 };
 

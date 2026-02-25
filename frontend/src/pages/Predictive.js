@@ -31,25 +31,18 @@ const Predictive = () => {
     const { salesData } = marketData;
     const { aiAnalysis } = aiRecommendations || {};
 
-    const lastSale = salesData.length > 0 ? (salesData[salesData.length - 1].sales || 0) : 0;
-    const scenarioData = ['Month 1', 'Month 2', 'Month 3', 'Month 4', 'Month 5', 'Month 6'].map((m, i) => ({
+    const lastSale = salesData[salesData.length - 1].sales;
+    const scenarioData = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'].map((m, i) => ({
         month: m,
         currentPath: Math.round(lastSale * (1 + (i * 0.05))),
         optimistic: Math.round(lastSale * (1 + (i * 0.15))),
         pessimistic: Math.round(lastSale * (1 - (i * 0.10))),
     }));
 
-    const totalSales = salesData.reduce((acc, d) => acc + d.sales, 0);
-    const totalProfit = salesData.reduce((acc, d) => acc + d.profit, 0);
-    const totalLoss = salesData.reduce((acc, d) => acc + d.loss, 0);
-
-    // Fallback exactly to user inputs
-    const churnChartData = totalSales > 0 ? [
-        { name: 'Low Risk', value: totalProfit, fill: theme.palette.success.main },
-        { name: 'Medium Risk', value: Math.max(0, totalSales - totalProfit - totalLoss), fill: theme.palette.warning.main },
-        { name: 'High Risk', value: totalLoss, fill: theme.palette.error.main },
-    ] : [
-        { name: 'Awaiting Business Data', value: 1, fill: theme.palette.text.disabled }
+    const churnChartData = [
+        { name: 'Low Risk', value: 750, fill: theme.palette.success.main },
+        { name: 'Medium Risk', value: 240, fill: theme.palette.warning.main },
+        { name: 'High Risk', value: 110, fill: theme.palette.error.main },
     ];
 
     return (
