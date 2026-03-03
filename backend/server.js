@@ -4,31 +4,69 @@ const cors = require('cors');
 const connectDB = require('./config/db');
 const { GoogleGenAI } = require("@google/genai");
 const jwt = require('jsonwebtoken');
+const http = require('http');
+const { Server } = require('socket.io');
+const compression = require('compression');
+const helmet = require('helmet');
+const morgan = require('morgan');
+const { aiQueue } = require('./config/queue');
+const { redis } = require('./config/redis');
 
 dotenv.config();
 
 const app = express();
-// Moved genAI initialization inside routes to ensure it picks up Render's environment updates
-
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"]
+  }
+});
 
 // Database Connection
 connectDB();
 
-// Middleware - Apply BEFORE routes
+// Middlewares
+app.use(helmet({
+  crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" }
+}));
+app.use(compression());
+app.use(morgan('dev'));
 app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin) return callback(null, true);
-    return callback(null, true);
-  },
+  origin: "*",
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json());
 
-// Set security headers for Google OAuth compatibility on mobile
+// Socket.io connection
+io.on('connection', (socket) => {
+  console.log('Client connected:', socket.id);
+
+  socket.on('join', (userId) => {
+    socket.join(userId);
+    console.log(`User ${userId} joined their private channel`);
+  });
+
+  socket.on('disconnect', () => {
+    console.log('Client disconnected');
+  });
+});
+
+// Redis Pub/Sub to Socket.io bridge
+const sub = redis.duplicate();
+sub.on('message', (channel, message) => {
+  if (channel === 'ai_results') {
+    const { type, response, userId } = JSON.parse(message);
+    io.to(userId).emit(type, response);
+  }
+});
+sub.subscribe('ai_results');
+
+// Pass io to request object
 app.use((req, res, next) => {
-  res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
+  req.io = io;
   next();
 });
 
@@ -49,45 +87,34 @@ const auth = (req, res, next) => {
   }
 };
 
-// Chat Handler Function
+// Queue-based Chat Handler
 const chatHandler = async (req, res) => {
   try {
     const { prompt } = req.body;
     if (!prompt || prompt.trim() === "")
       return res.status(400).json({ message: "Prompt required" });
 
-    const key = process.env.GEMINI_API_KEY;
-    if (!key) {
-      return res.status(503).json({ message: "Server configuration error: API Key missing." });
-    }
-
-    // Using the new @google/genai SDK
-    const ai = new GoogleGenAI({ apiKey: key });
-
-    const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
-
-      contents: prompt,
+    // Push to queue
+    const job = await aiQueue.add('chat-task', {
+      type: 'chat',
+      prompt,
+      userId: req.user.id
     });
 
-    res.json({ response: response.text });
+    res.json({ message: "Job queued", jobId: job.id });
   }
   catch (err) {
-    console.error("AI Chat Error:", err);
-    const errStatus = err.status || err.httpError || 500;
-    res.status(errStatus).json({
-      message: "Chat Error: " + (err.message || "Unknown error")
-    });
+    console.error("AI Queue Error:", err);
+    res.status(500).json({ message: "Queue Error: " + err.message });
   }
 };
 
-
-// Support both routes for compatibility with cached frontend versions
+// Support both routes for compatibility
 app.post("/api/chat", auth, chatHandler);
 app.post("/chat", auth, chatHandler);
 
 app.get('/', (req, res) => {
-  res.send('API is running...');
+  res.send('Scaleable API is running...');
 });
 
 app.use('/api/users', require('./routes/userRoutes'));
@@ -95,5 +122,6 @@ app.use('/api/market', require('./routes/marketRoutes'));
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
 
