@@ -1,5 +1,7 @@
-const express = require('express');
 const dotenv = require('dotenv');
+dotenv.config();
+
+const express = require('express');
 const cors = require('cors');
 const connectDB = require('./config/db');
 const { GoogleGenAI } = require("@google/genai");
@@ -13,8 +15,6 @@ const cluster = require('cluster');
 const os = require('os');
 const { aiQueue } = require('./config/queue');
 const { redis } = require('./config/redis');
-
-dotenv.config();
 
 // Cluster logic: Scale across CPU cores
 if (cluster.isMaster) {
