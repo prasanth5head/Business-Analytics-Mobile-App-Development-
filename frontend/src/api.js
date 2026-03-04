@@ -12,10 +12,19 @@ const api = axios.create({
     }
 });
 
-// Add a request interceptor to debug network errors on mobile
-api.interceptors.request.use(request => {
-    console.log('Mobile Debug: Starting Request', request.method, request.url);
-    return request;
+// Add a request interceptor to attach tokens and debug network errors
+api.interceptors.request.use(config => {
+    const userInfo = localStorage.getItem('userInfo');
+    if (userInfo) {
+        const { token } = JSON.parse(userInfo);
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+    }
+    console.log('Mobile Debug: Starting Request', config.method, config.url);
+    return config;
+}, error => {
+    return Promise.reject(error);
 });
 
 api.interceptors.response.use(

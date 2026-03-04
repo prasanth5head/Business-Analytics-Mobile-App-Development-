@@ -12,10 +12,16 @@ export const MyBusinessProvider = ({ children }) => {
     const fetchData = useCallback(async () => {
         try {
             setLoading(true);
+
+            const userInfo = localStorage.getItem('userInfo');
+            if (!userInfo) {
+                setLoading(false);
+                return;
+            }
+
             const { data } = await api.get(`/api/market/my-data`);
             setBusinessData(data);
 
-            // Get AI recommendations based on the manual business data
             const { data: aiData } = await api.post(`/api/market/recommendations`, {
                 salesData: data.salesData,
                 productData: data.productData,
@@ -25,7 +31,11 @@ export const MyBusinessProvider = ({ children }) => {
             setLoading(false);
         } catch (err) {
             console.error('Fetch error:', err);
-            setError('Failed to fetch your business analytics data');
+            if (err.response?.status === 401) {
+                setError('Please login to view your business analytics');
+            } else {
+                setError('Failed to fetch your business analytics data');
+            }
             setLoading(false);
         }
     }, []);

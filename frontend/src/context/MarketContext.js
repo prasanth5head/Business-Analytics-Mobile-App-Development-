@@ -15,17 +15,24 @@ export const MarketProvider = ({ children }) => {
             const { data } = await api.get(`/api/market/data`);
             setMarketData(data);
 
-            // Get AI recommendations based on the new market data
-            const { data: aiData } = await api.post(`/api/market/recommendations`, {
-                salesData: data.salesData,
-                productData: data.productData,
-                summary: data.summary
-            });
-            setAiRecommendations(aiData);
+            // ONLY fetch recommendations if we have a token (user is logged in)
+            const userInfo = localStorage.getItem('userInfo');
+            if (userInfo) {
+                const { data: aiData } = await api.post(`/api/market/recommendations`, {
+                    salesData: data.salesData,
+                    productData: data.productData,
+                    summary: data.summary
+                });
+                setAiRecommendations(aiData);
+            }
+
             setLoading(false);
         } catch (err) {
             console.error('Fetch error:', err);
-            setError('Failed to fetch real-time market data');
+            // Don't show error for 401 if user just isn't logged in yet
+            if (err.response?.status !== 401) {
+                setError('Failed to fetch real-time market data');
+            }
             setLoading(false);
         }
     }, []);
