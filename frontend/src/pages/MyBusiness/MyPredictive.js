@@ -29,10 +29,10 @@ const MyPredictive = () => {
     if (error) return <Alert severity="error">{error}</Alert>;
     if (!businessData) return <Alert severity="info">Add business data to generate predictive forecasts.</Alert>;
 
-    const { salesData } = businessData;
+    const { salesData = [] } = businessData || {};
     const { aiAnalysis } = aiRecommendations || {};
 
-    const lastSale = salesData.length > 0 ? (salesData.find(d => !d.isPredictive)?.sales || salesData[0].sales) : 0;
+    const lastSale = salesData.length > 0 ? (salesData.find(d => !d.isPredictive)?.sales || salesData[0].sales || 0) : 0;
     const scenarioData = ['Month 1', 'Month 2', 'Month 3', 'Month 4', 'Month 5', 'Month 6'].map((m, i) => ({
         month: m,
         currentPath: Math.round(lastSale * (1 + (i * 0.05))),
@@ -110,21 +110,21 @@ const MyPredictive = () => {
                 <Grid item xs={12} md={4}>
                     <Paper sx={{ p: 3, textAlign: 'center', bgcolor: theme.palette.mode === 'dark' ? 'rgba(76, 175, 80, 0.05)' : '#e8f5e9', borderRadius: 2 }}>
                         <Typography variant="subtitle2" color="success.main" fontWeight="bold">OPTIMISTIC TARGET</Typography>
-                        <Typography variant="h4" fontWeight="bold">₹{scenarioData[5].optimistic.toLocaleString()}</Typography>
+                        <Typography variant="h4" fontWeight="bold">₹{(scenarioData[5]?.optimistic || 0).toLocaleString()}</Typography>
                         <Typography variant="caption" color="text.secondary">Aggressive marketing strategy impact</Typography>
                     </Paper>
                 </Grid>
                 <Grid item xs={12} md={4}>
                     <Paper sx={{ p: 3, textAlign: 'center', bgcolor: theme.palette.mode === 'dark' ? 'rgba(33, 150, 243, 0.05)' : '#e3f2fd', borderRadius: 2 }}>
                         <Typography variant="subtitle2" color="primary.main" fontWeight="bold">BASELINE FORECAST</Typography>
-                        <Typography variant="h4" fontWeight="bold">₹{scenarioData[5].currentPath.toLocaleString()}</Typography>
+                        <Typography variant="h4" fontWeight="bold">₹{(scenarioData[5]?.currentPath || 0).toLocaleString()}</Typography>
                         <Typography variant="caption" color="text.secondary">Current performance continuation</Typography>
                     </Paper>
                 </Grid>
                 <Grid item xs={12} md={4}>
                     <Paper sx={{ p: 3, textAlign: 'center', bgcolor: theme.palette.mode === 'dark' ? 'rgba(244, 67, 54, 0.05)' : '#ffebee', borderRadius: 2 }}>
                         <Typography variant="subtitle2" color="error.main" fontWeight="bold">MINIMUM THRESHOLD</Typography>
-                        <Typography variant="h4" fontWeight="bold">₹{scenarioData[5].pessimistic.toLocaleString()}</Typography>
+                        <Typography variant="h4" fontWeight="bold">₹{(scenarioData[5]?.pessimistic || 0).toLocaleString()}</Typography>
                         <Typography variant="caption" color="text.secondary">Worst-case market conditions</Typography>
                     </Paper>
                 </Grid>

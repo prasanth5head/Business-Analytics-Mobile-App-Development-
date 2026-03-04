@@ -8,6 +8,7 @@ router.get('/my-data', protect, getMyBusinessData);
 router.get('/revenue', protect, getManualRevenue);
 router.delete('/revenue', protect, clearRevenue);
 router.post('/revenue', protect, addRevenue);
+router.post('/revenue-bulk', protect, addRevenueBulk);
 router.post('/recommendations', protect, getAIRecommendations);
 
 module.exports = router;

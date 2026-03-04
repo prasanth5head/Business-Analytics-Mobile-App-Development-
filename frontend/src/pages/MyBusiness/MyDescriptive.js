@@ -35,11 +35,11 @@ const MyDescriptive = () => {
     if (error) return <Alert severity="error">{error}</Alert>;
     if (!businessData) return <Alert severity="info">Add revenue records to see descriptive analytics.</Alert>;
 
-    const { salesData, productData, summary } = businessData;
+    const { salesData = [], productData = [], summary = {} } = businessData || {};
     const { aiAnalysis } = aiRecommendations || {};
 
-    const totalSales = salesData.reduce((sum, d) => sum + d.sales, 0);
-    const totalProfit = salesData.reduce((sum, d) => sum + d.profit, 0);
+    const totalSales = salesData.reduce((sum, d) => sum + (d.sales || 0), 0);
+    const totalProfit = salesData.reduce((sum, d) => sum + (d.profit || 0), 0);
 
     return (
         <Box sx={{ pb: 4 }}>
@@ -85,10 +85,10 @@ const MyDescriptive = () => {
             {/* KPI Cards */}
             <Grid container spacing={3} sx={{ mb: 4 }}>
                 {[
-                    { label: 'Total Business Revenue', value: `₹${totalSales.toLocaleString()}`, change: summary.growthRate, up: true, color: theme.palette.primary.main },
+                    { label: 'Total Business Revenue', value: `₹${totalSales.toLocaleString()}`, change: summary?.growthRate || '0%', up: true, color: theme.palette.primary.main },
                     { label: 'Total Net Profit', value: `₹${totalProfit.toLocaleString()}`, change: '+0%', up: true, color: theme.palette.success.main },
-                    { label: 'Number of Entries', value: summary.activeUsers.toLocaleString(), change: 'Manual', up: true, color: theme.palette.secondary.main },
-                    { label: 'Total Loss Tracking', value: `₹${summary.totalLoss.toLocaleString()}`, change: 'Audit', up: false, color: theme.palette.error.main },
+                    { label: 'Number of Entries', value: (summary?.activeUsers || 0).toLocaleString(), change: 'Manual', up: true, color: theme.palette.secondary.main },
+                    { label: 'Total Loss Tracking', value: `₹${(summary?.totalLoss || 0).toLocaleString()}`, change: 'Audit', up: false, color: theme.palette.error.main },
                 ].map((kpi, i) => (
                     <Grid item xs={12} sm={6} md={3} key={i}>
                         <Paper sx={{ p: 3, borderTop: `4px solid ${kpi.color}`, textAlign: 'center', borderRadius: 2 }}>

@@ -96,7 +96,53 @@ const getMyBusinessData = async (req, res) => {
 
         const revenue = await Revenue.find({ userId });
         const myData = generateMyBusinessData(revenue);
-        const result = { salesData: myData, timestamp: new Date() };
+
+        // Calculate Summary for the user's data
+        const totalSales = revenue.reduce((sum, r) => sum + (r.amount || 0), 0);
+        const totalProfit = revenue.reduce((sum, r) => sum + (r.profit || 0), 0);
+        const totalLoss = revenue.reduce((sum, r) => sum + (r.loss || 0), 0);
+        const avgProfit = myData.length > 0 ? Math.round(totalSales / myData.length) : 0;
+
+        const summary = {
+            totalSales,
+            totalProfit,
+            totalLoss,
+            avgProfit,
+            growthRate: "5% ▲", // Placeholder or calculate from myData
+            activeUsers: Math.floor(totalSales / 500) || 0,
+            customerGrowth: "2% ▲",
+            profitGrowth: "3% ▲"
+        };
+
+        // Generate Product Data based on user categories
+        const usedProducts = [...new Set(revenue.map(r => r.product || 'All'))];
+        const productData = usedProducts.map(name => {
+            const prodRevenue = revenue.filter(r => (r.product || 'All') === name);
+            const sales = prodRevenue.reduce((sum, r) => sum + (r.amount || 0), 0);
+            const profit = prodRevenue.reduce((sum, r) => sum + (r.profit || 0), 0);
+            const profitMargin = sales > 0 ? Math.round((profit / sales) * 100) : 0;
+            const returnRate = Math.floor(Math.random() * 5); // Mocked for now
+            const complaints = Math.floor(Math.random() * 10); // Mocked for now
+            return {
+                name,
+                profitMargin,
+                returnRate,
+                complaints,
+                gst: name.includes('Electronics') ? 18 : 5,
+                risk: calculateRisk(profitMargin, returnRate, complaints)
+            };
+        });
+
+        // Fallback if no data
+        if (productData.length === 0) {
+            const defaultProducts = [
+                { name: 'Retail Clothing (<₹1k)', profitMargin: 20, returnRate: 5.2, complaints: 15, gst: 5 },
+                { name: 'Electronics (Mobiles)', profitMargin: 12, returnRate: 2.1, complaints: 25, gst: 18 },
+            ];
+            productData.push(...defaultProducts.map(p => ({ ...p, risk: calculateRisk(p.profitMargin, p.returnRate, p.complaints) })));
+        }
+
+        const result = { salesData: myData, productData, summary, timestamp: new Date() };
 
         try {
             await redis.setex(cacheKey, 300, JSON.stringify(result));
@@ -152,4 +198,29 @@ const clearRevenue = async (req, res) => {
     } catch (err) { res.status(500).json({ message: err.message }); }
 };
 
-module.exports = { getMarketData, getMyBusinessData, addRevenue, getAIRecommendations, getManualRevenue, clearRevenue };
+const addRevenueBulk = async (req, res) => {
+    try {
+        const { records } = req.body;
+        if (!records || !Array.isArray(records)) {
+            return res.status(400).json({ message: 'Invalid records format' });
+        }
+
+        const toSave = records.map(rec => ({
+            ...rec,
+            userId: req.user._id,
+            amount: rec.amount || rec.revenue // handles both naming conventions
+        }));
+
+        await Revenue.insertMany(toSave);
+
+        try {
+            await redis.del(`my_business_${req.user._id}`);
+        } catch (e) {
+            console.error("Redis Del Error:", e.message);
+        }
+
+        res.status(201).json({ message: `${records.length} records saved` });
+    } catch (err) { res.status(500).json({ message: err.message }); }
+};
+
+module.exports = { getMarketData, getMyBusinessData, addRevenue, addRevenueBulk, getAIRecommendations, getManualRevenue, clearRevenue };

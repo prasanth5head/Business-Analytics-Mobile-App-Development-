@@ -178,16 +178,19 @@ const MyPrescriptive = () => {
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {productData.map((prod, idx) => {
-                                const riskColor = prod.risk.level === 'High' ? theme.palette.error.main : prod.risk.level === 'Medium' ? theme.palette.warning.main : theme.palette.success.main;
+                            {(productData || []).map((prod, idx) => {
+                                const riskLevel = prod?.risk?.level || 'N/A';
+                                const riskColor = riskLevel === 'High' ? theme.palette.error.main :
+                                    riskLevel === 'Medium' ? theme.palette.warning.main :
+                                        theme.palette.success.main;
                                 return (
                                     <TableRow key={idx} hover>
-                                        <TableCell sx={{ fontWeight: 'bold', color: 'text.primary' }}>{prod.name}</TableCell>
+                                        <TableCell sx={{ fontWeight: 'bold', color: 'text.primary' }}>{prod?.name || 'Category'}</TableCell>
                                         <TableCell>
-                                            <Chip label={prod.risk.level} size="small" sx={{ bgcolor: riskColor + '20', color: riskColor, fontWeight: 'bold' }} />
+                                            <Chip label={riskLevel} size="small" sx={{ bgcolor: riskColor + '20', color: riskColor, fontWeight: 'bold' }} />
                                         </TableCell>
-                                        <TableCell sx={{ color: 'text.secondary' }}>{prod.profitMargin < 20 ? 'Margin Compression' : 'Performing as Input'}</TableCell>
-                                        <TableCell sx={{ color: 'text.primary' }}>Optimize for higher profitability based on {prod.name} trends.</TableCell>
+                                        <TableCell sx={{ color: 'text.secondary' }}>{(prod?.profitMargin || 0) < 20 ? 'Margin Compression' : 'Performing as Input'}</TableCell>
+                                        <TableCell sx={{ color: 'text.primary' }}>Optimize for higher profitability based on {prod?.name || 'this category'} trends.</TableCell>
                                     </TableRow>
                                 );
                             })}

@@ -57,8 +57,8 @@ const MyDiagnostic = () => {
     if (error) return <Alert severity="error">{error}</Alert>;
     if (!businessData) return <Alert severity="info">Add business data to generate diagnostic insights.</Alert>;
 
-    const { salesData, productData } = businessData;
-    const { recommendations } = aiRecommendations || {};
+    const { salesData = [], productData = [] } = businessData || {};
+    const { recommendations = [] } = aiRecommendations || {};
 
     return (
         <Box sx={{ pb: 4 }}>
@@ -91,14 +91,14 @@ const MyDiagnostic = () => {
                             AI-Generated Diagnostic Report for Your Business
                         </Typography>
                         <Divider sx={{ my: 2 }} />
-                        {recommendations ? (
+                        {recommendations && recommendations.length > 0 ? (
                             recommendations.map((rec, idx) => (
                                 <FindingCard
                                     key={idx}
-                                    title={rec.title}
-                                    observation={rec.recommendation}
-                                    evidence={rec.insight}
-                                    severity={rec.type}
+                                    title={rec?.title || 'Finding'}
+                                    observation={rec?.recommendation || 'No data found.'}
+                                    evidence={rec?.insight || 'N/A'}
+                                    severity={rec?.type || 'Medium'}
                                 />
                             ))
                         ) : (

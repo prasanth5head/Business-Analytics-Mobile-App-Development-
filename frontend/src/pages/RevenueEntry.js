@@ -40,22 +40,24 @@ export default function RevenueEntry() {
     };
 
     const handleSave = async () => {
+        const toSave = rows.filter(r => r.revenue && r.month);
+        if (toSave.length === 0) {
+            setSnack({ open: true, msg: 'Please enter at least one month of revenue data.', severity: 'warning' });
+            return;
+        }
+
         setSaving(true);
         try {
-            const userInfo = JSON.parse(localStorage.getItem('userInfo'));
-            const token = userInfo?.token;
-            const headers = { Authorization: `Bearer ${token}` };
+            const formattedRecords = toSave.map(row => ({
+                month: row.month,
+                product: row.product || 'All',
+                amount: Number(row.revenue),
+                profit: Number(row.profit) || 0,
+                loss: Number(row.loss) || 0
+            }));
 
-            const toSave = rows.filter(r => r.revenue && r.month);
-            for (const row of toSave) {
-                await api.post('/api/market/revenue', {
-                    month: row.month,
-                    product: row.product || 'All',
-                    amount: Number(row.revenue),
-                    profit: Number(row.profit) || 0,
-                    loss: Number(row.loss) || 0
-                }, { headers });
-            }
+            await api.post('/api/market/revenue-bulk', { records: formattedRecords });
+
             setSnack({ open: true, msg: `✅ ${toSave.length} records added successfully!`, severity: 'success' });
 
             // Clear the form fields after successful save
