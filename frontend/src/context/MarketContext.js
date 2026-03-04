@@ -16,14 +16,17 @@ export const MarketProvider = ({ children }) => {
             setMarketData(data);
 
             // ONLY fetch recommendations if we have a token (user is logged in)
-            const userInfo = localStorage.getItem('userInfo');
-            if (userInfo) {
-                const { data: aiData } = await api.post(`/api/market/recommendations`, {
-                    salesData: data.salesData,
-                    productData: data.productData,
-                    summary: data.summary
-                });
-                setAiRecommendations(aiData);
+            const userInfoStr = localStorage.getItem('userInfo');
+            if (userInfoStr) {
+                const userInfo = JSON.parse(userInfoStr);
+                if (userInfo && userInfo.token) {
+                    const { data: aiData } = await api.post(`/api/market/recommendations`, {
+                        salesData: data.salesData,
+                        productData: data.productData,
+                        summary: data.summary
+                    });
+                    setAiRecommendations(aiData);
+                }
             }
 
             setLoading(false);

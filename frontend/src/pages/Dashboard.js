@@ -141,8 +141,8 @@ const Dashboard = () => {
 
     if (error) return <Alert severity="error">{error}</Alert>;
 
-    const { salesData, productData, summary } = marketData;
-    const { recommendations, aiAnalysis } = aiRecommendations || {};
+    const { salesData = [], productData = [], summary = {} } = marketData || {};
+    const { recommendations = [], aiAnalysis = "" } = aiRecommendations || {};
 
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
@@ -203,8 +203,8 @@ const Dashboard = () => {
                 <Grid item xs={12} sm={6} md={3}>
                     <KPICard
                         title="Live Revenue"
-                        value={`₹${summary.totalSales.toLocaleString()}`}
-                        percentage={summary.growthRate}
+                        value={`₹${summary?.totalSales?.toLocaleString() || '0'}`}
+                        percentage={summary?.growthRate || '0%'}
                         icon={<AttachMoney />}
                         color={theme.palette.primary.main}
                         up={true}
@@ -213,8 +213,8 @@ const Dashboard = () => {
                 <Grid item xs={12} sm={6} md={3}>
                     <KPICard
                         title="Active Users"
-                        value={summary.activeUsers.toLocaleString()}
-                        percentage={summary.customerGrowth}
+                        value={summary?.activeUsers?.toLocaleString() || '0'}
+                        percentage={summary?.customerGrowth || '0%'}
                         icon={<PeopleAlt />}
                         color={theme.palette.secondary.main}
                         up={true}
@@ -223,8 +223,8 @@ const Dashboard = () => {
                 <Grid item xs={12} sm={6} md={3}>
                     <KPICard
                         title="Avg. Profit"
-                        value={`₹${summary.avgProfit.toLocaleString()}`}
-                        percentage={summary.profitGrowth}
+                        value={`₹${summary?.avgProfit?.toLocaleString() || '0'}`}
+                        percentage={summary?.profitGrowth || '0%'}
                         icon={<TrendingUp />}
                         color={theme.palette.success.main}
                         up={true}

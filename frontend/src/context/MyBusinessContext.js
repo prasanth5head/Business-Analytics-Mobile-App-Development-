@@ -13,8 +13,14 @@ export const MyBusinessProvider = ({ children }) => {
         try {
             setLoading(true);
 
-            const userInfo = localStorage.getItem('userInfo');
-            if (!userInfo) {
+            const userInfoStr = localStorage.getItem('userInfo');
+            if (!userInfoStr) {
+                setLoading(false);
+                return;
+            }
+
+            const userInfo = JSON.parse(userInfoStr);
+            if (!userInfo || !userInfo.token) {
                 setLoading(false);
                 return;
             }
