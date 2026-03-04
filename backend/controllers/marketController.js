@@ -78,15 +78,27 @@ const getMarketData = async (req, res) => {
 
 const getMyBusinessData = async (req, res) => {
     try {
-        const userId = req.user.id;
+        const userId = req.user._id;
         const cacheKey = `my_business_${userId}`;
-        const cached = await redis.get(cacheKey);
+        let cached = null;
+        try {
+            cached = await redis.get(cacheKey);
+        } catch (e) {
+            console.error("Redis Get Error:", e.message);
+        }
+
         if (cached) return res.json(JSON.parse(cached));
 
         const revenue = await Revenue.find({ userId });
         const myData = generateMyBusinessData(revenue);
         const result = { salesData: myData, timestamp: new Date() };
-        await redis.setex(cacheKey, 300, JSON.stringify(result));
+
+        try {
+            await redis.setex(cacheKey, 300, JSON.stringify(result));
+        } catch (e) {
+            console.error("Redis Set Error:", e.message);
+        }
+
         res.json(result);
     } catch (err) { res.status(500).json({ message: err.message }); }
 };
@@ -94,31 +106,43 @@ const getMyBusinessData = async (req, res) => {
 const addRevenue = async (req, res) => {
     try {
         const { amount, profit, loss, month, product } = req.body;
-        const newRevenue = new Revenue({ userId: req.user.id, amount, profit, loss, month, product });
+        const newRevenue = new Revenue({ userId: req.user._id, amount, profit, loss, month, product });
         await newRevenue.save();
-        await redis.del(`my_business_${req.user.id}`);
+
+        try {
+            await redis.del(`my_business_${req.user._id}`);
+        } catch (e) {
+            console.error("Redis Del Error:", e.message);
+        }
+
         res.status(201).json(newRevenue);
     } catch (err) { res.status(500).json({ message: err.message }); }
 };
 
 const getAIRecommendations = async (req, res) => {
     try {
-        const job = await aiQueue.add('recommendation', { ...req.body, userId: req.user.id, type: 'recommendation' });
+        const job = await aiQueue.add('recommendation', { ...req.body, userId: req.user._id, type: 'recommendation' });
         res.json({ jobId: job.id, status: 'queued' });
     } catch (err) { res.status(500).json({ message: err.message }); }
 };
 
 const getManualRevenue = async (req, res) => {
     try {
-        const revs = await Revenue.find({ userId: req.user.id }).sort({ createdAt: -1 });
+        const revs = await Revenue.find({ userId: req.user._id }).sort({ createdAt: -1 });
         res.json(revs);
     } catch (err) { res.status(500).json({ message: err.message }); }
 };
 
 const clearRevenue = async (req, res) => {
     try {
-        await Revenue.deleteMany({ userId: req.user.id });
-        await redis.del(`my_business_${req.user.id}`);
+        await Revenue.deleteMany({ userId: req.user._id });
+
+        try {
+            await redis.del(`my_business_${req.user._id}`);
+        } catch (e) {
+            console.error("Redis Del Error:", e.message);
+        }
+
         res.json({ message: 'Cleared' });
     } catch (err) { res.status(500).json({ message: err.message }); }
 };
