@@ -1,5 +1,4 @@
-const dotenv = require('dotenv');
-dotenv.config();
+require('dotenv').config();
 
 const express = require('express');
 const cors = require('cors');
@@ -93,22 +92,7 @@ if (cluster.isMaster) {
     next();
   });
 
-  // Simple Auth Middleware
-  const auth = (req, res, next) => {
-    const authHeader = req.headers.authorization;
-    if (authHeader && authHeader.startsWith('Bearer')) {
-      const token = authHeader.split(' ')[1];
-      try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.user = decoded;
-        next();
-      } catch (error) {
-        res.status(401).json({ message: 'Not authorized, token failed' });
-      }
-    } else {
-      res.status(401).json({ message: 'Not authorized, no token' });
-    }
-  };
+  const { protect } = require('./middleware/authMiddleware');
 
   // Queue-based Chat Handler
   const chatHandler = async (req, res) => {
@@ -121,7 +105,7 @@ if (cluster.isMaster) {
       const job = await aiQueue.add('chat-task', {
         type: 'chat',
         prompt,
-        userId: req.user.id
+        userId: req.user._id // Using _id from the fetched user object
       });
 
       res.json({ message: "Job queued", jobId: job.id });
@@ -132,8 +116,8 @@ if (cluster.isMaster) {
     }
   };
 
-  app.post("/api/chat", auth, chatHandler);
-  app.post("/chat", auth, chatHandler);
+  app.post("/api/chat", protect, chatHandler);
+  app.post("/chat", protect, chatHandler);
 
   app.get('/', (req, res) => {
     res.send(`Scaleable API is running on worker ${process.pid}`);
