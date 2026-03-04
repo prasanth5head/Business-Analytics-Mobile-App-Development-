@@ -38,15 +38,20 @@ const generateMyBusinessData = (persistentRevenue = []) => {
         return acc;
     }, {});
     const currentMonthIndex = new Date().getMonth();
-    return MONTH_NAMES.map((month, idx) => {
-        const data = revenueMap[month] || { sales: 0, profit: 0, loss: 0, count: 0 };
-        return {
-            p: month, sales: data.sales, profit: data.profit, loss: data.loss,
-            price: data.count > 0 ? Math.round(data.sales / data.count) : 0,
-            complaints: data.count > 0 ? Math.floor(Math.random() * 5) : 0,
-            isPredictive: idx > currentMonthIndex
-        };
-    });
+
+    // Sort month names to ensure chronological order in the result
+    return MONTH_NAMES
+        .map((month, idx) => ({ month, idx }))
+        .filter(({ month }) => revenueMap[month]) // ONLY include months the user actually added
+        .map(({ month, idx }) => {
+            const data = revenueMap[month];
+            return {
+                p: month, sales: data.sales, profit: data.profit, loss: data.loss,
+                price: data.count > 0 ? Math.round(data.sales / data.count) : 0,
+                complaints: data.count > 0 ? Math.floor(Math.random() * 5) : 0,
+                isPredictive: false // Manual entries are historical, not predictive
+            };
+        });
 };
 
 const calculateRisk = (profitMargin, returnRate, complaints = 5) => {
