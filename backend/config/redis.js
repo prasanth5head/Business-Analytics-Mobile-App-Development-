@@ -11,9 +11,11 @@ const redisOptions = {
 
 // Log the connection attempt for debugging
 if (process.env.REDIS_URL) {
-    console.log(`📡 Attempting to connect to Redis via URL: ${process.env.REDIS_URL.split('@').pop()}`);
+    const obscuredUrl = process.env.REDIS_URL.split('@').pop();
+    console.log(`📡 Attempting to connect to Online Redis: ${obscuredUrl}`);
 } else {
-    console.log(`🏠 Redis URL not found. Falling back to localhost:6379`);
+    console.log(`⚠️  WARNING: REDIS_URL not found! Falling back to localhost:6379.`);
+    console.log(`👉 If you are on Render, PLEASE add REDIS_URL to your Environment Variables.`);
 }
 
 // Use REDIS_URL if available (Render/Production), otherwise fallback to host/port (Local)

@@ -20,8 +20,13 @@ if (cluster.isMaster) {
   const numCPUs = os.cpus().length;
   console.log(`🚀 Master process ${process.pid} is running`);
 
-  // Fork workers - limit to 4 in dev or use all in production
-  const workersToFork = process.env.NODE_ENV === 'production' ? numCPUs : Math.min(numCPUs, 2);
+  // Render Free Tier has 512MB RAM. Multiple workers will crash the server.
+  // We detects Render via the RENDER=true env var (automatically set by Render).
+  const workersToFork = (process.env.RENDER || process.env.NODE_ENV === 'production')
+    ? 1
+    : Math.min(numCPUs, 2);
+
+  console.log(`📡 Starting ${workersToFork} worker process(es)...`);
 
   for (let i = 0; i < workersToFork; i++) {
     cluster.fork();
