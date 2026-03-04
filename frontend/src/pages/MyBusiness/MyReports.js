@@ -39,7 +39,7 @@ export default function MyReports() {
         );
     }
 
-    if (!businessData || businessData.salesData.filter(d => d.sales > 0).length === 0) {
+    if (!businessData || !businessData.salesData || businessData.salesData.filter(d => d.sales > 0).length === 0) {
         return (
             <Box sx={{ p: 4, textAlign: 'center' }}>
                 <Typography variant="h5" color="text.secondary">No reports available yet. Add business data to generate your personalized reports.</Typography>
@@ -47,7 +47,10 @@ export default function MyReports() {
         );
     }
 
-    const { salesData, productData, summary } = businessData;
+    const { salesData = [], productData = [], summary = {} } = businessData || {};
+    const totalSales = summary?.totalSales || 0;
+    const totalLoss = summary?.totalLoss || 0;
+    const avgProfit = summary?.avgProfit || 0;
 
     return (
         <Box sx={{
@@ -95,10 +98,10 @@ export default function MyReports() {
             {/* Stats Cards */}
             <Grid container spacing={3} mb={4}>
                 {[
-                    { label: 'Total Revenue', value: summary.totalSales, icon: <AccountBalanceWallet />, color: theme.palette.primary.main },
-                    { label: 'Net Profit', value: summary.totalSales - summary.totalLoss, icon: <TrendingUp />, color: theme.palette.success.main },
-                    { label: 'Total Loss', value: summary.totalLoss, icon: <TrendingDown />, color: theme.palette.error.main },
-                    { label: 'Avg Monthly', value: summary.avgProfit, icon: <Assessment />, color: theme.palette.secondary.main }
+                    { label: 'Total Revenue', value: totalSales, icon: <AccountBalanceWallet />, color: theme.palette.primary.main },
+                    { label: 'Net Profit', value: totalSales - totalLoss, icon: <TrendingUp />, color: theme.palette.success.main },
+                    { label: 'Total Loss', value: totalLoss, icon: <TrendingDown />, color: theme.palette.error.main },
+                    { label: 'Avg Monthly', value: avgProfit, icon: <Assessment />, color: theme.palette.secondary.main }
                 ].map((stat, i) => (
                     <Grid item xs={12} sm={6} md={3} key={i}>
                         <Card sx={{

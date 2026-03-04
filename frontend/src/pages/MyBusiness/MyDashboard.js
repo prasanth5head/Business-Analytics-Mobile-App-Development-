@@ -47,7 +47,7 @@ const MyDashboard = () => {
     if (error) return <Alert severity="error" sx={{ borderRadius: 3 }}>{error}</Alert>;
     if (!businessData) return <Alert severity="info" sx={{ borderRadius: 3 }}>Please add some revenue entries to see your analytics.</Alert>;
 
-    const { salesData, productData, summary } = businessData;
+    const { salesData = [], productData = [], summary = {} } = businessData || {};
 
     return (
         <Box sx={{ pb: 6 }}>
@@ -87,7 +87,7 @@ const MyDashboard = () => {
                 <Grid item xs={12} md={4}>
                     <Stack spacing={4}>
                         <FinancialHealthScore score={82} />
-                        <ScenarioSimulator initialSales={summary.totalSales} />
+                        <ScenarioSimulator initialSales={summary?.totalSales || 0} />
 
                         {/* Background Task Status */}
                         <Card sx={{ p: 3, borderRadius: 5, border: '1px solid rgba(255, 255, 255, 0.05)', bgcolor: 'rgba(255, 255, 255, 0.02)' }}>
