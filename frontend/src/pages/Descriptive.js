@@ -39,7 +39,7 @@ const Descriptive = () => {
 
     if (error) return <Alert severity="error">{error}</Alert>;
 
-    const { salesData, productData, summary } = marketData;
+    const { salesData = [], productData = [], summary = {} } = marketData || {};
     const { aiAnalysis } = aiRecommendations || {};
 
     const totalSales = salesData.reduce((sum, d) => sum + d.sales, 0);
