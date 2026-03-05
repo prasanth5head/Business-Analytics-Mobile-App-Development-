@@ -128,7 +128,7 @@ const Predictive = () => {
                     <Paper sx={{
                         p: 3,
                         textAlign: 'center',
-                        bgcolor: theme.palette.mode === 'dark' ? 'rgba(255, 94, 0, 0.05)' : '#fff3e0',
+                        bgcolor: theme.palette.mode === 'dark' ? 'rgba(14, 165, 233, 0.1)' : 'rgba(14, 165, 233, 0.05)',
                         borderRadius: 2
                     }}>
                         <Typography variant="subtitle2" color="primary.main" fontWeight="bold">PROJECTED Q2</Typography>

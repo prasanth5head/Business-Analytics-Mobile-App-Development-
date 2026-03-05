@@ -186,8 +186,8 @@ const Diagnostic = () => {
                 <Grid container spacing={2}>
                     {productData.map((prod, i) => {
                         const risk = prod.risk || {};
-                        const riskColor = risk.level === 'High' ? '#f44336' : risk.level === 'Medium' ? '#FF9800' : '#4caf50';
-                        const riskBg = risk.level === 'High' ? 'rgba(244,67,54,0.08)' : risk.level === 'Medium' ? 'rgba(255,152,0,0.08)' : 'rgba(76,175,80,0.08)';
+                        const riskColor = risk.level === 'High' ? theme.palette.error.main : risk.level === 'Medium' ? theme.palette.warning.main : theme.palette.success.main;
+                        const riskBg = risk.level === 'High' ? `${theme.palette.error.main}15` : risk.level === 'Medium' ? `${theme.palette.warning.main}15` : `${theme.palette.success.main}15`;
                         return (
                             <Grid item xs={12} sm={6} md={4} key={i}>
                                 <Paper sx={{
@@ -234,7 +234,7 @@ const Diagnostic = () => {
                                         <Divider />
                                         <Box display="flex" justifyContent="space-between" alignItems="center">
                                             <Typography variant="caption" color="text.secondary" fontWeight="600" fontSize="0.7rem">Returns</Typography>
-                                            <Typography variant="body2" sx={{ fontWeight: 800, color: '#FF9800', fontSize: '0.8rem' }}>{prod.returnRate}%</Typography>
+                                            <Typography variant="body2" sx={{ fontWeight: 800, color: theme.palette.warning.main, fontSize: '0.8rem' }}>{prod.returnRate}%</Typography>
                                         </Box>
                                         <Divider />
                                         <Box display="flex" justifyContent="space-between" alignItems="center">

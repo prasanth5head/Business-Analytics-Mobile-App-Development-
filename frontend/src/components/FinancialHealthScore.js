@@ -9,7 +9,7 @@ const FinancialHealthScore = ({ score = 75 }) => {
     ];
 
     const COLORS = [
-        score > 70 ? '#4caf50' : score > 40 ? '#ff9800' : '#f44336',
+        score > 70 ? '#10B981' : score > 40 ? '#0EA5E9' : '#EF4444',
         'rgba(255, 255, 255, 0.1)'
     ];
 

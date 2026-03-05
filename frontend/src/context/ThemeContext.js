@@ -31,16 +31,16 @@ export const CustomThemeProvider = ({ children }) => {
                 palette: {
                     mode,
                     primary: {
-                        main: '#FF5E00', // Lava Orange
-                        light: '#FF8A4D',
-                        dark: '#CC4B00',
+                        main: '#0EA5E9', // Sky Blue
+                        light: '#7DD3FC',
+                        dark: '#0369A1',
                         contrastText: '#ffffff',
                     },
                     secondary: {
-                        main: '#FFB800', // Gold
-                        light: '#FFD147',
-                        dark: '#B88600',
-                        contrastText: '#000000',
+                        main: '#06B6D4', // Cyan
+                        light: '#67E8F9',
+                        dark: '#0891B2',
+                        contrastText: '#ffffff',
                     },
                     background: {
                         default: mode === 'light' ? '#F8F9FA' : '#080808', // Neutral dark, zero blue
@@ -76,7 +76,7 @@ export const CustomThemeProvider = ({ children }) => {
                                     backgroundColor: mode === 'light' ? '#CCCCCC' : '#444444',
                                 },
                                 '&::-webkit-scrollbar-thumb:hover, & *::-webkit-scrollbar-thumb:hover': {
-                                    backgroundColor: '#FF5E00',
+                                    backgroundColor: '#0EA5E9',
                                 },
                             },
                         },
@@ -92,7 +92,7 @@ export const CustomThemeProvider = ({ children }) => {
                                 '&:hover': {
                                     transform: 'translateY(-2px)',
                                     boxShadow: mode === 'light'
-                                        ? '0 6px 15px rgba(255, 94, 0, 0.2)'
+                                        ? '0 6px 15px rgba(14, 165, 233, 0.2)'
                                         : '0 8px 20px rgba(0, 0, 0, 0.4)',
                                 },
                             },
@@ -104,7 +104,7 @@ export const CustomThemeProvider = ({ children }) => {
                                 borderRadius: 32,
                                 backgroundImage: mode === 'light'
                                     ? 'none'
-                                    : 'radial-gradient(at 0% 0%, rgba(255, 94, 0, 0.05) 0, transparent 50%)',
+                                    : 'radial-gradient(at 0% 0%, rgba(14, 165, 233, 0.05) 0, transparent 50%)',
                                 border: mode === 'light' ? '1px solid #EDEDED' : '1px solid rgba(255, 255, 255, 0.05)',
                                 boxShadow: mode === 'light'
                                     ? '0 10px 30px rgba(0,0,0,0.05)'

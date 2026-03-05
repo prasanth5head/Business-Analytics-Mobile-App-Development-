@@ -51,7 +51,7 @@ const KPICommandCenter = () => {
     const [items, setItems] = useState([
         { id: 1, title: 'TOTAL REVENUE', value: '₹1,24,500', trend: 12.5, color: '#4caf50', icon: <DollarSign color="#4caf50" size={24} /> },
         { id: 2, title: 'ACTIVE CUSTOMERS', value: '840', trend: 4.2, color: '#2196f3', icon: <Users color="#2196f3" size={24} /> },
-        { id: 3, title: 'PROFIT MARGIN', value: '32%', trend: -1.5, color: '#ff9800', icon: <TrendingUp color="#ff9800" size={24} /> },
+        { id: 3, title: 'PROFIT MARGIN', value: '32%', trend: -1.5, color: '#06B6D4', icon: <TrendingUp sx={{ color: '#06B6D4' }} size={24} /> },
         { id: 4, title: 'OPERATIONAL EFFICIENCY', value: '88%', trend: 0.8, color: '#9c27b0', icon: <Activity color="#9c27b0" size={24} /> },
     ]);
 

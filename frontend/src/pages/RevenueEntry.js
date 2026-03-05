@@ -119,7 +119,7 @@ export default function RevenueEntry() {
                 <TableContainer>
                     <Table size="small">
                         <TableHead>
-                            <TableRow sx={{ background: theme.palette.mode === 'dark' ? 'rgba(255,94,0,0.12)' : 'rgba(255,94,0,0.08)' }}>
+                            <TableRow sx={{ background: theme.palette.mode === 'dark' ? 'rgba(14,165,233,0.12)' : 'rgba(14,165,233,0.08)' }}>
                                 {['Month', 'Product Category', 'Revenue (₹)', 'Profit (₹)', 'Loss (₹)'].map(h => (
                                     <TableCell key={h} sx={{ fontWeight: 800, color: 'text.primary', py: 1.5, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                                         {h}
@@ -135,7 +135,7 @@ export default function RevenueEntry() {
                                 }}>
                                     <TableCell>
                                         <Chip label={row.month} size="small" sx={{
-                                            bgcolor: 'rgba(255,94,0,0.15)', color: '#FF8A00',
+                                            bgcolor: 'rgba(14,165,233,0.15)', color: '#0EA5E9',
                                             fontWeight: 700, fontSize: '0.75rem'
                                         }} />
                                     </TableCell>
@@ -172,7 +172,7 @@ export default function RevenueEntry() {
                                 </TableRow>
                             ))}
                             {/* Totals Row */}
-                            <TableRow sx={{ background: 'rgba(255,94,0,0.08)' }}>
+                            <TableRow sx={{ background: 'rgba(14,165,233,0.08)' }}>
                                 <TableCell colSpan={2} sx={{ fontWeight: 900, color: 'white' }}>TOTAL</TableCell>
                                 <TableCell sx={{ fontWeight: 900, color: '#4caf50' }}>₹{totalRevenue.toLocaleString()}</TableCell>
                                 <TableCell sx={{ fontWeight: 900, color: '#2196f3' }}>₹{totalProfit.toLocaleString()}</TableCell>
@@ -192,9 +192,9 @@ export default function RevenueEntry() {
                     onClick={handleSave}
                     disabled={saving}
                     sx={{
-                        background: 'linear-gradient(135deg, #FF5E00, #FF8A00)',
+                        background: 'linear-gradient(135deg, #0EA5E9, #06B6D4)',
                         borderRadius: 3, fontWeight: 800, px: 4,
-                        '&:hover': { background: 'linear-gradient(135deg, #FF8A00, #FF5E00)' }
+                        '&:hover': { background: 'linear-gradient(135deg, #06B6D4, #0EA5E9)' }
                     }}
                 >
                     {saving ? 'Processing...' : 'Save Records'}

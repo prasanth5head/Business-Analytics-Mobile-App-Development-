@@ -10,19 +10,19 @@ const AIAnomalyDetector = ({ anomalies = [] }) => {
     ];
 
     return (
-        <Card sx={{ p: 4, borderRadius: 5, background: 'rgba(255, 67, 54, 0.05)', backdropFilter: 'blur(20px)', border: '1px solid rgba(244, 67, 54, 0.2)' }}>
+        <Card sx={{ p: 4, borderRadius: 5, background: 'rgba(14, 165, 233, 0.05)', backdropFilter: 'blur(20px)', border: '1px solid rgba(14, 165, 233, 0.2)' }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
-                <Typography variant="h6" sx={{ fontWeight: 800, display: 'flex', alignItems: 'center', color: '#f44336' }}>
+                <Typography variant="h6" sx={{ fontWeight: 800, display: 'flex', alignItems: 'center', color: '#0EA5E9' }}>
                     <AlertTriangle size={24} style={{ marginRight: 12 }} />
                     AI ANOMALY DETECTOR
                 </Typography>
-                <Badge badgeContent={displayAnomalies.length} color="error" overlap="circular" />
+                <Badge badgeContent={displayAnomalies.length} color="primary" overlap="circular" />
             </Box>
 
             <Stack spacing={3}>
                 {displayAnomalies.map((a, idx) => (
                     <Box key={idx} sx={{ p: 2, borderRadius: 3, bgcolor: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.05)', position: 'relative', overflow: 'hidden' }}>
-                        <Box sx={{ position: 'absolute', top: 0, left: 0, height: '100%', width: 4, bgcolor: a.severity === 'High' ? '#f44336' : '#ff9800' }} />
+                        <Box sx={{ position: 'absolute', top: 0, left: 0, height: '100%', width: 4, bgcolor: a.severity === 'High' ? '#ef4444' : '#06B6D4' }} />
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
                             <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#fff' }}>[{a.type}] {a.amount}</Typography>
                             <Chip label={a.severity} size="small" color={a.severity === 'High' ? 'error' : 'warning'} />

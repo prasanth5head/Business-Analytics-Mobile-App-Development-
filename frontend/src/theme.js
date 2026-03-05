@@ -4,16 +4,16 @@ const theme = createTheme({
     palette: {
         mode: 'dark',
         primary: {
-            main: '#FF5E00', // Lava Orange - Bright & Attractive
-            light: '#FF8A4D',
-            dark: '#CC4B00',
+            main: '#0EA5E9', // Sky Blue
+            light: '#7DD3FC',
+            dark: '#0369A1',
             contrastText: '#ffffff',
         },
         secondary: {
-            main: '#FFB800', // Radiant Gold
-            light: '#FFD147',
-            dark: '#B88600',
-            contrastText: '#000000',
+            main: '#06B6D4', // Vibrant Cyan
+            light: '#67E8F9',
+            dark: '#0891B2',
+            contrastText: '#ffffff',
         },
         background: {
             default: '#080808', // Pure deep neutral dark
@@ -27,13 +27,13 @@ const theme = createTheme({
             main: '#D4FF00', // Lime Yellow - Bright & Creative
         },
         error: {
-            main: '#FF3D00', // Vivid Red-Orange
+            main: '#EF4444', // Clean Red
         },
         warning: {
-            main: '#FFB800',
+            main: '#06B6D4', // Vibrant Cyan (Replacing Orange Warning)
         },
         info: {
-            main: '#FF8A00', // Deep Orange
+            main: '#38BDF8', // Light Sky Blue
         },
         divider: 'rgba(255, 255, 255, 0.1)',
     },
@@ -66,7 +66,7 @@ const theme = createTheme({
                         backgroundClip: 'padding-box',
                     },
                     '&::-webkit-scrollbar-thumb:hover, & *::-webkit-scrollbar-thumb:hover': {
-                        backgroundColor: '#FF5E00',
+                        backgroundColor: '#0EA5E9',
                     },
                 },
             },
@@ -82,13 +82,13 @@ const theme = createTheme({
                     transition: 'all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
                     '&:hover': {
                         transform: 'translateY(-3px) scale(1.03)',
-                        boxShadow: '0 12px 24px rgba(255, 94, 0, 0.3)',
+                        boxShadow: '0 12px 24px rgba(14, 165, 233, 0.3)',
                     },
                 },
                 containedPrimary: {
-                    background: 'linear-gradient(135deg, #FF5E00 0%, #FFB800 100%)',
+                    background: 'linear-gradient(135deg, #0EA5E9 0%, #06B6D4 100%)',
                     '&:hover': {
-                        background: 'linear-gradient(135deg, #FF8A4D 0%, #FF5E00 100%)',
+                        background: 'linear-gradient(135deg, #7DD3FC 0%, #0EA5E9 100%)',
                     }
                 }
             },
@@ -106,10 +106,10 @@ const theme = createTheme({
                             borderColor: 'transparent',
                         },
                         '&:hover fieldset': {
-                            borderColor: 'rgba(255, 94, 0, 0.4)',
+                            borderColor: 'rgba(14, 165, 233, 0.4)',
                         },
                         '&.Mui-focused fieldset': {
-                            borderColor: '#FF5E00',
+                            borderColor: '#0EA5E9',
                             borderWidth: '2px',
                         },
                     },
@@ -121,7 +121,7 @@ const theme = createTheme({
                 root: {
                     borderRadius: 32,
                     backgroundColor: '#161616',
-                    backgroundImage: 'radial-gradient(at 0% 0%, rgba(255, 94, 0, 0.05) 0, transparent 50%), radial-gradient(at 100% 100%, rgba(255, 184, 0, 0.05) 0, transparent 50%)',
+                    backgroundImage: 'radial-gradient(at 0% 0%, rgba(14, 165, 233, 0.05) 0, transparent 50%), radial-gradient(at 100% 100%, rgba(6, 182, 212, 0.05) 0, transparent 50%)',
                     border: '1px solid rgba(255, 255, 255, 0.05)',
                     boxShadow: '0 20px 50px rgba(0, 0, 0, 0.6)',
                 },

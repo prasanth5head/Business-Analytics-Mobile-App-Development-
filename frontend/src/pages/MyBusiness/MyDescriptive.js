@@ -11,7 +11,7 @@ import { ArrowUpward, ArrowDownward, Refresh } from '@mui/icons-material';
 import { useMyBusiness } from '../../context/MyBusinessContext';
 
 const COLORS = [
-    '#2196f3', '#4caf50', '#ff9800', '#f44336', '#9c27b0', '#00bcd4'
+    '#0EA5E9', '#06B6D4', '#38BDF8', '#10B981', '#6366F1', '#8B5CF6'
 ];
 
 const MyDescriptive = () => {

@@ -125,7 +125,7 @@ export default function Chatai() {
                                     p: '10px 14px',
                                     maxWidth: "78%",
                                     background: msg.role === "user"
-                                        ? 'linear-gradient(135deg, #FF5E00, #FF8A00)'
+                                        ? 'linear-gradient(135deg, #0EA5E9, #06B6D4)'
                                         : 'rgba(255,255,255,0.05)',
                                     color: "white",
                                     borderRadius: msg.role === "user" ? "18px 4px 18px 18px" : "4px 18px 18px 18px",
@@ -177,8 +177,8 @@ export default function Chatai() {
                                     fontSize: '0.9rem',
                                     color: 'white',
                                     '& fieldset': { borderColor: 'rgba(255,255,255,0.1)' },
-                                    '&:hover fieldset': { borderColor: 'rgba(255,94,0,0.4)' },
-                                    '&.Mui-focused fieldset': { borderColor: '#FF5E00' },
+                                    '&:hover fieldset': { borderColor: 'rgba(14,165,233,0.4)' },
+                                    '&.Mui-focused fieldset': { borderColor: '#0EA5E9' },
                                     '& input': { color: 'white' },
                                     '& input::placeholder': { color: 'rgba(255,255,255,0.45)', opacity: 1 },
                                 }
@@ -187,7 +187,7 @@ export default function Chatai() {
                         <IconButton type="submit" disabled={!prompt.trim()} sx={{
                             width: 44, height: 44, flexShrink: 0,
                             background: prompt.trim()
-                                ? 'linear-gradient(135deg, #FF5E00, #FF8A00)'
+                                ? 'linear-gradient(135deg, #0EA5E9, #06B6D4)'
                                 : 'rgba(255,255,255,0.06)',
                             color: prompt.trim() ? 'white' : 'rgba(255,255,255,0.25)',
                             borderRadius: 2,
