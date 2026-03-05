@@ -20,6 +20,7 @@ const Register = lazy(() => import('./pages/Register'));
 const Reports = lazy(() => import('./pages/Reports'));
 const RevenueEntry = lazy(() => import('./pages/RevenueEntry'));
 const Login = lazy(() => import('./pages/Login'));
+const Welcome = lazy(() => import('./pages/Welcome'));
 const Chatai = lazy(() => import('./pages/Chatai'));
 const ManualReport = lazy(() => import('./pages/ManualReport'));
 const EntryHistory = lazy(() => import('./pages/EntryHistory'));
@@ -58,6 +59,7 @@ function App() {
               <PWAUpdateHandler />
               <Suspense fallback={<PageLoader />}>
                 <Routes>
+                  <Route path="/welcome" element={<Welcome />} />
                   <Route path="/login" element={<Login />} />
                   <Route path="/register" element={<Register />} />
                   <Route element={<ProtectedRoute />}>

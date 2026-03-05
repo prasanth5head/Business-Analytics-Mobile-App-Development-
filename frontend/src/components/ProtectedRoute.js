@@ -5,7 +5,7 @@ const ProtectedRoute = () => {
     const userInfo = localStorage.getItem('userInfo');
 
     if (!userInfo) {
-        return <Navigate to="/login" replace />;
+        return <Navigate to="/welcome" replace />;
     }
 
     return <Outlet />;
