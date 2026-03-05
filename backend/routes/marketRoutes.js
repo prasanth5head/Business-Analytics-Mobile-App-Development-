@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { getMarketData, getMyBusinessData, addRevenue, getManualRevenue, clearRevenue, getAIRecommendations } = require('../controllers/marketController');
+const { getMarketData, getMyBusinessData, addRevenue, getManualRevenue, clearRevenue, getAIRecommendations, addRevenueBulk } = require('../controllers/marketController');
 const { protect } = require('../middleware/authMiddleware');
 
 router.get('/data', getMarketData);
