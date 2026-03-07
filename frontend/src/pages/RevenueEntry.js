@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import {
     Box, Paper, Typography, TextField, Button, Table,
     TableBody, TableCell, TableContainer, TableHead, TableRow,
-    Alert, Snackbar, MenuItem, Chip, Divider, useTheme
+    Alert, Snackbar, MenuItem, Chip, useTheme
 } from '@mui/material';
-import { AddCircleOutline, Save } from '@mui/icons-material';
+import { Save } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useMyBusiness } from '../context/MyBusinessContext';
 import api from '../api';
@@ -35,14 +35,12 @@ export default function RevenueEntry() {
     const handleChange = (index, field, value) => {
         setRows(prev => {
             const updated = [...prev];
-            let newVal = value;
+            const updatedRow = { ...updated[index], [field]: value };
 
-            // Auto-calculate loss if profit is changed
-            let updatedRow = { ...updated[index], [field]: newVal };
-            if (field === 'profit') {
-                const profitVal = Number(value) || 0;
-                updatedRow.loss = profitVal < 0 ? Math.abs(profitVal) : 0;
-            }
+            // Calculate loss dynamically: Revenue - Profit
+            const revVal = Number(field === 'revenue' ? value : updatedRow.revenue) || 0;
+            const proVal = Number(field === 'profit' ? value : updatedRow.profit) || 0;
+            updatedRow.loss = revVal - proVal;
 
             updated[index] = updatedRow;
             return updated;
@@ -63,28 +61,25 @@ export default function RevenueEntry() {
                 product: row.product || 'All',
                 amount: Number(row.revenue),
                 profit: Number(row.profit) || 0,
-                loss: Number(row.profit) < 0 ? Math.abs(Number(row.profit)) : 0
+                loss: Number(row.revenue) - (Number(row.profit) || 0)
             }));
 
             await api.post('/api/market/revenue-bulk', { records: formattedRecords });
 
-            const newTotal = currentTotal + formattedRecords.length;
-
-            if (newTotal >= 12 && currentTotal < 12) {
-                setSnack({ open: true, msg: '🚀 Business Analytics Unlocked! Your insights are now ready.', severity: 'success' });
-                setTimeout(() => {
-                    navigate('/my-business/dashboard');
-                }, 2000);
-            } else {
-                setSnack({ open: true, msg: `✅ ${toSave.length} records added successfully!`, severity: 'success' });
-            }
+            setSnack({ open: true, msg: `✅ ${toSave.length} records added successfully! Redirecting...`, severity: 'success' });
 
             // Refresh context data
             await refreshData();
 
             // Clear the form fields after successful save
             setRows(MONTHS.map(m => ({ month: m, product: '', revenue: '', profit: '', loss: 0 })));
+
+            // Navigate to Dashboard after a short delay
+            setTimeout(() => {
+                navigate('/my-business/dashboard');
+            }, 1500);
         } catch (err) {
+            console.error("Save error:", err);
             setSnack({ open: true, msg: '❌ Failed to add records. Please try again.', severity: 'error' });
         }
         setSaving(false);
@@ -94,39 +89,36 @@ export default function RevenueEntry() {
     const totalRevenue = rows.reduce((s, r) => s + (Number(r.revenue) || 0), 0);
     const totalProfit = rows.reduce((s, r) => s + (Number(r.profit) || 0), 0);
     const totalLoss = rows.reduce((s, r) => s + (Number(r.loss) || 0), 0);
-    const netProfit = totalProfit; // Since profit is net, netProfit is just sum of all profits (some might be negative)
-    // Actually, based on User logic: Revenue - Profit = Expense. If Profit < 0 -> Loss.
-    // If we show Loss as a separate column, it's just the absolute value of negative profit.
 
     return (
         <Box sx={{ p: { xs: 2, md: 4 }, maxWidth: 1100, mx: 'auto' }}>
             {/* Header */}
-            <Box mb={3}>
-                <Typography variant="h4" sx={{ fontWeight: 900, color: 'text.primary', mb: 0.5 }}>
-                    📊 Annual Revenue Entry
+            <Box mb={4}>
+                <Typography variant="h3" sx={{ fontWeight: 900, color: 'text.primary', mb: 1, letterSpacing: '-0.04em' }}>
+                    Annual Profit / Loss Entry
                 </Typography>
-                <Typography color="text.secondary" variant="body2">
-                    Enter your 12-month revenue, profit, and loss data. Saved data is reflected on the Dashboard.
+                <Typography color="text.secondary" variant="body1" sx={{ fontWeight: 500 }}>
+                    Populate your 12-month financial records. System reflects these in real-time analytics.
                 </Typography>
             </Box>
 
             {/* Summary Cards */}
-            <Box display="flex" gap={2} flexWrap="wrap" mb={3}>
+            <Box display="flex" gap={2} flexWrap="wrap" mb={4}>
                 {[
-                    { label: 'Total Revenue', value: totalRevenue, color: '#4caf50' },
-                    { label: 'Total Profit', value: totalProfit, color: '#2196f3' },
-                    { label: 'Total Loss', value: totalLoss, color: '#f44336' },
-                    { label: 'Net Profit', value: netProfit, color: netProfit >= 0 ? '#4caf50' : '#f44336' },
+                    { label: 'Cumulative Revenue', value: totalRevenue, color: theme.palette.primary.main },
+                    { label: 'Cumulative Profit', value: totalProfit, color: theme.palette.success.main },
+                    { label: 'Computed Net Loss', value: totalLoss, color: theme.palette.error.main },
                 ].map(card => (
                     <Paper key={card.label} sx={{
-                        px: 3, py: 2, borderRadius: 3, minWidth: 160, flex: 1,
-                        borderLeft: `4px solid ${card.color}`,
-                        background: 'rgba(255,255,255,0.04)'
+                        px: 3, py: 3, borderRadius: 4, minWidth: 200, flex: 1,
+                        border: `1px solid ${theme.palette.divider}`,
+                        borderLeft: `6px solid ${card.color}`,
+                        background: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.02)' : 'white'
                     }}>
-                        <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700, textTransform: 'uppercase' }}>
+                        <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
                             {card.label}
                         </Typography>
-                        <Typography variant="h5" sx={{ fontWeight: 900, color: card.color }}>
+                        <Typography variant="h4" sx={{ fontWeight: 900, color: card.color }}>
                             ₹{card.value.toLocaleString()}
                         </Typography>
                     </Paper>
@@ -135,17 +127,17 @@ export default function RevenueEntry() {
 
             {/* Table */}
             <Paper sx={{
-                borderRadius: 3,
+                borderRadius: 4,
                 overflow: 'hidden',
-                background: theme.palette.mode === 'dark' ? 'rgba(20,20,20,0.9)' : theme.palette.background.paper,
+                background: theme.palette.mode === 'dark' ? 'rgba(20,20,20,0.5)' : 'white',
                 border: `1px solid ${theme.palette.divider}`
             }}>
                 <TableContainer>
                     <Table size="small">
                         <TableHead>
-                            <TableRow sx={{ background: theme.palette.mode === 'dark' ? 'rgba(14,165,233,0.12)' : 'rgba(14,165,233,0.08)' }}>
-                                {['Month', 'Product Category', 'Revenue (₹)', 'Profit (₹)', 'Loss (₹)'].map(h => (
-                                    <TableCell key={h} sx={{ fontWeight: 800, color: 'text.primary', py: 1.5, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                            <TableRow sx={{ background: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)' }}>
+                                {['Month', 'Category', 'Revenue (₹)', 'Profit (₹)', 'Loss (₹)'].map(h => (
+                                    <TableCell key={h} sx={{ fontWeight: 900, color: 'text.primary', py: 2.5, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
                                         {h}
                                     </TableCell>
                                 ))}
@@ -154,13 +146,13 @@ export default function RevenueEntry() {
                         <TableBody>
                             {rows.map((row, i) => (
                                 <TableRow key={i} sx={{
-                                    '&:hover': { background: 'rgba(255,255,255,0.03)' },
-                                    borderBottom: '1px solid rgba(255,255,255,0.04)'
+                                    '&:hover': { background: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.01)' },
+                                    borderBottom: `1px solid ${theme.palette.divider}`
                                 }}>
                                     <TableCell>
                                         <Chip label={row.month} size="small" sx={{
-                                            bgcolor: 'rgba(14,165,233,0.15)', color: '#0EA5E9',
-                                            fontWeight: 700, fontSize: '0.75rem'
+                                            bgcolor: `${theme.palette.primary.main}15`, color: theme.palette.primary.main,
+                                            fontWeight: 900, fontSize: '0.75rem', borderRadius: 1.5
                                         }} />
                                     </TableCell>
                                     <TableCell>
@@ -169,9 +161,9 @@ export default function RevenueEntry() {
                                             value={row.product}
                                             onChange={e => handleChange(i, 'product', e.target.value)}
                                             variant="standard"
-                                            InputProps={{ disableUnderline: true, sx: { color: 'text.primary', fontSize: '0.85rem' } }}
+                                            InputProps={{ disableUnderline: true, sx: { color: 'text.primary', fontSize: '0.85rem', fontWeight: 700 } }}
                                         >
-                                            <MenuItem value=""><em>All</em></MenuItem>
+                                            <MenuItem value=""><em>Select Product</em></MenuItem>
                                             {PRODUCTS.map(p => <MenuItem key={p} value={p}>{p}</MenuItem>)}
                                         </TextField>
                                     </TableCell>
@@ -179,7 +171,7 @@ export default function RevenueEntry() {
                                         <TableCell key={field}>
                                             <TextField
                                                 type="number" size="small" fullWidth
-                                                placeholder="0"
+                                                placeholder="0.00"
                                                 value={row[field]}
                                                 onChange={e => handleChange(i, field, e.target.value)}
                                                 variant="standard"
@@ -188,8 +180,8 @@ export default function RevenueEntry() {
                                                     readOnly: field === 'loss',
                                                     disableUnderline: true,
                                                     sx: {
-                                                        color: field === 'loss' ? '#f44336' : field === 'profit' ? '#4caf50' : 'text.primary',
-                                                        fontSize: '0.9rem', fontWeight: 700
+                                                        color: field === 'loss' && Number(row.loss) > 0 ? theme.palette.error.main : field === 'profit' ? theme.palette.success.main : 'text.primary',
+                                                        fontSize: '0.9rem', fontWeight: 900
                                                     }
                                                 }}
                                             />
@@ -197,20 +189,18 @@ export default function RevenueEntry() {
                                     ))}
                                 </TableRow>
                             ))}
-                            {/* Totals Row */}
-                            <TableRow sx={{ background: 'rgba(14,165,233,0.08)' }}>
-                                <TableCell colSpan={2} sx={{ fontWeight: 900, color: 'white' }}>TOTAL</TableCell>
-                                <TableCell sx={{ fontWeight: 900, color: '#4caf50' }}>₹{totalRevenue.toLocaleString()}</TableCell>
-                                <TableCell sx={{ fontWeight: 900, color: '#2196f3' }}>₹{totalProfit.toLocaleString()}</TableCell>
-                                <TableCell sx={{ fontWeight: 900, color: '#f44336' }}>₹{totalLoss.toLocaleString()}</TableCell>
+                            <TableRow sx={{ background: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)' }}>
+                                <TableCell colSpan={2} sx={{ fontWeight: 900, color: 'text.primary', fontSize: '0.9rem' }}>AGGREGATE TOTAL</TableCell>
+                                <TableCell sx={{ fontWeight: 900, color: theme.palette.primary.main, fontSize: '1rem' }}>₹{totalRevenue.toLocaleString()}</TableCell>
+                                <TableCell sx={{ fontWeight: 900, color: theme.palette.success.main, fontSize: '1rem' }}>₹{totalProfit.toLocaleString()}</TableCell>
+                                <TableCell sx={{ fontWeight: 900, color: theme.palette.error.main, fontSize: '1rem' }}>₹{totalLoss.toLocaleString()}</TableCell>
                             </TableRow>
                         </TableBody>
                     </Table>
                 </TableContainer>
             </Paper>
 
-            {/* Action Buttons */}
-            <Box mt={3} display="flex" justifyContent="flex-end" gap={2}>
+            <Box mt={4} display="flex" justifyContent="flex-end" gap={2}>
                 <Button
                     variant="contained"
                     size="large"
@@ -218,17 +208,20 @@ export default function RevenueEntry() {
                     onClick={handleSave}
                     disabled={saving}
                     sx={{
-                        background: 'linear-gradient(135deg, #0EA5E9, #06B6D4)',
-                        borderRadius: 3, fontWeight: 800, px: 4,
-                        '&:hover': { background: 'linear-gradient(135deg, #06B6D4, #0EA5E9)' }
+                        background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+                        boxShadow: `0 10px 20px ${theme.palette.primary.main}40`,
+                        borderRadius: 3, fontWeight: 900, px: 6, py: 1.5,
+                        textTransform: 'none',
+                        fontSize: '1rem',
+                        '&:hover': { background: `linear-gradient(135deg, ${theme.palette.secondary.main}, ${theme.palette.primary.main})` }
                     }}
                 >
-                    {saving ? 'Processing...' : 'Save Records'}
+                    {saving ? 'Processing Audit...' : 'Commit Financial Data'}
                 </Button>
             </Box>
 
             <Snackbar open={snack.open} autoHideDuration={4000} onClose={() => setSnack(s => ({ ...s, open: false }))}>
-                <Alert severity={snack.severity} sx={{ borderRadius: 2 }}>{snack.msg}</Alert>
+                <Alert severity={snack.severity} variant="filled" sx={{ borderRadius: 3, fontWeight: 800 }}>{snack.msg}</Alert>
             </Snackbar>
         </Box>
     );

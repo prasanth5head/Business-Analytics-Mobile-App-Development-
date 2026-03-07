@@ -72,7 +72,7 @@ const Layout = () => {
         { text: 'Revenue Entry', icon: <ReceiptIcon />, path: '/revenue', role: 'manorwoman' },
         { text: 'Entry History', icon: <HistoryIcon />, path: '/entry-history', role: 'manorwoman' },
 
-        { type: 'subheader', text: 'My Business Analytics', role: 'manorwoman', locked: !isUnlocked },
+        { type: 'subheader', text: 'My Business Analytics', role: 'manorwoman', locked: !isUnlocked, message: "Complete 12 months of business data to unlock analytics." },
         { text: 'Descriptive', icon: <DescriptiveIcon />, path: '/my-business/descriptive', role: 'manorwoman', locked: !isUnlocked },
         { text: 'Diagnostic', icon: <DiagnosticIcon />, path: '/my-business/diagnostic', role: 'manorwoman', locked: !isUnlocked },
         { text: 'Predictive', icon: <PredictiveIcon />, path: '/my-business/predictive', role: 'manorwoman', locked: !isUnlocked },

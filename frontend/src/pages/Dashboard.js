@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
     Box,
     Grid,
@@ -12,11 +12,10 @@ import {
     Button,
     Chip,
     Avatar,
-    TextField,
-    MenuItem,
-    InputAdornment,
     Snackbar,
-    Divider
+    Pagination,
+    Menu,
+    MenuItem
 } from '@mui/material';
 import {
     TrendingUp,
@@ -26,7 +25,7 @@ import {
     ArrowUpward,
     ArrowDownward,
     NotificationsActive,
-    AddCircleOutline
+    CalendarToday
 } from '@mui/icons-material';
 import {
     XAxis,
@@ -35,9 +34,7 @@ import {
     Tooltip,
     ResponsiveContainer,
     AreaChart,
-    Area,
-    BarChart,
-    Bar
+    Area
 } from 'recharts';
 import { useMarket } from '../context/MarketContext';
 
@@ -100,29 +97,18 @@ const KPICard = ({ title, value, percentage, icon, color, up }) => {
 
 const Dashboard = () => {
     const theme = useTheme();
-    const { marketData, aiRecommendations, loading, error, refreshData, addRevenue } = useMarket();
-    const [revAmount, setRevAmount] = useState('');
-    const [revMonth, setRevMonth] = useState('Jan');
-    const [submitting, setSubmitting] = useState(false);
+    const { marketData, loading, error, refreshData } = useMarket();
     const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+    const [selectedYear, setSelectedYear] = useState('All');
+    const [page, setPage] = useState(1);
+    const [anchorEl, setAnchorEl] = useState(null);
+    const itemsPerPage = 6;
 
-    const handleAddRevenue = async (e) => {
-        e.preventDefault();
-        if (!revAmount || isNaN(revAmount)) {
-            setSnackbar({ open: true, message: 'Please enter a valid amount', severity: 'error' });
-            return;
-        }
-
-        setSubmitting(true);
-        const result = await addRevenue(Number(revAmount), revMonth);
-        setSubmitting(false);
-
-        if (result.success) {
-            setSnackbar({ open: true, message: 'Revenue added successfully!', severity: 'success' });
-            setRevAmount('');
-        } else {
-            setSnackbar({ open: true, message: result.error, severity: 'error' });
-        }
+    const handleYearClick = (event) => setAnchorEl(event.currentTarget);
+    const handleYearClose = (year) => {
+        setAnchorEl(null);
+        if (year) setSelectedYear(year);
+        setPage(1);
     };
 
     if (loading && !marketData) {
@@ -141,126 +127,131 @@ const Dashboard = () => {
 
     if (error) return <Alert severity="error">{error}</Alert>;
 
-    const { salesData = [], productData = [], summary = {} } = marketData || {};
-    const { recommendations = [], aiAnalysis = "" } = aiRecommendations || {};
+    const { salesData = [], productData = [], summary = {}, strategicPriorities = [] } = marketData || {};
 
-    const lastSale = salesData.length > 0 ? salesData[salesData.length - 1].sales : 4000;
-    const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const currentMonth = new Date().getMonth();
+    const years = [...new Set(strategicPriorities.map(p => p.year))].sort((a, b) => b - a);
 
-    const projectionData = Array.from({ length: 6 }, (_, i) => {
-        const date = new Date();
-        date.setMonth(currentMonth + i);
-        return {
-            p: MONTH_NAMES[date.getMonth()],
-            sales: Math.round(lastSale * (1 + (i * 0.06))),
-            profit: Math.round(lastSale * 0.4 * (1 + (i * 0.05)))
-        };
-    });
+    const filteredPriorities = useMemo(() => {
+        if (selectedYear === 'All') return strategicPriorities;
+        return strategicPriorities.filter(p => p.year === parseInt(selectedYear) || p.year === selectedYear);
+    }, [selectedYear, strategicPriorities]);
+
+    const paginatedPriorities = filteredPriorities.slice((page - 1) * itemsPerPage, page * itemsPerPage);
+
+    const filteredSalesData = useMemo(() => {
+        if (selectedYear === 'All') return salesData.slice(-12);
+        return salesData.filter(s => s.year === selectedYear);
+    }, [selectedYear, salesData]);
 
     return (
         <Box>
             {/* Header Area */}
-            <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
                 <Box>
                     <Typography variant="h4" sx={{ fontWeight: 900, color: 'text.primary', letterSpacing: '-0.03em' }}>Global Operations Center</Typography>
                     <Typography variant="body1" color="text.secondary">Real-time market tracking & AI-driven strategic intelligence.</Typography>
                 </Box>
-                <Box sx={{ display: 'flex', gap: 2 }}>
+                <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                    <Chip
+                        icon={<CalendarToday />}
+                        label={`Year: ${selectedYear}`}
+                        onClick={handleYearClick}
+                        onDelete={selectedYear !== 'All' ? () => handleYearClose('All') : undefined}
+                        sx={{ pl: 1, pr: 0.5, py: 2.5, borderRadius: 3, fontWeight: 800, bgcolor: 'background.paper', border: `1px solid ${theme.palette.divider}` }}
+                    />
+                    <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={() => handleYearClose()}>
+                        <MenuItem onClick={() => handleYearClose('All')}>All Years</MenuItem>
+                        {years.map(y => <MenuItem key={y} onClick={() => handleYearClose(y)}>{y}</MenuItem>)}
+                    </Menu>
                     <Button
                         variant="contained"
                         startIcon={<Refresh />}
-                        onClick={refreshData}
+                        onClick={() => {
+                            refreshData();
+                            setSnackbar({ open: true, message: 'Data Synced Successfully!', severity: 'success' });
+                        }}
                         disabled={loading}
                         sx={{ borderRadius: 3, px: 3, fontWeight: 900 }}
                     >
-                        Update Feed
+                        Sync
                     </Button>
                 </Box>
             </Box>
 
-
-            {/* AI Top Alert Bar */}
-            {aiAnalysis && (
-                <Paper sx={{
-                    p: 2.5, mb: 4,
-                    display: 'flex',
-                    alignItems: 'center',
-                    background: theme.palette.mode === 'dark' ? 'rgba(18, 18, 18, 1)' : '#ffffff',
-                    borderLeft: `6px solid ${theme.palette.primary.main}`,
-                    color: 'text.primary',
-                    borderRadius: 3,
-                    border: `1px solid ${theme.palette.divider}`,
-                    boxShadow: theme.palette.mode === 'dark' ? '0 10px 40px rgba(0,0,0,0.5)' : '0 10px 30px rgba(0,0,0,0.05)'
-                }}>
-                    <Typography variant="body1" sx={{ flexGrow: 1, fontWeight: 600, letterSpacing: '0.01em', color: 'text.primary' }}>
-                        <span style={{ color: theme.palette.primary.main, fontWeight: 900 }}>STRATEGIC AI:</span> {aiAnalysis.substring(0, 150)}...
-                    </Typography>
-                    <Chip label="LIVE ANALYSIS" size="small" sx={{ bgcolor: theme.palette.primary.main, color: 'white', fontWeight: 900, px: 1 }} />
-                </Paper>
-            )}
-
-            <Snackbar
-                open={snackbar.open}
-                autoHideDuration={6000}
-                onClose={() => setSnackbar({ ...snackbar, open: false })}
-            >
-                <Alert onClose={() => setSnackbar({ ...snackbar, open: false })} severity={snackbar.severity} sx={{ width: '100%', borderRadius: 2 }}>
-                    {snackbar.message}
-                </Alert>
-            </Snackbar>
-
             {/* KPI Section */}
             <Grid container spacing={4} sx={{ mb: 4 }}>
                 <Grid item xs={12} sm={6} md={3}>
-                    <KPICard
-                        title="Live Revenue"
-                        value={`₹${summary?.totalSales?.toLocaleString() || '0'}`}
-                        percentage={summary?.growthRate || '0%'}
-                        icon={<AttachMoney />}
-                        color={theme.palette.primary.main}
-                        up={true}
-                    />
+                    <KPICard title="Live Revenue" value={`₹${summary?.totalSales?.toLocaleString() || '0'}`} percentage={summary?.growthRate || '0%'} icon={<AttachMoney />} color={theme.palette.primary.main} up={true} />
                 </Grid>
                 <Grid item xs={12} sm={6} md={3}>
-                    <KPICard
-                        title="Active Users"
-                        value={summary?.activeUsers?.toLocaleString() || '0'}
-                        percentage={summary?.customerGrowth || '0%'}
-                        icon={<PeopleAlt />}
-                        color={theme.palette.secondary.main}
-                        up={true}
-                    />
+                    <KPICard title="Active Users" value={summary?.activeUsers?.toLocaleString() || '0'} percentage={summary?.customerGrowth || '0%'} icon={<PeopleAlt />} color={theme.palette.secondary.main} up={true} />
                 </Grid>
                 <Grid item xs={12} sm={6} md={3}>
-                    <KPICard
-                        title="Avg. Profit"
-                        value={`₹${summary?.avgProfit?.toLocaleString() || '0'}`}
-                        percentage={summary?.profitGrowth || '0%'}
-                        icon={<TrendingUp />}
-                        color={theme.palette.success.main}
-                        up={true}
-                    />
+                    <KPICard title="Avg. Profit" value={`₹${summary?.avgProfit?.toLocaleString() || '0'}`} percentage={summary?.profitGrowth || '0%'} icon={<TrendingUp />} color={theme.palette.success.main} up={true} />
                 </Grid>
                 <Grid item xs={12} sm={6} md={3}>
-                    <KPICard
-                        title="Volatility"
-                        value="Stable"
-                        percentage="Low"
-                        icon={<NotificationsActive />}
-                        color={theme.palette.error.main}
-                        up={false}
-                    />
+                    <KPICard title="Volatility" value="Stable" percentage="Low" icon={<NotificationsActive />} color={theme.palette.error.main} up={false} />
                 </Grid>
             </Grid>
 
-            {/* Charts Row */}
+            {/* AI Strategic Priorities Section */}
+            <Paper sx={{ p: 4, borderRadius: 4, mb: 4, border: `1px solid ${theme.palette.divider}`, bgcolor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.01)' : 'white' }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                    <Box>
+                        <Typography variant="h5" sx={{ fontWeight: 900, color: 'text.primary' }}>AI Strategic Priorities</Typography>
+                        <Typography variant="body2" color="text.secondary">Deep-learning derived initiatives for {selectedYear === 'All' ? 'historical & future' : selectedYear} operations.</Typography>
+                    </Box>
+                    <Chip label={`${filteredPriorities.length} RECORDS`} color="primary" sx={{ fontWeight: 900 }} />
+                </Box>
+
+                <Grid container spacing={3}>
+                    {paginatedPriorities.map((item, idx) => (
+                        <Grid item xs={12} md={selectedYear === 'All' ? 4 : 12} key={item.id}>
+                            <Box sx={{
+                                p: 3, borderRadius: 3,
+                                bgcolor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
+                                borderLeft: `6px solid ${item.type === 'Critical' ? theme.palette.error.main : item.type === 'Growth' ? theme.palette.success.main : theme.palette.primary.main}`,
+                                height: '100%',
+                                transition: 'all 0.3s',
+                                '&:hover': { transform: 'translateY(-5px)', bgcolor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)', boxShadow: '0 10px 20px rgba(0,0,0,0.1)' }
+                            }}>
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+                                    <Typography variant="h6" fontWeight="900" color="text.primary">{item.title}</Typography>
+                                    <Chip label={`${item.confidence}% AI Confidence`} size="small" variant="outlined" sx={{ fontWeight: 900, fontSize: '0.7rem' }} />
+                                </Box>
+                                <Typography variant="body1" color="text.secondary" paragraph sx={{ lineHeight: 1.8 }}>{item.recommendation}</Typography>
+                                <Box sx={{ display: 'flex', gap: 1.5 }}>
+                                    <Chip label={item.type.toUpperCase()} size="small" sx={{ fontWeight: 900, bgcolor: 'divider', px: 1 }} />
+                                    <Chip label={`FISCAL YEAR: ${item.year}`} size="small" sx={{ fontWeight: 900, bgcolor: 'divider', px: 1 }} />
+                                </Box>
+                            </Box>
+                        </Grid>
+                    ))}
+                </Grid>
+
+                {filteredPriorities.length > itemsPerPage && (
+                    <Box sx={{ mt: 5, display: 'flex', justifyContent: 'center' }}>
+                        <Pagination
+                            count={Math.ceil(filteredPriorities.length / itemsPerPage)}
+                            page={page}
+                            onChange={(e, v) => setPage(v)}
+                            color="primary"
+                            size="large"
+                            sx={{ '& .MuiPaginationItem-root': { fontWeight: 900, borderRadius: 2 } }}
+                        />
+                    </Box>
+                )}
+            </Paper>
+
+            {/* Performance Charts */}
             <Grid container spacing={3} sx={{ mb: 4 }}>
-                <Grid item xs={12} md={8}>
-                    <Paper sx={{ p: 3, borderRadius: 4, height: '100%', border: `1px solid ${theme.palette.divider}` }}>
-                        <Typography variant="h6" sx={{ mb: 3, fontWeight: 800, color: 'text.primary' }}>Projected Sales Growth (Next 6 Months)</Typography>
-                        <ResponsiveContainer width="100%" height={350}>
-                            <AreaChart data={projectionData}>
+                <Grid item xs={12}>
+                    <Paper sx={{ p: 4, borderRadius: 4, border: `1px solid ${theme.palette.divider}` }}>
+                        <Typography variant="h6" sx={{ mb: 4, fontWeight: 900, color: 'text.primary' }}>
+                            {selectedYear === 'All' ? 'Recent Revenue Performance (Last 12 Months)' : `Revenue Performance for ${selectedYear}`}
+                        </Typography>
+                        <ResponsiveContainer width="100%" height={400}>
+                            <AreaChart data={filteredSalesData}>
                                 <defs>
                                     <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
                                         <stop offset="5%" stopColor={theme.palette.primary.main} stopOpacity={0.4} />
@@ -270,167 +261,65 @@ const Dashboard = () => {
                                 <XAxis dataKey="p" stroke={theme.palette.text.secondary} axisLine={false} tickLine={false} />
                                 <YAxis stroke={theme.palette.text.secondary} axisLine={false} tickLine={false} />
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={theme.palette.divider} />
-                                <Tooltip
-                                    contentStyle={{
-                                        borderRadius: 16,
-                                        border: `1px solid ${theme.palette.divider}`,
-                                        boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
-                                        backgroundColor: theme.palette.background.paper,
-                                        color: theme.palette.text.primary
-                                    }}
-                                />
+                                <Tooltip contentStyle={{ borderRadius: 16, border: `1px solid ${theme.palette.divider}`, backgroundColor: theme.palette.background.paper, color: theme.palette.text.primary, boxShadow: '0 10px 40px rgba(0,0,0,0.1)' }} />
                                 <Area type="monotone" dataKey="sales" stroke={theme.palette.primary.main} strokeWidth={4} fillOpacity={1} fill="url(#colorSales)" name="Sales (₹)" />
-                                <Area type="monotone" dataKey="profit" stroke={theme.palette.secondary.main} strokeWidth={3} fill="transparent" name="Profit (₹)" />
                             </AreaChart>
                         </ResponsiveContainer>
-                    </Paper>
-                </Grid>
-                <Grid item xs={12} md={4}>
-                    <Paper sx={{ p: 3, borderRadius: 4, height: '100%', border: `1px solid ${theme.palette.divider}` }}>
-                        <Typography variant="h6" sx={{ mb: 3, fontWeight: 800, color: 'text.primary' }}>AI Strategic Priorities</Typography>
-                        {recommendations ? (
-                            recommendations.slice(0, 3).map((rec, idx) => (
-                                <Box key={idx} sx={{
-                                    mb: 2, p: 2,
-                                    bgcolor: theme.palette.mode === 'light' ? 'rgba(0,0,0,0.02)' : 'rgba(255,255,255,0.03)',
-                                    borderRadius: 3,
-                                    borderLeft: `4px solid ${rec.type === 'Critical' ? theme.palette.error.main : theme.palette.primary.main}`,
-                                    transition: 'transform 0.2s ease',
-                                    '&:hover': { transform: 'translateX(5px)' }
-                                }}>
-                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                                        <Typography variant="subtitle2" fontWeight="900" color="text.primary">
-                                            {rec.title}
-                                        </Typography>
-                                        <Chip label={`${rec.confidence}%`} size="small" variant="outlined" sx={{ height: 20, fontSize: '0.65rem', fontWeight: 900 }} />
-                                    </Box>
-                                    <Typography variant="caption" color="text.secondary" display="block">
-                                        {rec.recommendation}
-                                    </Typography>
-                                </Box>
-                            ))
-                        ) : (
-                            <Box sx={{ textAlign: 'center', py: 5 }}>
-                                <Typography color="text.secondary">No active alerts</Typography>
-                            </Box>
-                        )}
-                        <Button fullWidth variant="outlined" sx={{ mt: 1, borderRadius: 2, fontWeight: 700 }}>View All Diagnostics</Button>
-                    </Paper>
-                </Grid>
-            </Grid>
-
-            {/* Category Split */}
-            <Grid container spacing={3} sx={{ mb: 4 }}>
-                <Grid item xs={12} md={6}>
-                    <Paper sx={{ p: 3, borderRadius: 4, border: `1px solid ${theme.palette.divider}` }}>
-                        <Typography variant="h6" sx={{ mb: 2, fontWeight: 800, color: 'text.primary' }}>Profit Margin by Category</Typography>
-                        <ResponsiveContainer width="100%" height={250}>
-                            <BarChart data={productData} layout="vertical">
-                                <XAxis type="number" hide />
-                                <YAxis dataKey="name" type="category" stroke={theme.palette.text.secondary} width={100} axisLine={false} tickLine={false} />
-                                <Tooltip cursor={{ fill: theme.palette.mode === 'light' ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)' }} />
-                                <Bar dataKey="profitMargin" fill={theme.palette.primary.main} radius={[0, 4, 4, 0]} name="Margin %" barSize={20} />
-                            </BarChart>
-                        </ResponsiveContainer>
-                    </Paper>
-                </Grid>
-                <Grid item xs={12} md={6}>
-                    <Paper sx={{ p: 3, borderRadius: 4, border: `1px solid ${theme.palette.divider}` }}>
-                        <Typography variant="h6" sx={{ mb: 2, fontWeight: 800, color: 'text.primary' }}>Recent Activity Feed</Typography>
-                        {[
-                            { time: '2 mins ago', msg: 'Gemini AI recalculated Q2 forecast (+15% uplift projected)', icon: <TrendingUp />, color: theme.palette.primary.main },
-                            { time: '15 mins ago', msg: 'Market volatility detected in Electronics category', icon: <NotificationsActive />, color: theme.palette.warning.main },
-                            { time: '1 hour ago', msg: 'System refresh: Live market raw data synchronized', icon: <Refresh />, color: theme.palette.success.main }
-                        ].map((item, i) => (
-                            <Box key={i} sx={{ display: 'flex', gap: 2, mb: 2, p: 1.5, borderRadius: 2, '&:hover': { bgcolor: 'rgba(0,0,0,0.02)' } }}>
-                                <Avatar sx={{ bgcolor: `${item.color}15`, color: item.color, width: 40, height: 40, borderRadius: 2 }}>
-                                    {item.icon}
-                                </Avatar>
-                                <Box>
-                                    <Typography variant="body2" fontWeight="bold" color="text.primary">{item.msg}</Typography>
-                                    <Typography variant="caption" color="text.secondary">{item.time}</Typography>
-                                </Box>
-                            </Box>
-                        ))}
                     </Paper>
                 </Grid>
             </Grid>
 
             {/* ── Product Risk Analysis ── */}
-            <Paper sx={{ p: 3, borderRadius: 4, mb: 4, border: `1px solid ${theme.palette.divider}` }}>
-                <Box mb={2}>
-                    <Typography variant="h6" sx={{ fontWeight: 900, color: 'text.primary' }}>
-                        ⚠️ Product Risk Analysis
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                        Risk Formula: <strong>(ReturnRate × 0.5) + ((100 − ProfitMargin) × 0.3) + (Complaints × 0.2)</strong> &nbsp;|&nbsp; Scale: 0–100 (lower is safer)
-                    </Typography>
+            <Paper sx={{ p: 4, borderRadius: 4, mb: 4, border: `1px solid ${theme.palette.divider}` }}>
+                <Box mb={4} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                    <Box>
+                        <Typography variant="h5" sx={{ fontWeight: 900, color: 'text.primary' }}>⚠️ Multi-Point Risk Analysis</Typography>
+                        <Typography variant="body1" color="text.secondary">Calculated from dynamic financial ratios, GST liabilities, and operational loss data.</Typography>
+                    </Box>
                 </Box>
-                <Grid container spacing={2}>
+                <Grid container spacing={4}>
                     {productData.map((prod, i) => {
                         const risk = prod.risk || {};
-                        const riskColor = risk.level === 'High' ? theme.palette.error.main : risk.level === 'Medium' ? theme.palette.warning.main : theme.palette.success.main;
-                        const riskBg = risk.level === 'High' ? `${theme.palette.error.main}15` : risk.level === 'Medium' ? `${theme.palette.warning.main}15` : `${theme.palette.success.main}15`;
+                        const riskColor = risk.level === 'High Risk' ? theme.palette.error.main : risk.level === 'Moderate' ? theme.palette.warning.main : theme.palette.success.main;
+                        const riskBg = risk.level === 'High Risk' ? `${theme.palette.error.main}08` : risk.level === 'Moderate' ? `${theme.palette.warning.main}08` : `${theme.palette.success.main}08`;
+
                         return (
-                            <Grid item xs={12} sm={6} md={3} key={i}>
+                            <Grid item xs={12} sm={6} md={4} key={i}>
                                 <Paper sx={{
-                                    p: 2.5, borderRadius: 3,
+                                    p: 3, borderRadius: 4,
                                     border: `2px solid ${riskColor}`,
                                     background: riskBg,
-                                    height: '100%'
+                                    height: '100%',
+                                    transition: 'all 0.3s',
+                                    '&:hover': { boxShadow: `0 15px 40px ${riskColor}25`, transform: 'scale(1.02)' }
                                 }}>
-                                    {/* Product Name & Level */}
-                                    <Box display="flex" justifyContent="space-between" alignItems="center" mb={1.5}>
-                                        <Typography sx={{ fontWeight: 900, color: 'text.primary', fontSize: '1rem' }}>
-                                            {prod.name}
-                                        </Typography>
-                                        <Chip
-                                            label={risk.level || 'N/A'}
-                                            size="small"
-                                            sx={{ bgcolor: riskColor, color: 'white', fontWeight: 800, fontSize: '0.7rem' }}
-                                        />
+                                    <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+                                        <Typography sx={{ fontWeight: 900, fontSize: '1.2rem' }}>{prod.name}</Typography>
+                                        <Chip label={risk.level} size="small" sx={{ bgcolor: riskColor, color: 'white', fontWeight: 900, px: 1 }} />
                                     </Box>
 
-                                    {/* Risk Score */}
-                                    <Box mb={1.5}>
-                                        <Typography variant="h3" sx={{ fontWeight: 900, color: riskColor, lineHeight: 1 }}>
-                                            {risk.score ?? '—'}
-                                        </Typography>
-                                        <Typography variant="caption" color="text.secondary">Risk Score / 100</Typography>
+                                    <Box sx={{ textAlign: 'center', mb: 3, p: 2.5, bgcolor: 'rgba(255,255,255,0.05)', borderRadius: 4, border: '1px solid rgba(255,255,255,0.05)' }}>
+                                        <Typography variant="h2" sx={{ fontWeight: 900, color: riskColor, letterSpacing: '-0.05em' }}>{risk.score}</Typography>
+                                        <Typography variant="subtitle2" sx={{ fontWeight: 800, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Risk Score</Typography>
                                     </Box>
 
-                                    {/* Key Metrics */}
-                                    <Box display="flex" flexDirection="column" gap={0.5} mb={1.5}>
-                                        <Box display="flex" justifyContent="space-between">
-                                            <Typography variant="caption" color="text.secondary">Profit Margin</Typography>
-                                            <Typography variant="caption" sx={{ fontWeight: 700, color: '#4caf50' }}>{prod.profitMargin}%</Typography>
-                                        </Box>
-                                        <Box display="flex" justifyContent="space-between">
-                                            <Typography variant="caption" color="text.secondary">GST Rate</Typography>
-                                            <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.primary' }}>{prod.gst}%</Typography>
-                                        </Box>
-                                        <Box display="flex" justifyContent="space-between">
-                                            <Typography variant="caption" color="text.secondary">Return Rate</Typography>
-                                            <Typography variant="caption" sx={{ fontWeight: 700, color: theme.palette.warning.main }}>{prod.returnRate}%</Typography>
-                                        </Box>
-                                        <Box display="flex" justifyContent="space-between">
-                                            <Typography variant="caption" color="text.secondary">Complaints</Typography>
-                                            <Typography variant="caption" sx={{ fontWeight: 700, color: '#f44336' }}>{prod.complaints}</Typography>
-                                        </Box>
-                                    </Box>
+                                    <Grid container spacing={2} sx={{ mb: 4 }}>
+                                        {[
+                                            { label: 'Market Price', val: `₹${prod.price.toLocaleString()}`, color: 'text.primary' },
+                                            { label: 'Unit Profit', val: `₹${prod.profit.toLocaleString()}`, color: theme.palette.success.main },
+                                            { label: 'Gross Loss', val: `₹${prod.loss.toLocaleString()}`, color: theme.palette.error.main },
+                                            { label: 'GST Applied', val: `${prod.gst}%`, color: theme.palette.info.main }
+                                        ].map(item => (
+                                            <Grid item xs={6} key={item.label}>
+                                                <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 800, textTransform: 'uppercase', display: 'block', mb: 0.5 }}>{item.label}</Typography>
+                                                <Typography variant="h6" sx={{ fontWeight: 900, color: item.color }}>{item.val}</Typography>
+                                            </Grid>
+                                        ))}
+                                    </Grid>
 
-                                    {/* Formula Applied */}
-                                    <Box sx={{
-                                        p: 1, borderRadius: 2,
-                                        background: 'rgba(0,0,0,0.2)',
-                                        fontFamily: 'monospace'
-                                    }}>
-                                        <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.65rem', display: 'block', mb: 0.3 }}>
-                                            Calculation:
-                                        </Typography>
-                                        <Typography variant="caption" sx={{ color: riskColor, fontSize: '0.68rem', fontWeight: 700, wordBreak: 'break-word' }}>
-                                            {risk.calculation || '—'}
-                                        </Typography>
+                                    <Box sx={{ p: 2, borderRadius: 3, bgcolor: theme.palette.mode === 'dark' ? 'rgba(0,0,0,0.25)' : 'rgba(255,255,255,0.6)', border: '1px dashed rgba(0,0,0,0.1)' }}>
+                                        <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 800, display: 'block', mb: 1, textTransform: 'uppercase' }}>Formula Logic:</Typography>
+                                        <Typography variant="body2" sx={{ fontFamily: 'monospace', fontWeight: 800, color: riskColor, wordBreak: 'break-all', fontSize: '0.75rem' }}>{risk.calculation}</Typography>
                                     </Box>
                                 </Paper>
                             </Grid>
@@ -439,6 +328,16 @@ const Dashboard = () => {
                 </Grid>
             </Paper>
 
+            <Snackbar
+                open={snackbar.open}
+                autoHideDuration={4000}
+                onClose={() => setSnackbar({ ...snackbar, open: false })}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+            >
+                <Alert onClose={() => setSnackbar({ ...snackbar, open: false })} severity={snackbar.severity} variant="filled" sx={{ borderRadius: 3, fontWeight: 900 }}>
+                    {snackbar.message}
+                </Alert>
+            </Snackbar>
         </Box>
     );
 };

@@ -87,7 +87,7 @@ const Login = () => {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                background: theme.palette.background.default,
+                background: 'transparent',
                 position: 'relative',
                 overflow: 'hidden',
                 p: 2
@@ -141,7 +141,7 @@ const Login = () => {
                         sx={{
                             p: { xs: 4, md: 6 },
                             borderRadius: 8,
-                            bgcolor: theme.palette.mode === 'dark' ? 'rgba(18, 18, 18, 0.75)' : 'rgba(255, 255, 255, 0.85)',
+                            bgcolor: 'transparent',
                             backdropFilter: 'blur(30px) saturate(160%)',
                             border: `1px solid rgba(255, 255, 255, 0.1)`,
                             textAlign: 'center',
