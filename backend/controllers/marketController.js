@@ -4,28 +4,45 @@ const { aiQueue } = require('../config/queue');
 
 const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-const generateTrendData = (baseSales) => {
+const generateTrendData = (baseSales, count = 200) => {
     const now = new Date();
     const currentMonthIndex = now.getMonth();
-    return Array.from({ length: 7 }, (_, i) => {
-        const monthOffset = i;
-        const monthIndex = (currentMonthIndex + monthOffset) % 12;
+    const currentYear = now.getFullYear();
+
+    return Array.from({ length: count }, (_, i) => {
+        // Generate historical data going backwards from i=0 (most recent) to i=count-1 (oldest)
+        const date = new Date(currentYear, currentMonthIndex - i, 1);
+        const monthIndex = date.getMonth();
+        const year = date.getFullYear();
         const month = MONTH_NAMES[monthIndex];
-        const isPredictive = monthOffset > 0;
-        const trendMultiplier = isPredictive ? (1 + monthOffset * 0.04) : 1;
-        const volatility = isPredictive ? Math.random() * 0.15 - 0.05 : Math.random() * 0.2 - 0.1;
+
+        // Add some "future" points if i is very small? 
+        // No, the user wants "raw data", let's make it looks like historical records.
+        // We'll tag the most recent 6 as "Predictive" just for the chart in Predictive page if needed,
+        // but usually salesData is historical.
+
+        const isPredictive = false; // We'll handle predictive markers in the frontend logic if needed
+        const trendMultiplier = 1;
+        const volatility = Math.random() * 0.2 - 0.1;
         const base = baseSales * (1 + volatility) * trendMultiplier;
         const sales = Math.round(base);
         const profit = Math.round(sales * (0.3 + Math.random() * 0.3));
         const loss = Math.round(sales * (0.05 + Math.random() * 0.1));
         const price = 90 + Math.floor(Math.random() * 80);
+
         return {
-            p: month, sales, profit, loss, price,
+            p: month,
+            monthIndex,
+            year,
+            sales,
+            profit,
+            loss,
+            price,
             complaints: Math.floor(Math.random() * (price > 130 ? 30 : 10)),
             competitorCheck: Math.random() > 0.7 ? 1 : 0,
             isPredictive
         };
-    });
+    }).reverse(); // Reverse so it's oldest to newest for charts
 };
 
 const generateMyBusinessData = (persistentRevenue = []) => {
@@ -75,7 +92,25 @@ const getMarketData = async (req, res) => {
             { name: 'Gaming Zone', profitMargin: 65, returnRate: 0.1, complaints: 2, gst: 18 },
         ];
         const products = productsRaw.map(p => ({ ...p, risk: calculateRisk(p.profitMargin, p.returnRate, p.complaints) }));
-        const result = { salesData: liveData, productData: products, timestamp: new Date() };
+
+        // Calculate Summary for the global data
+        const totalSales = liveData.reduce((sum, d) => sum + d.sales, 0);
+        const totalProfit = liveData.reduce((sum, d) => sum + d.profit, 0);
+        const totalLoss = liveData.reduce((sum, d) => sum + d.loss, 0);
+        const avgProfit = Math.round(totalProfit / liveData.length);
+
+        const summary = {
+            totalSales,
+            totalProfit,
+            totalLoss,
+            avgProfit,
+            growthRate: "+12.5% ▲",
+            activeUsers: Math.floor(totalSales / 500) || 1200,
+            customerGrowth: "+4.2% ▲",
+            profitGrowth: "+8.4% ▲"
+        };
+
+        const result = { salesData: liveData, productData: products, summary, timestamp: new Date() };
         await redis.setex(cacheKey, 900, JSON.stringify(result));
         res.json(result);
     } catch (err) { res.status(500).json({ message: err.message }); }
@@ -142,7 +177,8 @@ const getMyBusinessData = async (req, res) => {
             productData.push(...defaultProducts.map(p => ({ ...p, risk: calculateRisk(p.profitMargin, p.returnRate, p.complaints) })));
         }
 
-        const result = { salesData: myData, productData, summary, timestamp: new Date() };
+        const totalRecords = await Revenue.countDocuments({ userId });
+        const result = { salesData: myData, productData, summary, totalRecords, timestamp: new Date() };
 
         try {
             await redis.setex(cacheKey, 300, JSON.stringify(result));
@@ -156,8 +192,18 @@ const getMyBusinessData = async (req, res) => {
 
 const addRevenue = async (req, res) => {
     try {
-        const { amount, profit, loss, month, product } = req.body;
-        const newRevenue = new Revenue({ userId: req.user._id, amount, profit, loss, month, product });
+        let { amount, profit, loss, month, product } = req.body;
+        // Automatically calculate loss: If profit is negative, loss is the absolute value.
+        const calculatedLoss = profit < 0 ? Math.abs(profit) : 0;
+
+        const newRevenue = new Revenue({
+            userId: req.user._id,
+            amount,
+            profit,
+            loss: calculatedLoss,
+            month,
+            product
+        });
         await newRevenue.save();
 
         try {
@@ -205,11 +251,18 @@ const addRevenueBulk = async (req, res) => {
             return res.status(400).json({ message: 'Invalid records format' });
         }
 
-        const toSave = records.map(rec => ({
-            ...rec,
-            userId: req.user._id,
-            amount: rec.amount || rec.revenue // handles both naming conventions
-        }));
+        const toSave = records.map(rec => {
+            const revenueVal = rec.amount || rec.revenue;
+            const profitVal = rec.profit || 0;
+            const lossVal = profitVal < 0 ? Math.abs(profitVal) : 0;
+            return {
+                ...rec,
+                userId: req.user._id,
+                amount: revenueVal,
+                profit: profitVal,
+                loss: lossVal
+            };
+        });
 
         await Revenue.insertMany(toSave);
 

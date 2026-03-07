@@ -144,7 +144,19 @@ const Dashboard = () => {
     const { salesData = [], productData = [], summary = {} } = marketData || {};
     const { recommendations = [], aiAnalysis = "" } = aiRecommendations || {};
 
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const lastSale = salesData.length > 0 ? salesData[salesData.length - 1].sales : 4000;
+    const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const currentMonth = new Date().getMonth();
+
+    const projectionData = Array.from({ length: 6 }, (_, i) => {
+        const date = new Date();
+        date.setMonth(currentMonth + i);
+        return {
+            p: MONTH_NAMES[date.getMonth()],
+            sales: Math.round(lastSale * (1 + (i * 0.06))),
+            profit: Math.round(lastSale * 0.4 * (1 + (i * 0.05)))
+        };
+    });
 
     return (
         <Box>
@@ -248,7 +260,7 @@ const Dashboard = () => {
                     <Paper sx={{ p: 3, borderRadius: 4, height: '100%', border: `1px solid ${theme.palette.divider}` }}>
                         <Typography variant="h6" sx={{ mb: 3, fontWeight: 800, color: 'text.primary' }}>Projected Sales Growth (Next 6 Months)</Typography>
                         <ResponsiveContainer width="100%" height={350}>
-                            <AreaChart data={salesData}>
+                            <AreaChart data={projectionData}>
                                 <defs>
                                     <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
                                         <stop offset="5%" stopColor={theme.palette.primary.main} stopOpacity={0.4} />

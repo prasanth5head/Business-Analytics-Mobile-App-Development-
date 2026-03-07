@@ -61,8 +61,20 @@ export const MyBusinessProvider = ({ children }) => {
         }
     };
 
+    const isUnlocked = businessData?.totalRecords >= 12;
+    const totalRecords = businessData?.totalRecords || 0;
+
     return (
-        <MyBusinessContext.Provider value={{ businessData, aiRecommendations, loading, error, refreshData: fetchData, addRevenue }}>
+        <MyBusinessContext.Provider value={{
+            businessData,
+            aiRecommendations,
+            loading,
+            error,
+            refreshData: fetchData,
+            addRevenue,
+            isUnlocked,
+            totalRecords
+        }}>
             {children}
         </MyBusinessContext.Provider>
     );

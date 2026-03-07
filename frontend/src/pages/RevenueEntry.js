@@ -5,7 +5,8 @@ import {
     Alert, Snackbar, MenuItem, Chip, Divider, useTheme
 } from '@mui/material';
 import { AddCircleOutline, Save } from '@mui/icons-material';
-import api from '../api';
+import { useNavigate } from 'react-router-dom';
+import { useMyBusiness } from '../context/MyBusinessContext';
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
     'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -19,14 +20,13 @@ const PRODUCTS = [
     'Tattoo Shop', 'Photo Studio', 'Pet Shop', 'Sweet Shop', 'Flower Shop'
 ];
 
-const emptyRow = () => ({
-    month: '', product: '', revenue: '', profit: '', loss: ''
-});
-
 export default function RevenueEntry() {
     const theme = useTheme();
+    const navigate = useNavigate();
+    const { refreshData, totalRecords: currentTotal } = useMyBusiness();
+
     const [rows, setRows] = useState(
-        MONTHS.map(m => ({ month: m, product: '', revenue: '', profit: '', loss: '' }))
+        MONTHS.map(m => ({ month: m, product: '', revenue: '', profit: '', loss: 0 }))
     );
     const [snack, setSnack] = useState({ open: false, msg: '', severity: 'success' });
     const [saving, setSaving] = useState(false);
@@ -34,7 +34,16 @@ export default function RevenueEntry() {
     const handleChange = (index, field, value) => {
         setRows(prev => {
             const updated = [...prev];
-            updated[index] = { ...updated[index], [field]: value };
+            let newVal = value;
+
+            // Auto-calculate loss if profit is changed
+            let updatedRow = { ...updated[index], [field]: newVal };
+            if (field === 'profit') {
+                const profitVal = Number(value) || 0;
+                updatedRow.loss = profitVal < 0 ? Math.abs(profitVal) : 0;
+            }
+
+            updated[index] = updatedRow;
             return updated;
         });
     };
@@ -53,15 +62,27 @@ export default function RevenueEntry() {
                 product: row.product || 'All',
                 amount: Number(row.revenue),
                 profit: Number(row.profit) || 0,
-                loss: Number(row.loss) || 0
+                loss: Number(row.profit) < 0 ? Math.abs(Number(row.profit)) : 0
             }));
 
             await api.post('/api/market/revenue-bulk', { records: formattedRecords });
 
-            setSnack({ open: true, msg: `✅ ${toSave.length} records added successfully!`, severity: 'success' });
+            const newTotal = currentTotal + formattedRecords.length;
+
+            if (newTotal >= 12 && currentTotal < 12) {
+                setSnack({ open: true, msg: '🚀 Business Analytics Unlocked! Your insights are now ready.', severity: 'success' });
+                setTimeout(() => {
+                    navigate('/my-business/dashboard');
+                }, 2000);
+            } else {
+                setSnack({ open: true, msg: `✅ ${toSave.length} records added successfully!`, severity: 'success' });
+            }
+
+            // Refresh context data
+            await refreshData();
 
             // Clear the form fields after successful save
-            setRows(MONTHS.map(m => ({ month: m, product: '', revenue: '', profit: '', loss: '' })));
+            setRows(MONTHS.map(m => ({ month: m, product: '', revenue: '', profit: '', loss: 0 })));
         } catch (err) {
             setSnack({ open: true, msg: '❌ Failed to add records. Please try again.', severity: 'error' });
         }
@@ -72,7 +93,9 @@ export default function RevenueEntry() {
     const totalRevenue = rows.reduce((s, r) => s + (Number(r.revenue) || 0), 0);
     const totalProfit = rows.reduce((s, r) => s + (Number(r.profit) || 0), 0);
     const totalLoss = rows.reduce((s, r) => s + (Number(r.loss) || 0), 0);
-    const netProfit = totalProfit - totalLoss;
+    const netProfit = totalProfit; // Since profit is net, netProfit is just sum of all profits (some might be negative)
+    // Actually, based on User logic: Revenue - Profit = Expense. If Profit < 0 -> Loss.
+    // If we show Loss as a separate column, it's just the absolute value of negative profit.
 
     return (
         <Box sx={{ p: { xs: 2, md: 4 }, maxWidth: 1100, mx: 'auto' }}>
@@ -159,7 +182,9 @@ export default function RevenueEntry() {
                                                 value={row[field]}
                                                 onChange={e => handleChange(i, field, e.target.value)}
                                                 variant="standard"
+                                                disabled={field === 'loss'}
                                                 InputProps={{
+                                                    readOnly: field === 'loss',
                                                     disableUnderline: true,
                                                     sx: {
                                                         color: field === 'loss' ? '#f44336' : field === 'profit' ? '#4caf50' : 'text.primary',

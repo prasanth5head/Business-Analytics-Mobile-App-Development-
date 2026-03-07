@@ -8,6 +8,7 @@ import {
 } from 'recharts';
 import { Refresh } from '@mui/icons-material';
 import { useMyBusiness } from '../../context/MyBusinessContext';
+import LockedModuleWrapper from '../../components/LockedModuleWrapper';
 
 const FindingCard = ({ title, observation, evidence, severity }) => {
     const theme = useTheme();
@@ -38,7 +39,7 @@ const FindingCard = ({ title, observation, evidence, severity }) => {
 
 const MyDiagnostic = () => {
     const theme = useTheme();
-    const { businessData, aiRecommendations, loading, error, refreshData } = useMyBusiness();
+    const { businessData, aiRecommendations, loading, error, refreshData, isUnlocked, totalRecords } = useMyBusiness();
 
     if (loading && !businessData) {
         return (
@@ -55,100 +56,101 @@ const MyDiagnostic = () => {
     }
 
     if (error) return <Alert severity="error">{error}</Alert>;
-    if (!businessData) return <Alert severity="info">Add business data to generate diagnostic insights.</Alert>;
 
     const { salesData = [], productData = [] } = businessData || {};
     const { recommendations = [] } = aiRecommendations || {};
 
     return (
-        <Box sx={{ pb: 4 }}>
-            {/* Header */}
-            <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <Box>
-                    <Typography variant="h4" fontWeight="900" gutterBottom sx={{ color: 'text.primary' }}>
-                        🔍 My Diagnostic Analytics
-                    </Typography>
-                    <Typography variant="h6" color="text.secondary">
-                        "Why is my business performing this way?" — Personal AI Analysis
-                    </Typography>
-                </Box>
-                <Button
-                    variant="outlined"
-                    startIcon={<Refresh />}
-                    onClick={refreshData}
-                    disabled={loading}
-                    sx={{ borderRadius: 2 }}
-                >
-                    Update Analysis
-                </Button>
-            </Box>
-
-            {/* AI Diagnostics Summary */}
-            <Grid container spacing={3} sx={{ mb: 4 }}>
-                <Grid item xs={12}>
-                    <Paper sx={{ p: 3, mb: 1, borderLeft: `6px solid ${theme.palette.secondary.main}`, borderRadius: 2 }}>
-                        <Typography variant="h6" fontWeight="bold" gutterBottom color="text.primary">
-                            AI-Generated Diagnostic Report for Your Business
+        <LockedModuleWrapper isUnlocked={isUnlocked} totalRecords={totalRecords}>
+            <Box sx={{ pb: 4 }}>
+                {/* Header */}
+                <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <Box>
+                        <Typography variant="h4" fontWeight="900" gutterBottom sx={{ color: 'text.primary' }}>
+                            🔍 My Diagnostic Analytics
                         </Typography>
-                        <Divider sx={{ my: 2 }} />
-                        {recommendations && recommendations.length > 0 ? (
-                            recommendations.map((rec, idx) => (
-                                <FindingCard
-                                    key={idx}
-                                    title={rec?.title || 'Finding'}
-                                    observation={rec?.recommendation || 'No data found.'}
-                                    evidence={rec?.insight || 'N/A'}
-                                    severity={rec?.type || 'Medium'}
-                                />
-                            ))
-                        ) : (
-                            <Typography color="text.secondary">Processing your business diagnostics...</Typography>
-                        )}
-                    </Paper>
-                </Grid>
-            </Grid>
+                        <Typography variant="h6" color="text.secondary">
+                            "Why is my business performing this way?" — Personal AI Analysis
+                        </Typography>
+                    </Box>
+                    <Button
+                        variant="outlined"
+                        startIcon={<Refresh />}
+                        onClick={refreshData}
+                        disabled={loading}
+                        sx={{ borderRadius: 2 }}
+                    >
+                        Update Analysis
+                    </Button>
+                </Box>
 
-            {/* Correlation Chart */}
-            <Paper sx={{ p: 3, mb: 4, borderRadius: 3 }}>
-                <Typography variant="h6" gutterBottom fontWeight="bold" color="text.primary">
-                    Revenue & Profit Correlation
-                </Typography>
-                <Typography variant="body2" color="text.secondary" gutterBottom>
-                    Identifying how your revenue translates to profit month-over-month.
-                </Typography>
-                <ResponsiveContainer width="100%" height={400}>
-                    <ComposedChart data={salesData}>
-                        <CartesianGrid stroke={theme.palette.divider} vertical={false} />
-                        <XAxis dataKey="p" stroke={theme.palette.text.secondary} />
-                        <YAxis stroke={theme.palette.primary.main} label={{ value: 'Amount (₹)', angle: -90, position: 'insideLeft', fill: theme.palette.text.secondary }} />
-                        <Tooltip contentStyle={{ backgroundColor: theme.palette.background.paper, border: `1px solid ${theme.palette.divider}`, borderRadius: 8 }} />
-                        <Legend />
-                        <Bar dataKey="sales" barSize={30} fill={theme.palette.primary.main} name="Revenue" radius={[4, 4, 0, 0]} />
-                        <Line type="monotone" dataKey="profit" stroke={theme.palette.success.main} strokeWidth={3} name="Profit" dot={{ r: 4, fill: theme.palette.success.main }} />
-                    </ComposedChart>
-                </ResponsiveContainer>
-            </Paper>
-
-            {/* Risk factors */}
-            <Grid container spacing={3}>
-                <Grid item xs={12}>
-                    <Paper sx={{ p: 4, height: '100%', borderRadius: 3, border: `1px solid ${theme.palette.divider}` }}>
-                        <Typography variant="h5" gutterBottom fontWeight="900" color="text.primary" mb={3}>Product Risk Assessment</Typography>
-                        <ResponsiveContainer width="100%" height={500}>
-                            <BarChart data={productData} layout="vertical" margin={{ top: 20, right: 30, left: 50, bottom: 5 }}>
-                                <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
-                                <XAxis type="number" stroke={theme.palette.text.secondary} fontWeight={700} />
-                                <YAxis dataKey="name" type="category" width={120} stroke={theme.palette.text.secondary} fontWeight={700} />
-                                <Tooltip contentStyle={{ backgroundColor: theme.palette.background.paper, border: `1px solid ${theme.palette.divider}`, borderRadius: 8, fontWeight: 700 }} />
-                                <Legend wrapperStyle={{ fontWeight: 700, paddingTop: '20px' }} />
-                                <Bar dataKey="profitMargin" fill={theme.palette.success.main} name="Profit Margin %" radius={[0, 4, 4, 0]} />
-                                <Bar dataKey="returnRate" fill={theme.palette.error.main} name="Loss Ratio %" radius={[0, 4, 4, 0]} />
-                            </BarChart>
-                        </ResponsiveContainer>
-                    </Paper>
+                {/* AI Diagnostics Summary */}
+                <Grid container spacing={3} sx={{ mb: 4 }}>
+                    <Grid item xs={12}>
+                        <Paper sx={{ p: 3, mb: 1, borderLeft: `6px solid ${theme.palette.secondary.main}`, borderRadius: 2 }}>
+                            <Typography variant="h6" fontWeight="bold" gutterBottom color="text.primary">
+                                AI-Generated Diagnostic Report for Your Business
+                            </Typography>
+                            <Divider sx={{ my: 2 }} />
+                            {recommendations && recommendations.length > 0 ? (
+                                recommendations.map((rec, idx) => (
+                                    <FindingCard
+                                        key={idx}
+                                        title={rec?.title || 'Finding'}
+                                        observation={rec?.recommendation || 'No data found.'}
+                                        evidence={rec?.insight || 'N/A'}
+                                        severity={rec?.type || 'Medium'}
+                                    />
+                                ))
+                            ) : (
+                                <Typography color="text.secondary">Processing your business diagnostics...</Typography>
+                            )}
+                        </Paper>
+                    </Grid>
                 </Grid>
-            </Grid>
-        </Box>
+
+                {/* Correlation Chart */}
+                <Paper sx={{ p: 3, mb: 4, borderRadius: 3 }}>
+                    <Typography variant="h6" gutterBottom fontWeight="bold" color="text.primary">
+                        Revenue & Profit Correlation
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" gutterBottom>
+                        Identifying how your revenue translates to profit month-over-month.
+                    </Typography>
+                    <ResponsiveContainer width="100%" height={400}>
+                        <ComposedChart data={salesData}>
+                            <CartesianGrid stroke={theme.palette.divider} vertical={false} />
+                            <XAxis dataKey="p" stroke={theme.palette.text.secondary} />
+                            <YAxis stroke={theme.palette.primary.main} label={{ value: 'Amount (₹)', angle: -90, position: 'insideLeft', fill: theme.palette.text.secondary }} />
+                            <Tooltip contentStyle={{ backgroundColor: theme.palette.background.paper, border: `1px solid ${theme.palette.divider}`, borderRadius: 8 }} />
+                            <Legend />
+                            <Bar dataKey="sales" barSize={30} fill={theme.palette.primary.main} name="Revenue" radius={[4, 4, 0, 0]} />
+                            <Line type="monotone" dataKey="profit" stroke={theme.palette.success.main} strokeWidth={3} name="Profit" dot={{ r: 4, fill: theme.palette.success.main }} />
+                        </ComposedChart>
+                    </ResponsiveContainer>
+                </Paper>
+
+                {/* Risk factors */}
+                <Grid container spacing={3}>
+                    <Grid item xs={12}>
+                        <Paper sx={{ p: 4, height: '100%', borderRadius: 3, border: `1px solid ${theme.palette.divider}` }}>
+                            <Typography variant="h5" gutterBottom fontWeight="900" color="text.primary" mb={3}>Product Risk Assessment</Typography>
+                            <ResponsiveContainer width="100%" height={500}>
+                                <BarChart data={productData} layout="vertical" margin={{ top: 20, right: 30, left: 50, bottom: 5 }}>
+                                    <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
+                                    <XAxis type="number" stroke={theme.palette.text.secondary} fontWeight={700} />
+                                    <YAxis dataKey="name" type="category" width={120} stroke={theme.palette.text.secondary} fontWeight={700} />
+                                    <Tooltip contentStyle={{ backgroundColor: theme.palette.background.paper, border: `1px solid ${theme.palette.divider}`, borderRadius: 8, fontWeight: 700 }} />
+                                    <Legend wrapperStyle={{ fontWeight: 700, paddingTop: '20px' }} />
+                                    <Bar dataKey="profitMargin" fill={theme.palette.success.main} name="Profit Margin %" radius={[0, 4, 4, 0]} />
+                                    <Bar dataKey="returnRate" fill={theme.palette.error.main} name="Loss Ratio %" radius={[0, 4, 4, 0]} />
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </Paper>
+                    </Grid>
+                </Grid>
+            </Box>
+        </LockedModuleWrapper>
     );
 };
 

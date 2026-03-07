@@ -34,6 +34,9 @@ import { useColorMode } from '../context/ThemeContext';
 
 import ChatAssistantIcon from '@mui/icons-material/Chat';
 
+import { useMyBusiness } from '../context/MyBusinessContext';
+import SettingsIcon from '@mui/icons-material/Settings';
+
 const drawerWidth = 260;
 
 const Layout = () => {
@@ -41,6 +44,7 @@ const Layout = () => {
     const colorMode = useColorMode();
     const navigate = useNavigate();
     const location = useLocation();
+    const { isUnlocked } = useMyBusiness();
     const [mobileOpen, setMobileOpen] = useState(false);
 
     const handleDrawerToggle = () => {
@@ -50,29 +54,38 @@ const Layout = () => {
     const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
     const businessRole = userInfo.businessRole || 'learner';
 
-    const allMenuItems = [
-        { type: 'subheader', text: 'Actual World Business Analytics', role: 'learner' },
+    const learnerMenuItems = [
+        { type: 'subheader', text: 'Market Analytics', role: 'learner' },
         { text: 'Dashboard', icon: <DashboardIcon />, path: '/actual-world/dashboard', role: 'learner' },
         { text: 'Descriptive', icon: <DescriptiveIcon />, path: '/descriptive', role: 'learner' },
         { text: 'Diagnostic', icon: <DiagnosticIcon />, path: '/diagnostic', role: 'learner' },
         { text: 'Predictive', icon: <PredictiveIcon />, path: '/predictive', role: 'learner' },
         { text: 'Prescriptive', icon: <PrescriptiveIcon />, path: '/prescriptive', role: 'learner' },
         { text: 'Reports', icon: <AssessmentIcon />, path: '/reports', role: 'learner' },
+    ];
 
-        { type: 'subheader', text: 'My Business Analytics', role: 'manorwoman' },
+    const manorwomanMenuItems = [
+        { type: 'subheader', text: 'Main', role: 'manorwoman' },
         { text: 'Dashboard', icon: <DashboardIcon />, path: '/my-business/dashboard', role: 'manorwoman' },
-        { text: 'Descriptive', icon: <DescriptiveIcon />, path: '/my-business/descriptive', role: 'manorwoman' },
-        { text: 'Diagnostic', icon: <DiagnosticIcon />, path: '/my-business/diagnostic', role: 'manorwoman' },
-        { text: 'Predictive', icon: <PredictiveIcon />, path: '/my-business/predictive', role: 'manorwoman' },
-        { text: 'Prescriptive', icon: <PrescriptiveIcon />, path: '/my-business/prescriptive', role: 'manorwoman' },
-        { text: 'Reports', icon: <AssessmentIcon />, path: '/my-business/reports', role: 'manorwoman' },
 
         { type: 'subheader', text: 'Data Management', role: 'manorwoman' },
         { text: 'Revenue Entry', icon: <ReceiptIcon />, path: '/revenue', role: 'manorwoman' },
         { text: 'Entry History', icon: <HistoryIcon />, path: '/entry-history', role: 'manorwoman' },
+
+        { type: 'subheader', text: 'My Business Analytics', role: 'manorwoman', locked: !isUnlocked },
+        { text: 'Descriptive', icon: <DescriptiveIcon />, path: '/my-business/descriptive', role: 'manorwoman', locked: !isUnlocked },
+        { text: 'Diagnostic', icon: <DiagnosticIcon />, path: '/my-business/diagnostic', role: 'manorwoman', locked: !isUnlocked },
+        { text: 'Predictive', icon: <PredictiveIcon />, path: '/my-business/predictive', role: 'manorwoman', locked: !isUnlocked },
+        { text: 'Prescriptive', icon: <PrescriptiveIcon />, path: '/my-business/prescriptive', role: 'manorwoman', locked: !isUnlocked },
+
+        { type: 'subheader', text: 'Reports', role: 'manorwoman', locked: !isUnlocked },
+        { text: 'Personalized Reports', icon: <AssessmentIcon />, path: '/my-business/reports', role: 'manorwoman', locked: !isUnlocked },
+
+        { type: 'subheader', text: 'System', role: 'manorwoman' },
+        { text: 'Settings', icon: <SettingsIcon />, path: '/settings', role: 'manorwoman' },
     ];
 
-    const menuItems = allMenuItems.filter(item => item.role === businessRole);
+    const menuItems = businessRole === 'manorwoman' ? manorwomanMenuItems : learnerMenuItems;
 
     const drawer = (
         <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', bgcolor: 'background.paper', borderRight: '1px solid rgba(255,255,255,0.05)' }}>
@@ -123,12 +136,15 @@ const Layout = () => {
                             <ListItem key={item.text} disablePadding>
                                 <ListItemButton
                                     selected={location.pathname === item.path}
-                                    onClick={() => navigate(item.path)}
+                                    onClick={() => !item.locked && navigate(item.path)}
+                                    disabled={item.locked}
                                     sx={{
                                         mx: 2,
                                         my: 0.5,
                                         borderRadius: 3,
                                         py: 1, // Slightly reduced to fit more items
+                                        opacity: item.locked ? 0.5 : 1,
+                                        cursor: item.locked ? 'not-allowed' : 'pointer',
                                         '&.Mui-selected': {
                                             background: `linear-gradient(90deg, ${theme.palette.primary.main}25 0%, transparent 100%)`,
                                             color: theme.palette.primary.main,

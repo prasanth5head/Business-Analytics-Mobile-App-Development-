@@ -50,7 +50,7 @@ export default function Chatai() {
                 { headers: { "Authorization": token ? `Bearer ${token}` : "" } }
             );
 
-            setMessages((prev) => [...prev, { role: "ai", text: res.data.response || "No reply" }]);
+            setMessages((prev) => [...prev, { role: "ai", text: res.data.reply || "Sorry, I couldn't generate a response. Please try again." }]);
         } catch (err) {
             console.error("Chat fetch error:", err);
             const errorMsg = err.response?.data?.message || "Connection error. Please check server.";

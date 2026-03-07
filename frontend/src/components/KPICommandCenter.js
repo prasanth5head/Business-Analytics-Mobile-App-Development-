@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { Box, Typography, Card, Grid, IconButton } from '@mui/material';
-import { motion, Reorder } from 'framer-motion';
+import { Box, Typography, Card, IconButton } from '@mui/material';
+import { Reorder } from 'framer-motion';
 import { GripVertical, MoreVertical, TrendingUp, Users, DollarSign, Activity } from 'lucide-react';
+import { useMyBusiness } from '../context/MyBusinessContext';
+import { useMarket } from '../context/MarketContext';
 
 const KPICard = ({ item }) => (
     <Reorder.Item
@@ -36,8 +38,8 @@ const KPICard = ({ item }) => (
                 </Box>
             </Box>
             <Box sx={{ textAlign: 'right' }}>
-                <Typography variant="caption" sx={{ color: item.trend >= 0 ? '#4caf50' : '#f44336', fontWeight: 900 }}>
-                    {item.trend >= 0 ? '+' : ''}{item.trend}%
+                <Typography variant="caption" sx={{ color: (typeof item.trend === 'string' && item.trend.includes('▼')) ? '#f44336' : '#4caf50', fontWeight: 900 }}>
+                    {item.trend}
                 </Typography>
                 <IconButton size="small" sx={{ ml: 1, color: 'rgba(255, 255, 255, 0.3)' }}>
                     <MoreVertical size={16} />
@@ -48,12 +50,33 @@ const KPICard = ({ item }) => (
 );
 
 const KPICommandCenter = () => {
+    // Determine which context to use
+    const myBusiness = useMyBusiness();
+    const market = useMarket();
+
+    // Default to myBusiness data if available (active), else fallback to market (learner)
+    const context = myBusiness?.businessData ? myBusiness : market;
+    const data = context?.businessData || context?.marketData || {};
+    const { summary = {} } = data;
+
     const [items, setItems] = useState([
-        { id: 1, title: 'TOTAL REVENUE', value: '₹1,24,500', trend: 12.5, color: '#4caf50', icon: <DollarSign color="#4caf50" size={24} /> },
-        { id: 2, title: 'ACTIVE CUSTOMERS', value: '840', trend: 4.2, color: '#2196f3', icon: <Users color="#2196f3" size={24} /> },
-        { id: 3, title: 'PROFIT MARGIN', value: '32%', trend: -1.5, color: '#06B6D4', icon: <TrendingUp sx={{ color: '#06B6D4' }} size={24} /> },
-        { id: 4, title: 'OPERATIONAL EFFICIENCY', value: '88%', trend: 0.8, color: '#9c27b0', icon: <Activity color="#9c27b0" size={24} /> },
+        { id: 1, title: 'TOTAL REVENUE', value: `₹${(summary.totalSales || 0).toLocaleString()}`, trend: summary.growthRate || '+1.2%', color: '#4caf50', icon: <DollarSign color="#4caf50" size={24} /> },
+        { id: 2, title: 'ACTIVE CUSTOMERS', value: (summary.activeUsers || 0).toLocaleString(), trend: summary.customerGrowth || '+5.0%', color: '#2196f3', icon: <Users color="#2196f3" size={24} /> },
+        { id: 3, title: 'PROFIT MARGIN', value: `${summary.totalSales > 0 ? Math.round((summary.totalProfit / summary.totalSales) * 100) : 0}%`, trend: summary.profitGrowth || '+3.4%', color: '#06B6D4', icon: <TrendingUp color="#06B6D4" size={24} /> },
+        { id: 4, title: 'OPERATIONAL EFFICIENCY', value: '92%', trend: '+0.8%', color: '#9c27b0', icon: <Activity color="#9c27b0" size={24} /> },
     ]);
+
+    // Update items when summary changes
+    React.useEffect(() => {
+        if (summary && summary.totalSales !== undefined) {
+            setItems([
+                { id: 1, title: 'TOTAL REVENUE', value: `₹${(summary.totalSales || 0).toLocaleString()}`, trend: summary.growthRate || '+1.2%', color: '#4caf50', icon: <DollarSign color="#4caf50" size={24} /> },
+                { id: 2, title: 'ACTIVE CUSTOMERS', value: (summary.activeUsers || 0).toLocaleString(), trend: summary.customerGrowth || '+5.0%', color: '#2196f3', icon: <Users color="#2196f3" size={24} /> },
+                { id: 3, title: 'PROFIT MARGIN', value: `${summary.totalSales > 0 ? Math.round((summary.totalProfit / summary.totalSales) * 100) : 0}%`, trend: summary.profitGrowth || '+3.4%', color: '#06B6D4', icon: <TrendingUp color="#06B6D4" size={24} /> },
+                { id: 4, title: 'OPERATIONAL EFFICIENCY', value: '92%', trend: '+0.8%', color: '#9c27b0', icon: <Activity color="#9c27b0" size={24} /> },
+            ]);
+        }
+    }, [summary]);
 
     return (
         <Box sx={{ width: '100%', mb: 4 }}>

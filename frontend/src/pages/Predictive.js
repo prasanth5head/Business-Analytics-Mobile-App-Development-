@@ -32,12 +32,20 @@ const Predictive = () => {
     const { aiAnalysis } = aiRecommendations || {};
 
     const lastSale = salesData[salesData.length - 1].sales;
-    const scenarioData = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'].map((m, i) => ({
-        month: m,
-        currentPath: Math.round(lastSale * (1 + (i * 0.05))),
-        optimistic: Math.round(lastSale * (1 + (i * 0.15))),
-        pessimistic: Math.round(lastSale * (1 - (i * 0.10))),
-    }));
+    const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const currentMonth = new Date().getMonth();
+
+    const scenarioData = Array.from({ length: 6 }, (_, i) => {
+        const date = new Date();
+        date.setMonth(currentMonth + i);
+        const mName = MONTH_NAMES[date.getMonth()];
+        return {
+            month: mName,
+            currentPath: Math.round(lastSale * (1 + (i * 0.05))),
+            optimistic: Math.round(lastSale * (1 + (i * 0.15))),
+            pessimistic: Math.round(lastSale * (1 - (i * 0.10))),
+        };
+    });
 
     const churnChartData = [
         { name: 'Low Risk', value: 750, fill: theme.palette.success.main },

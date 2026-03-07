@@ -3,7 +3,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const connectDB = require('./config/db');
-const { GoogleGenAI } = require("@google/genai");
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 const jwt = require('jsonwebtoken');
 const http = require('http');
 const { Server } = require('socket.io');
@@ -81,7 +81,6 @@ if (cluster.isMaster) {
   });
 
   // Redis Pub/Sub to Socket.io bridge
-  // Each worker process listens to redis. When a job is done, it emits to connected clients.
   const sub = redis.duplicate();
   sub.on('message', (channel, message) => {
     if (channel === 'ai_results') {
@@ -99,25 +98,29 @@ if (cluster.isMaster) {
 
   const { protect } = require('./middleware/authMiddleware');
 
-  // Queue-based Chat Handler
+  // Synchronous Chat Handler
   const chatHandler = async (req, res) => {
     try {
       const { prompt } = req.body;
       if (!prompt || prompt.trim() === "")
         return res.status(400).json({ message: "Prompt required" });
 
-      // Push to queue
-      const job = await aiQueue.add('chat-task', {
-        type: 'chat',
-        prompt,
-        userId: req.user._id // Using _id from the fetched user object
-      });
+      console.log("AI Prompt Received:", prompt);
 
-      res.json({ message: "Job queued", jobId: job.id });
+      const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+      const result = await model.generateContent(prompt);
+      const aiResponse = await result.response;
+      const text = aiResponse.text();
+
+      console.log("AI Response Generated:", text);
+
+      res.json({ reply: text });
     }
     catch (err) {
-      console.error("AI Queue Error:", err);
-      res.status(500).json({ message: "Queue Error: " + err.message });
+      console.error("AI Chat Error:", err);
+      res.status(500).json({ message: "AI Error: " + err.message });
     }
   };
 
@@ -137,9 +140,6 @@ if (cluster.isMaster) {
     console.log(`Worker ${process.pid} started server on port ${PORT}`);
 
     // START THE AI WORKER LOGIC
-    // This makes this process handle both incoming web requests AND background tasks
     require('./worker');
   });
 }
-
-

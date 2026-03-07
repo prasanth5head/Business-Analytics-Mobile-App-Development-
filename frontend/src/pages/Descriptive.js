@@ -128,28 +128,76 @@ const Descriptive = () => {
                         </ResponsiveContainer>
                     </Paper>
                 </Grid>
-                <Grid item xs={12} md={12}>
-                    <Paper sx={{ p: 5, height: '100%', borderRadius: 3 }}>
-                        <Typography variant="h6" gutterBottom fontWeight="bold" color="text.primary">Category Contribution</Typography>
-                        <ResponsiveContainer width="100%" height={250}>
+                <Grid item xs={12} md={7}>
+                    <Paper sx={{ p: 4, height: '100%', borderRadius: 3, border: `1px solid ${theme.palette.divider}` }}>
+                        <Typography variant="h5" gutterBottom fontWeight="900" color="text.primary" mb={3}>Category Contribution (Value Map)</Typography>
+                        <Typography variant="caption" color="text.secondary" sx={{ mb: 2, display: 'block' }}>
+                            A Treemap view of market weight per category. Larger blocks represent higher contribution.
+                        </Typography>
+                        <ResponsiveContainer width="100%" height={350}>
                             <PieChart>
-                                <Pie data={productData} cx="50%" cy="50%" innerRadius={80} outerRadius={120} paddingAngle={5} dataKey="profitMargin"
-                                    label={({ name }) => name}>
+                                <Pie
+                                    data={productData}
+                                    cx="50%"
+                                    cy="50%"
+                                    innerRadius={100}
+                                    outerRadius={140}
+                                    paddingAngle={5}
+                                    dataKey="profitMargin"
+                                    stroke="none"
+                                >
                                     {productData.map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                     ))}
                                 </Pie>
-                                <Tooltip />
+                                <Tooltip contentStyle={{ backgroundColor: theme.palette.background.paper, border: 'none', borderRadius: 8, boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }} />
+                                <Legend verticalAlign="bottom" height={36} />
                             </PieChart>
                         </ResponsiveContainer>
-                        <Box sx={{ mt: 4, display: 'flex', flexWrap: 'wrap', gap: 2, justifyContent: 'center' }}>
-                            {productData.map((item, i) => (
-                                <Box key={item.name} sx={{ display: 'flex', alignItems: 'center', mb: 0.5, p: 1, border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 150 }}>
-                                        <Box sx={{ width: 14, height: 14, borderRadius: '50%', bgcolor: COLORS[i % COLORS.length] }} />
-                                        <Typography variant="body2" color="text.primary">{item.name}</Typography>
+                    </Paper>
+                </Grid>
+                <Grid item xs={12} md={5}>
+                    <Paper sx={{ p: 4, height: '100%', borderRadius: 3, border: `1px solid ${theme.palette.divider}`, background: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.01)' }}>
+                        <Typography variant="h5" gutterBottom fontWeight="900" color="text.primary" mb={1}>Market Attribute Spikes</Typography>
+                        <Typography variant="caption" color="text.secondary" sx={{ mb: 3, display: 'block' }}>
+                            Arrow-like spikes indicating strength in different business vectors.
+                        </Typography>
+                        <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                            <ResponsiveContainer width="100%" height={300}>
+                                <PieChart>
+                                    <Pie
+                                        data={[
+                                            { name: 'Stability', value: 85, fill: theme.palette.primary.main },
+                                            { name: 'Growth', value: 70, fill: theme.palette.secondary.main },
+                                            { name: 'Risk', value: 30, fill: theme.palette.error.main },
+                                            { name: 'Retention', value: 95, fill: theme.palette.success.main },
+                                        ]}
+                                        cx="50%"
+                                        cy="50%"
+                                        startAngle={180}
+                                        endAngle={0}
+                                        innerRadius={60}
+                                        outerRadius={100}
+                                        paddingAngle={5}
+                                        dataKey="value"
+                                    >
+                                        <Cell fill={theme.palette.primary.main} />
+                                        <Cell fill={theme.palette.secondary.main} />
+                                        <Cell fill={theme.palette.error.main} />
+                                        <Cell fill={theme.palette.success.main} />
+                                    </Pie>
+                                    <Tooltip />
+                                </PieChart>
+                            </ResponsiveContainer>
+                        </Box>
+                        <Box sx={{ mt: 2 }}>
+                            {['Stability', 'Growth', 'Risk', 'Retention'].map((label, i) => (
+                                <Box key={label} sx={{ display: 'flex', justifyContent: 'space-between', mb: 1.5 }}>
+                                    <Typography variant="body2" fontWeight="700" color="text.secondary">{label}</Typography>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                        <ArrowUpward sx={{ fontSize: 16, color: i === 2 ? 'error.main' : 'success.main', transform: i === 2 ? 'rotate(180deg)' : 'none' }} />
+                                        <Typography variant="body2" fontWeight="900" color="text.primary">{[85, 70, 30, 95][i]}%</Typography>
                                     </Box>
-                                    <Typography variant="body2" fontWeight="bold" color="text.primary" sx={{ ml: 2 }}>{item.profitMargin.toFixed(1)}%</Typography>
                                 </Box>
                             ))}
                         </Box>
@@ -159,39 +207,41 @@ const Descriptive = () => {
 
             {/* Data Table */}
             <Paper sx={{ p: 3, borderRadius: 3 }}>
-                <Typography variant="h6" gutterBottom fontWeight="bold" color="text.primary">Raw Data (Live Ticker)</Typography>
-                <TableContainer>
-                    <Table size="small">
-                        <TableHead>
-                            <TableRow sx={{ bgcolor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)' }}>
-                                <TableCell sx={{ fontWeight: 'bold', color: 'text.primary' }}>Month</TableCell>
-                                <TableCell align="right" sx={{ fontWeight: 'bold', color: 'text.primary' }}>Sales (₹)</TableCell>
-                                <TableCell align="right" sx={{ fontWeight: 'bold', color: 'text.primary' }}>Profit (₹)</TableCell>
-                                <TableCell align="right" sx={{ fontWeight: 'bold', color: 'text.primary' }}>Price (₹)</TableCell>
-                                <TableCell align="right" sx={{ fontWeight: 'bold', color: 'text.primary' }}>Complaints</TableCell>
-                                <TableCell align="right" sx={{ fontWeight: 'bold', color: 'text.primary' }}>Market Status</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {salesData.map((row) => (
-                                <TableRow key={row.p}>
-                                    <TableCell sx={{ color: 'text.primary' }}>{row.p}</TableCell>
-                                    <TableCell align="right" sx={{ color: 'text.primary' }}>{row.sales.toLocaleString()}</TableCell>
-                                    <TableCell align="right" sx={{ color: 'text.primary' }}>{row.profit.toLocaleString()}</TableCell>
-                                    <TableCell align="right" sx={{ color: 'text.primary' }}>₹{row.price}</TableCell>
-                                    <TableCell align="right" sx={{ color: 'text.primary' }}>{row.complaints}</TableCell>
-                                    <TableCell align="right">
-                                        <Chip
-                                            label={row.sales > 4500 ? 'Bullish' : row.sales > 3500 ? 'Stable' : 'Bearish'}
-                                            size="small"
-                                            color={row.sales > 4500 ? 'success' : row.sales > 3500 ? 'primary' : 'error'}
-                                        />
-                                    </TableCell>
+                <Typography variant="h6" gutterBottom fontWeight="bold" color="text.primary">Raw Data (Live Ticker - 200 Records)</Typography>
+                <Box sx={{ maxHeight: 600, overflowY: 'auto' }}>
+                    <TableContainer>
+                        <Table size="small">
+                            <TableHead>
+                                <TableRow sx={{ bgcolor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)' }}>
+                                    <TableCell sx={{ fontWeight: 'bold', color: 'text.primary' }}>Month</TableCell>
+                                    <TableCell align="right" sx={{ fontWeight: 'bold', color: 'text.primary' }}>Sales (₹)</TableCell>
+                                    <TableCell align="right" sx={{ fontWeight: 'bold', color: 'text.primary' }}>Profit (₹)</TableCell>
+                                    <TableCell align="right" sx={{ fontWeight: 'bold', color: 'text.primary' }}>Price (₹)</TableCell>
+                                    <TableCell align="right" sx={{ fontWeight: 'bold', color: 'text.primary' }}>Complaints</TableCell>
+                                    <TableCell align="right" sx={{ fontWeight: 'bold', color: 'text.primary' }}>Market Status</TableCell>
                                 </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
+                            </TableHead>
+                            <TableBody>
+                                {salesData.map((row) => (
+                                    <TableRow key={row.p}>
+                                        <TableCell sx={{ color: 'text.primary' }}>{row.p}</TableCell>
+                                        <TableCell align="right" sx={{ color: 'text.primary' }}>{row.sales.toLocaleString()}</TableCell>
+                                        <TableCell align="right" sx={{ color: 'text.primary' }}>{row.profit.toLocaleString()}</TableCell>
+                                        <TableCell align="right" sx={{ color: 'text.primary' }}>₹{row.price}</TableCell>
+                                        <TableCell align="right" sx={{ color: 'text.primary' }}>{row.complaints}</TableCell>
+                                        <TableCell align="right">
+                                            <Chip
+                                                label={row.sales > 4500 ? 'Bullish' : row.sales > 3500 ? 'Stable' : 'Bearish'}
+                                                size="small"
+                                                color={row.sales > 4500 ? 'success' : row.sales > 3500 ? 'primary' : 'error'}
+                                            />
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
+                </Box>
             </Paper>
         </Box>
     );

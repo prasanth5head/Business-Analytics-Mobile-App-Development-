@@ -1,5 +1,5 @@
 const { Worker } = require('bullmq');
-const { GoogleGenAI } = require("@google/genai");
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 const { redisConfig, redis } = require('./config/redis');
 const dotenv = require('dotenv');
 
@@ -11,17 +11,17 @@ const worker = new Worker(process.env.AI_QUEUE_NAME || 'ai-tasks-queue', async (
     const key = process.env.GEMINI_API_KEY;
 
     try {
-        const ai = new GoogleGenAI({ apiKey: key });
+        const genAI = new GoogleGenerativeAI(key);
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
         if (type === 'chat') {
-            const response = await ai.models.generateContent({
-                model: "gemini-3-flash-preview",
-                contents: prompt,
-            });
-            const result = { type: 'chat_result', response: response.text, userId };
-            // Publish result to redis for the main server to pick up and send via socket
-            await redis.publish('ai_results', JSON.stringify(result));
-            return result;
+            const result = await model.generateContent(prompt);
+            const response = await result.response;
+            const text = response.text();
+
+            const chatResult = { type: 'chat_result', response: text, userId };
+            await redis.publish('ai_results', JSON.stringify(chatResult));
+            return chatResult;
         }
 
         if (type === 'recommendation') {
@@ -34,13 +34,11 @@ const worker = new Worker(process.env.AI_QUEUE_NAME || 'ai-tasks-queue', async (
             1. "aiAnalysis": a 2-sentence summary.
             2. "recommendations": array of 3 objects with "title", "recommendation", "type", "confidence".`;
 
-            const aiResult = await ai.models.generateContent({
-                model: "gemini-3-flash-preview",
-                contents: recommendationPrompt,
-            });
+            const aiResult = await model.generateContent(recommendationPrompt);
+            const response = await aiResult.response;
+            const rawText = response.text().replace(/```json|```/g, "").trim();
 
-            const text = aiResult.text.replace(/```json|```/g, "").trim();
-            const parsedData = JSON.parse(text);
+            const parsedData = JSON.parse(rawText);
             const result = { type: 'recommendation_result', response: parsedData, userId };
             await redis.publish('ai_results', JSON.stringify(result));
             return result;

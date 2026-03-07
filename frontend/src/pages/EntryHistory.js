@@ -155,8 +155,7 @@ export default function EntryHistory() {
                             <Table>
                                 <TableHead sx={{ bgcolor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)' }}>
                                     <TableRow>
-                                        <TableCell sx={{ fontWeight: 900, color: 'text.primary', py: 2.5 }}>DATE LOGGED</TableCell>
-                                        <TableCell sx={{ fontWeight: 900, color: 'text.primary' }}>TARGET MONTH</TableCell>
+                                        <TableCell sx={{ fontWeight: 900, color: 'text.primary', py: 2.5 }}>MONTH</TableCell>
                                         <TableCell sx={{ fontWeight: 900, color: 'text.primary' }}>CATEGORY</TableCell>
                                         <TableCell sx={{ fontWeight: 900, color: 'text.primary' }}>REVENUE</TableCell>
                                         <TableCell sx={{ fontWeight: 900, color: 'text.primary' }}>PROFIT</TableCell>
@@ -166,15 +165,6 @@ export default function EntryHistory() {
                                 <TableBody>
                                     {batch.map((row) => (
                                         <TableRow key={row._id} sx={{ '&:hover': { bgcolor: theme.palette.action.hover } }}>
-                                            <TableCell sx={{ color: 'text.secondary', fontWeight: 600 }}>
-                                                <Box display="flex" alignItems="center" gap={1}>
-                                                    <AccessTime fontSize="small" />
-                                                    {new Date(row.createdAt).toLocaleString(undefined, {
-                                                        month: 'short', day: 'numeric',
-                                                        hour: '2-digit', minute: '2-digit'
-                                                    })}
-                                                </Box>
-                                            </TableCell>
                                             <TableCell>
                                                 <Chip label={row.month} size="small" variant="outlined" sx={{ fontWeight: 800, color: 'text.primary', borderColor: 'divider' }} />
                                             </TableCell>
@@ -182,7 +172,7 @@ export default function EntryHistory() {
                                                 {row.product || 'All'}
                                             </TableCell>
                                             <TableCell sx={{ fontWeight: 800, color: theme.palette.primary.main }}>₹{(row.amount || 0).toLocaleString()}</TableCell>
-                                            <TableCell sx={{ fontWeight: 800, color: '#4caf50' }}>₹{(row.profit || 0).toLocaleString()}</TableCell>
+                                            <TableCell sx={{ fontWeight: 800, color: row.profit >= 0 ? '#4caf50' : '#f44336' }}>₹{(row.profit || 0).toLocaleString()}</TableCell>
                                             <TableCell sx={{ fontWeight: 800, color: '#f44336' }}>₹{(row.loss || 0).toLocaleString()}</TableCell>
                                         </TableRow>
                                     ))}
