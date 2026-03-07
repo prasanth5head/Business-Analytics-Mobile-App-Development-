@@ -2,7 +2,7 @@ import React from "react";
 import ReactMarkdown from "react-markdown";
 import {
     Box, Paper, TextField, IconButton,
-    Typography, Avatar, Fade
+    Typography, Avatar, Fade, Container, Button
 } from "@mui/material";
 import SendIcon from "@mui/icons-material/Send";
 import SmartToyIcon from "@mui/icons-material/SmartToy";
