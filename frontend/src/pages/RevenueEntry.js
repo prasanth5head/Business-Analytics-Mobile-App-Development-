@@ -29,8 +29,10 @@ export default function RevenueEntry() {
     const [rows, setRows] = useState(
         MONTHS.map(m => ({ month: m, product: '', revenue: '', profit: '', loss: 0 }))
     );
+    const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
     const [snack, setSnack] = useState({ open: false, msg: '', severity: 'success' });
     const [saving, setSaving] = useState(false);
+    const { businessData } = useMyBusiness();
 
     const handleChange = (index, field, value) => {
         setRows(prev => {
@@ -48,6 +50,19 @@ export default function RevenueEntry() {
     };
 
     const handleSave = async () => {
+        const currentYear = new Date().getFullYear();
+        if (selectedYear > currentYear) {
+            setSnack({ open: true, msg: `❌ Year ${selectedYear} is in the future. Please enter valid data.`, severity: 'error' });
+            return;
+        }
+
+        // Check for duplicate year in existing business data
+        const existingYears = businessData?.salesData?.map(s => Number(s.year)) || [];
+        if (existingYears.includes(Number(selectedYear))) {
+            setSnack({ open: true, msg: `❌ Financial records for year ${selectedYear} already exist.`, severity: 'error' });
+            return;
+        }
+
         const toSave = rows.filter(r => r.revenue && r.month);
         if (toSave.length === 0) {
             setSnack({ open: true, msg: 'Please enter at least one month of revenue data.', severity: 'warning' });
@@ -61,7 +76,8 @@ export default function RevenueEntry() {
                 product: row.product || 'All',
                 amount: Number(row.revenue),
                 profit: Number(row.profit) || 0,
-                loss: Number(row.revenue) - (Number(row.profit) || 0)
+                loss: Number(row.revenue) - (Number(row.profit) || 0),
+                year: selectedYear
             }));
 
             await api.post('/api/market/revenue-bulk', { records: formattedRecords });
@@ -93,13 +109,33 @@ export default function RevenueEntry() {
     return (
         <Box sx={{ p: { xs: 2, md: 4 }, maxWidth: 1100, mx: 'auto' }}>
             {/* Header */}
-            <Box mb={4}>
-                <Typography variant="h3" sx={{ fontWeight: 900, color: 'text.primary', mb: 1, letterSpacing: '-0.04em' }}>
-                    Annual Profit / Loss Entry
-                </Typography>
-                <Typography color="text.secondary" variant="body1" sx={{ fontWeight: 500 }}>
-                    Populate your 12-month financial records. System reflects these in real-time analytics.
-                </Typography>
+            <Box mb={4} display="flex" justifyContent="space-between" alignItems="center" flexWrap="wrap" gap={2}>
+                <Box>
+                    <Typography variant="h3" sx={{ fontWeight: 900, color: 'text.primary', mb: 1, letterSpacing: '-0.04em' }}>
+                        Annual Profit / Loss Entry
+                    </Typography>
+                    <Typography color="text.secondary" variant="body1" sx={{ fontWeight: 500 }}>
+                        Populate your 12-month financial records. System reflects these in real-time analytics.
+                    </Typography>
+                </Box>
+                <Paper sx={{ p: 2, borderRadius: 3, border: `1px solid ${theme.palette.divider}`, background: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.02)' : 'white' }}>
+                    <Typography variant="caption" sx={{ fontWeight: 800, color: 'text.secondary', display: 'block', mb: 1 }}>SELECT AUDIT YEAR</Typography>
+                    <TextField
+                        type="number"
+                        size="small"
+                        value={selectedYear}
+                        onChange={(e) => setSelectedYear(e.target.value)}
+                        variant="outlined"
+                        sx={{
+                            width: 140,
+                            '& .MuiOutlinedInput-root': {
+                                borderRadius: 2,
+                                fontWeight: 900,
+                                '& input': { textAlign: 'center' }
+                            }
+                        }}
+                    />
+                </Paper>
             </Box>
 
             {/* Summary Cards */}

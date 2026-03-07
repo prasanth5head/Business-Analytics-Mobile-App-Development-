@@ -111,6 +111,18 @@ const Dashboard = () => {
         setPage(1);
     };
 
+    const { salesData = [], productData = [], summary = {}, strategicPriorities = [] } = marketData || {};
+
+    const filteredPriorities = useMemo(() => {
+        if (selectedYear === 'All') return strategicPriorities;
+        return strategicPriorities.filter(p => p.year === parseInt(selectedYear) || p.year === selectedYear);
+    }, [selectedYear, strategicPriorities]);
+
+    const filteredSalesData = useMemo(() => {
+        if (selectedYear === 'All') return salesData.slice(-12);
+        return salesData.filter(s => s.year === selectedYear);
+    }, [selectedYear, salesData]);
+
     if (loading && !marketData) {
         return (
             <Box sx={{ p: 4 }}>
@@ -127,21 +139,9 @@ const Dashboard = () => {
 
     if (error) return <Alert severity="error">{error}</Alert>;
 
-    const { salesData = [], productData = [], summary = {}, strategicPriorities = [] } = marketData || {};
-
     const years = [...new Set(strategicPriorities.map(p => p.year))].sort((a, b) => b - a);
 
-    const filteredPriorities = useMemo(() => {
-        if (selectedYear === 'All') return strategicPriorities;
-        return strategicPriorities.filter(p => p.year === parseInt(selectedYear) || p.year === selectedYear);
-    }, [selectedYear, strategicPriorities]);
-
     const paginatedPriorities = filteredPriorities.slice((page - 1) * itemsPerPage, page * itemsPerPage);
-
-    const filteredSalesData = useMemo(() => {
-        if (selectedYear === 'All') return salesData.slice(-12);
-        return salesData.filter(s => s.year === selectedYear);
-    }, [selectedYear, salesData]);
 
     return (
         <Box>
