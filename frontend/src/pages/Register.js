@@ -69,28 +69,38 @@ const Register = () => {
                 </IconButton>
             </Box>
 
-            {/* Creative Aurora Glows */}
+            {/* Background Video */}
+            <video
+                autoPlay
+                loop
+                muted
+                playsInline
+                style={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    minWidth: '100%',
+                    minHeight: '100%',
+                    width: 'auto',
+                    height: 'auto',
+                    objectFit: 'cover',
+                    transform: 'translate(-50%, -50%)',
+                    zIndex: 0,
+                    opacity: 0.65,
+                }}
+            >
+                <source src="/Intro.mp4" type="video/mp4" />
+            </video>
+
+            {/* Premium Overlay */}
             <Box sx={{
                 position: 'absolute',
-                bottom: '-10%',
-                right: '-10%',
-                width: 500,
-                height: 500,
-                borderRadius: '50%',
-                background: `radial-gradient(circle, ${theme.palette.secondary.main}20 0%, transparent 70%)`,
-                filter: 'blur(100px)',
-                zIndex: 0
-            }} />
-            <Box sx={{
-                position: 'absolute',
-                top: '15%',
-                left: '5%',
-                width: 350,
-                height: 350,
-                borderRadius: '50%',
-                background: `radial-gradient(circle, ${theme.palette.primary.main}10 0%, transparent 70%)`,
-                filter: 'blur(90px)',
-                zIndex: 0
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%',
+                background: 'rgba(0,0,0,0.5)',
+                zIndex: 1,
             }} />
 
             <Container maxWidth="xs" sx={{ zIndex: 1 }}>
@@ -100,11 +110,11 @@ const Register = () => {
                         sx={{
                             p: { xs: 4, md: 6 },
                             borderRadius: 8,
-                            bgcolor: theme.palette.mode === 'dark' ? 'rgba(18, 18, 18, 0.7)' : 'rgba(255, 255, 255, 0.9)',
-                            backdropFilter: 'blur(20px)',
-                            border: `1px solid ${theme.palette.divider}`,
+                            bgcolor: theme.palette.mode === 'dark' ? 'rgba(18, 18, 18, 0.75)' : 'rgba(255, 255, 255, 0.85)',
+                            backdropFilter: 'blur(30px) saturate(160%)',
+                            border: `1px solid rgba(255, 255, 255, 0.1)`,
                             textAlign: 'center',
-                            boxShadow: theme.palette.mode === 'dark' ? '0 20px 80px rgba(0,0,0,0.5)' : '0 10px 40px rgba(0,0,0,0.05)',
+                            boxShadow: '0 50px 100px -20px rgba(0,0,0,0.5)',
                             transition: 'all 0.3s ease',
                             '&:hover': {
                                 border: `1px solid ${theme.palette.secondary.main}30`,

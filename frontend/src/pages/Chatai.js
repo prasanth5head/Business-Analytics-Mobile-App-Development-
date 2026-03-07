@@ -7,13 +7,21 @@ import {
 import SendIcon from "@mui/icons-material/Send";
 import SmartToyIcon from "@mui/icons-material/SmartToy";
 import PersonIcon from "@mui/icons-material/Person";
+import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
+import { motion, AnimatePresence } from "framer-motion";
 import api from "../api";
+
+const SUGGESTIONS = [
+    "What is my revenue trend?",
+    "Which products are at high risk?",
+    "Analyze my profit margins",
+    "Predict next month's sales"
+];
 
 export default function Chatai() {
     const [prompt, setPrompt] = React.useState("");
-    const [messages, setMessages] = React.useState([
-        { role: "ai", text: "Hello! I'm your Business Bot 🤖 How can I help with your analytics today?" }
-    ]);
+    const [messages, setMessages] = React.useState([]);
+    const [hasStarted, setHasStarted] = React.useState(false);
     const chatEndRef = React.useRef(null);
     const inputRef = React.useRef(null);
 
@@ -29,9 +37,16 @@ export default function Chatai() {
         }, 400);
     }, []);
 
+    const handleSuggestionClick = (text) => {
+        setPrompt(text);
+        inputRef.current?.focus();
+    };
+
     const handleSubmit = async (e) => {
-        e.preventDefault();
+        if (e) e.preventDefault();
         if (!prompt.trim()) return;
+
+        if (!hasStarted) setHasStarted(true);
 
         const userMsg = { role: "user", text: prompt };
         setMessages((prev) => [...prev, userMsg]);
@@ -64,142 +79,208 @@ export default function Chatai() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            p: { xs: 0, sm: 2 },
+            background: 'linear-gradient(135deg, #0a0a0b 0%, #111114 100%)',
             boxSizing: 'border-box',
             overflow: 'hidden'
         }}>
-            <Fade in={true} timeout={500}>
-                <Paper elevation={12} sx={{
-                    width: { xs: '100%', sm: '95%', md: 650 },
-                    height: { xs: '100vh', sm: 'calc(100vh - 32px)', md: '88vh' },
-                    maxHeight: 900,
-                    display: "flex",
-                    flexDirection: "column",
-                    borderRadius: { xs: 0, sm: 4, md: 6 },
-                    overflow: 'hidden',
-                    background: 'rgba(15, 15, 15, 0.97)',
-                    backdropFilter: 'blur(20px)',
-                    border: '1px solid rgba(255, 255, 255, 0.07)',
-                }}>
-
-                    {/* ── Header ── */}
-                    <Box display="flex" alignItems="center" gap={2} px={2.5} py={2} sx={{
-                        background: 'linear-gradient(135deg, rgba(255,94,0,0.15) 0%, rgba(255,184,0,0.05) 100%)',
-                        borderBottom: '1px solid rgba(255,255,255,0.06)',
-                        flexShrink: 0
-                    }}>
-                        <Avatar sx={{ bgcolor: 'primary.main', width: 42, height: 42, boxShadow: '0 0 18px rgba(255,94,0,0.5)' }}>
-                            <SmartToyIcon />
-                        </Avatar>
-                        <Box>
-                            <Typography sx={{ fontWeight: 800, color: 'white', fontSize: '1rem', lineHeight: 1.2 }}>
-                                Business Bot
+            <Container maxWidth="md" sx={{
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: hasStarted ? 'flex-start' : 'center',
+                transition: 'all 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
+                pt: hasStarted ? 4 : 0,
+                pb: 4
+            }}>
+                {/* ── Initial State Content ── */}
+                <AnimatePresence>
+                    {!hasStarted && (
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            style={{ textAlign: 'center', marginBottom: '40px' }}
+                        >
+                            <Avatar sx={{
+                                bgcolor: 'primary.main',
+                                width: 80, height: 80,
+                                margin: '0 auto 24px',
+                                boxShadow: '0 0 40px rgba(14,165,233,0.4)',
+                                border: '2px solid rgba(255,255,255,0.1)'
+                            }}>
+                                <SmartToyIcon sx={{ fontSize: 40 }} />
+                            </Avatar>
+                            <Typography variant="h3" sx={{ fontWeight: 900, color: 'white', mb: 1, letterSpacing: '-0.04em' }}>
+                                How can I help you?
                             </Typography>
-                            <Box display="flex" alignItems="center" gap={0.6}>
-                                <Box sx={{ width: 7, height: 7, bgcolor: '#4caf50', borderRadius: '50%' }} />
-                                <Typography variant="caption" color="text.secondary">Online & Ready</Typography>
-                            </Box>
-                        </Box>
-                    </Box>
+                            <Typography variant="body1" sx={{ color: 'rgba(255,255,255,0.5)', maxWidth: 450, mx: 'auto' }}>
+                                Ask me about your business analytics, sales trends, or product risks. I'm here to analyze your data.
+                            </Typography>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
 
-                    {/* ── Messages ── */}
-                    <Box flex={1} p={2} sx={{
-                        overflowY: "auto",
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: 1.5,
-                        '&::-webkit-scrollbar': { width: '4px' },
-                        '&::-webkit-scrollbar-thumb': { background: 'rgba(255,255,255,0.1)', borderRadius: 4 },
-                    }}>
+                {/* ── Chat Messages ── */}
+                <Box sx={{
+                    flex: 1,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 3,
+                    mb: 3,
+                    overflowY: 'auto',
+                    opacity: hasStarted ? 1 : 0,
+                    visibility: hasStarted ? 'visible' : 'hidden',
+                    '&::-webkit-scrollbar': { width: '4px' },
+                    '&::-webkit-scrollbar-thumb': { background: 'rgba(255,255,255,0.05)', borderRadius: 4 },
+                }}>
+                    <AnimatePresence initial={false}>
                         {messages.map((msg, i) => (
-                            <Box key={i} display="flex"
-                                flexDirection={msg.role === "user" ? "row-reverse" : "row"}
-                                alignItems="flex-start" gap={1.2}>
+                            <motion.div
+                                key={i}
+                                initial={{ opacity: 0, x: msg.role === "user" ? 10 : -10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ duration: 0.3 }}
+                                style={{
+                                    display: 'flex',
+                                    flexDirection: msg.role === "user" ? "row-reverse" : "row",
+                                    gap: '16px',
+                                    padding: '0 8px'
+                                }}
+                            >
                                 <Avatar sx={{
-                                    width: 28, height: 28, flexShrink: 0,
-                                    bgcolor: msg.role === "user" ? 'secondary.main' : 'primary.dark'
+                                    width: 32, height: 32,
+                                    bgcolor: msg.role === "user" ? 'rgba(255,255,255,0.1)' : 'primary.main'
                                 }}>
-                                    {msg.role === "user" ? <PersonIcon sx={{ fontSize: 16 }} /> : <SmartToyIcon sx={{ fontSize: 16 }} />}
+                                    {msg.role === "user" ? <PersonIcon sx={{ fontSize: 18 }} /> : <SmartToyIcon sx={{ fontSize: 18 }} />}
                                 </Avatar>
-                                <Paper sx={{
-                                    p: '10px 14px',
-                                    maxWidth: "78%",
-                                    background: msg.role === "user"
-                                        ? 'linear-gradient(135deg, #0EA5E9, #06B6D4)'
-                                        : 'rgba(255,255,255,0.05)',
-                                    color: "white",
-                                    borderRadius: msg.role === "user" ? "18px 4px 18px 18px" : "4px 18px 18px 18px",
-                                    border: msg.role === "user" ? 'none' : '1px solid rgba(255,255,255,0.08)',
-                                    boxShadow: msg.role === "user" ? '0 3px 12px rgba(255,94,0,0.25)' : 'none',
-                                    wordBreak: 'break-word'
-                                }}>
-                                    {msg.role === "ai" ? (
-                                        <Box sx={{ '& p': { m: 0 }, '& ul': { mt: 0.5, mb: 0 }, fontSize: '0.88rem', lineHeight: 1.6 }}>
-                                            <ReactMarkdown>{msg.text}</ReactMarkdown>
-                                        </Box>
-                                    ) : (
-                                        <Typography sx={{ fontSize: '0.88rem', lineHeight: 1.6 }}>{msg.text}</Typography>
-                                    )}
-                                </Paper>
-                            </Box>
-                        ))}
-                        <div ref={chatEndRef} />
-                    </Box>
-
-                    {/* ── Input Bar ── */}
-                    <Box component="form" onSubmit={handleSubmit} px={2} py={1.5} sx={{
-                        background: 'rgba(0,0,0,0.35)',
-                        borderTop: '1px solid rgba(255,255,255,0.06)',
-                        display: 'flex',
-                        gap: 1.2,
-                        alignItems: 'center',
-                        flexShrink: 0
-                    }}>
-                        <TextField
-                            fullWidth
-                            inputRef={inputRef}
-                            placeholder="Type your message..."
-                            value={prompt}
-                            onChange={(e) => setPrompt(e.target.value)}
-                            onKeyDown={(e) => {
-                                if (e.key === 'Enter' && !e.shiftKey) {
-                                    e.preventDefault();
-                                    handleSubmit(e);
-                                }
-                            }}
-                            variant="outlined"
-                            autoComplete="off"
-                            size="small"
-                            sx={{
-                                "& .MuiOutlinedInput-root": {
+                                <Box sx={{
+                                    maxWidth: '80%',
+                                    bgcolor: msg.role === "user" ? 'transparent' : 'rgba(255,255,255,0.03)',
+                                    p: 1.5,
                                     borderRadius: 3,
-                                    background: 'rgba(255,255,255,0.04)',
-                                    fontSize: '0.9rem',
-                                    color: 'white',
-                                    '& fieldset': { borderColor: 'rgba(255,255,255,0.1)' },
-                                    '&:hover fieldset': { borderColor: 'rgba(14,165,233,0.4)' },
-                                    '&.Mui-focused fieldset': { borderColor: '#0EA5E9' },
-                                    '& input': { color: 'white' },
-                                    '& input::placeholder': { color: 'rgba(255,255,255,0.45)', opacity: 1 },
-                                }
-                            }}
-                        />
-                        <IconButton type="submit" disabled={!prompt.trim()} sx={{
-                            width: 44, height: 44, flexShrink: 0,
-                            background: prompt.trim()
-                                ? 'linear-gradient(135deg, #0EA5E9, #06B6D4)'
-                                : 'rgba(255,255,255,0.06)',
-                            color: prompt.trim() ? 'white' : 'rgba(255,255,255,0.25)',
-                            borderRadius: 2,
-                            transition: 'all 0.2s',
-                            '&:hover': { transform: 'scale(1.08)' }
-                        }}>
-                            <SendIcon sx={{ fontSize: 18 }} />
-                        </IconButton>
-                    </Box>
+                                    border: msg.role === "user" ? 'none' : '1px solid rgba(255,255,255,0.05)'
+                                }}>
+                                    <ReactMarkdown components={{
+                                        p: ({ node, ...props }) => <Typography color="white" sx={{ fontSize: '0.95rem', lineHeight: 1.7 }} {...props} />,
+                                        strong: ({ node, ...props }) => <span style={{ fontWeight: 800, color: '#0EA5E9' }} {...props} />,
+                                        li: ({ node, ...props }) => <li style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.9rem' }} {...props} />
+                                    }}>
+                                        {msg.text}
+                                    </ReactMarkdown>
+                                </Box>
+                            </motion.div>
+                        ))}
+                    </AnimatePresence>
+                    <div ref={chatEndRef} />
+                </Box>
 
-                </Paper>
-            </Fade>
+                {/* ── Suggestions Row ── */}
+                {!hasStarted && (
+                    <Box sx={{
+                        display: 'flex', flexWrap: 'wrap', gap: 1.5, justifyContent: 'center', mb: 4
+                    }}>
+                        {SUGGESTIONS.map((s, i) => (
+                            <Button
+                                key={i}
+                                component={motion.button}
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                                onClick={() => handleSuggestionClick(s)}
+                                variant="outlined"
+                                sx={{
+                                    borderRadius: 3,
+                                    px: 2.5,
+                                    py: 1.2,
+                                    borderColor: 'rgba(255,255,255,0.1)',
+                                    color: 'rgba(255,255,255,0.7)',
+                                    textTransform: 'none',
+                                    fontSize: '0.85rem',
+                                    backdropFilter: 'blur(10px)',
+                                    '&:hover': {
+                                        borderColor: 'primary.main',
+                                        bgcolor: 'rgba(14,165,233,0.05)',
+                                        color: 'white'
+                                    }
+                                }}
+                            >
+                                {s}
+                            </Button>
+                        ))}
+                    </Box>
+                )}
+
+                {/* ── Floating Input Bar ── */}
+                <Box
+                    component={motion.form}
+                    layout
+                    onSubmit={handleSubmit}
+                    sx={{
+                        position: 'relative',
+                        width: '100%',
+                        maxWidth: '750px',
+                        mx: 'auto'
+                    }}
+                >
+                    <TextField
+                        fullWidth
+                        inputRef={inputRef}
+                        placeholder="Message Business Bot..."
+                        value={prompt}
+                        onChange={(e) => setPrompt(e.target.value)}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter' && !e.shiftKey) {
+                                e.preventDefault();
+                                handleSubmit(e);
+                            }
+                        }}
+                        autoComplete="off"
+                        sx={{
+                            '& .MuiOutlinedInput-root': {
+                                p: 1.5,
+                                pr: 7,
+                                borderRadius: 4,
+                                background: 'rgba(255,255,255,0.03)',
+                                backdropFilter: 'blur(20px)',
+                                border: '1px solid rgba(255,255,255,0.1)',
+                                color: 'white',
+                                fontSize: '1rem',
+                                '& fieldset': { border: 'none' },
+                                '&:hover': { background: 'rgba(255,255,255,0.04)' },
+                                '&.Mui-focused': {
+                                    background: 'rgba(255,255,255,0.05)',
+                                    boxShadow: '0 0 30px rgba(14,165,233,0.15)',
+                                    border: '1px solid rgba(14,165,233,0.3)'
+                                }
+                            }
+                        }}
+                    />
+                    <IconButton
+                        type="submit"
+                        disabled={!prompt.trim()}
+                        sx={{
+                            position: 'absolute',
+                            right: 12,
+                            bottom: 12,
+                            bgcolor: prompt.trim() ? 'primary.main' : 'rgba(255,255,255,0.05)',
+                            color: prompt.trim() ? 'white' : 'rgba(255,255,255,0.2)',
+                            borderRadius: 3,
+                            width: 44,
+                            height: 44,
+                            '&:hover': { bgcolor: 'primary.dark' }
+                        }}
+                    >
+                        <SendIcon sx={{ fontSize: 20 }} />
+                    </IconButton>
+                    {!hasStarted && (
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 2, justifyContent: 'center' }}>
+                            <AutoFixHighIcon sx={{ color: 'rgba(255,255,255,0.3)', fontSize: 16 }} />
+                            <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.3)' }}>
+                                Business Bot can analyze your market trends & inventory efficiency
+                            </Typography>
+                        </Box>
+                    )}
+                </Box>
+            </Container>
         </Box>
     );
 }
