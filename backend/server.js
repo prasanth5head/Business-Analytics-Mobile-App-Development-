@@ -98,6 +98,8 @@ if (cluster.isMaster) {
 
   const { protect } = require('./middleware/authMiddleware');
 
+  const { generateWithFallback } = require('./config/ai');
+
   // Synchronous Chat Handler
   const chatHandler = async (req, res) => {
     try {
@@ -107,20 +109,18 @@ if (cluster.isMaster) {
 
       console.log("AI Prompt Received:", prompt);
 
-      const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-      const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
+      // Use the fallback utility instead of direct model call
+      const text = await generateWithFallback(prompt);
 
-      const result = await model.generateContent(prompt);
-      const aiResponse = await result.response;
-      const text = aiResponse.text();
-
-      console.log("AI Response Generated:", text);
+      console.log("AI Response Generated:", text.substring(0, 50) + "...");
 
       res.json({ reply: text });
     }
     catch (err) {
-      console.error("AI Chat Error:", err);
-      res.status(500).json({ message: "AI Error: " + err.message });
+      console.error("AI Chat Error Detail:", err);
+      // Clean up error message for user
+      const cleanMessage = err.message || "AI service is currently unavailable. Please try again later.";
+      res.status(500).json({ message: cleanMessage });
     }
   };
 

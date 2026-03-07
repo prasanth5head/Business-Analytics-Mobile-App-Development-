@@ -1,5 +1,5 @@
 const { Worker } = require('bullmq');
-const { GoogleGenerativeAI } = require("@google/generative-ai");
+const { generateWithFallback } = require('./config/ai');
 const { redisConfig, redis } = require('./config/redis');
 const dotenv = require('dotenv');
 
@@ -9,17 +9,10 @@ const worker = new Worker(process.env.AI_QUEUE_NAME || 'ai-tasks-queue', async (
     const { type, prompt, userId, salesData, productData, summary } = job.data;
     console.log(`[AI WORKER] Processing job ${job.id} of type ${type} for user ${userId}`);
 
-    const key = process.env.GEMINI_API_KEY;
-
     try {
-        const genAI = new GoogleGenerativeAI(key);
-        const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
-
         if (type === 'chat') {
-            console.log(`[AI CHAT] Sending prompt to gemini-3-flash-preview: "${prompt.substring(0, 50)}..."`);
-            const result = await model.generateContent(prompt);
-            const response = await result.response;
-            const text = response.text();
+            console.log(`[AI CHAT] Sending prompt to AI fallback cluster: "${prompt.substring(0, 50)}..."`);
+            const text = await generateWithFallback(prompt);
 
             console.log(`[AI CHAT] Received response (${text.length} chars)`);
             const chatResult = { type: 'chat_result', response: text, userId };
@@ -37,12 +30,11 @@ const worker = new Worker(process.env.AI_QUEUE_NAME || 'ai-tasks-queue', async (
             1. "aiAnalysis": a 2-sentence summary.
             2. "recommendations": array of 3 objects with "title", "recommendation", "type", "confidence".`;
 
-            console.log(`[AI GEN] Sending data-driven recommendation prompt to gemini-3-flash-preview`);
-            const aiResult = await model.generateContent(recommendationPrompt);
-            const response = await aiResult.response;
-            const rawText = response.text().replace(/```json|```/g, "").trim();
+            console.log(`[AI GEN] Sending data-driven recommendation prompt to AI fallback cluster`);
+            const rawText = await generateWithFallback(recommendationPrompt);
+            const cleanedText = rawText.replace(/```json|```/g, "").trim();
 
-            console.log(`[AI GEN] Raw Text Received: ${rawText.substring(0, 100)}...`);
+            console.log(`[AI GEN] Raw Text Received: ${cleanedText.substring(0, 100)}...`);
 
             try {
                 const parsedData = JSON.parse(rawText);
