@@ -19,7 +19,7 @@ import {
     PictureAsPdf as PdfIcon,
     Delete as DeleteIcon
 } from '@mui/icons-material';
-import axios from 'axios';
+import api from '../api';
 
 const Settings = () => {
     const [user, setUser] = useState({
@@ -55,7 +55,7 @@ const Settings = () => {
     const fetchUserProfile = async () => {
         setLoading(true);
         try {
-            const { data } = await axios.get('/api/users/profile', {
+            const { data } = await api.get('/api/users/profile', {
                 headers: getAuthHeaders()
             });
             setUser({
@@ -129,7 +129,7 @@ const Settings = () => {
 
         try {
             setUploadProgress(0);
-            const { data } = await axios.post('/api/upload', formData, {
+            const { data } = await api.post('/api/upload', formData, {
                 headers: {
                     ...getAuthHeaders(),
                     'Content-Type': 'multipart/form-data'
@@ -158,7 +158,7 @@ const Settings = () => {
         setSuccess('');
 
         try {
-            const { data } = await axios.put('/api/users/profile', user, {
+            const { data } = await api.put('/api/users/profile', user, {
                 headers: getAuthHeaders()
             });
 
