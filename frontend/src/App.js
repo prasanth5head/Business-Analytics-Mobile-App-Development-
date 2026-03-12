@@ -24,6 +24,7 @@ const Welcome = lazy(() => import('./pages/Welcome'));
 const Chatai = lazy(() => import('./pages/Chatai'));
 const ManualReport = lazy(() => import('./pages/ManualReport'));
 const EntryHistory = lazy(() => import('./pages/EntryHistory'));
+const Settings = lazy(() => import('./pages/Settings'));
 
 const MyDashboard = lazy(() => import('./pages/MyBusiness/MyDashboard'));
 const MyDescriptive = lazy(() => import('./pages/MyBusiness/MyDescriptive'));
@@ -73,6 +74,7 @@ function App() {
                       <Route path="reports" element={<Reports />} />
                       <Route path="revenue" element={<RevenueEntry />} />
                       <Route path="entry-history" element={<EntryHistory />} />
+                      <Route path="settings" element={<Settings />} />
                       <Route path="manual-report" element={<ManualReport />} />
                       <Route path="chat" element={<Chatai />} />
                       <Route path="my-business/dashboard" element={<MyDashboard />} />

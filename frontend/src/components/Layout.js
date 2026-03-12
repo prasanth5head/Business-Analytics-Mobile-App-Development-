@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import {
     Box,
@@ -14,7 +14,8 @@ import {
     ListItemText,
     IconButton,
     Avatar,
-    useTheme
+    useTheme,
+    LinearProgress
 } from '@mui/material';
 import {
     Menu as MenuIcon,
@@ -46,12 +47,20 @@ const Layout = () => {
     const location = useLocation();
     const { isUnlocked } = useMyBusiness();
     const [mobileOpen, setMobileOpen] = useState(false);
+    const [userInfo, setUserInfo] = useState(JSON.parse(localStorage.getItem('userInfo') || '{}'));
+
+    useEffect(() => {
+        const handleStorageChange = () => {
+            setUserInfo(JSON.parse(localStorage.getItem('userInfo') || '{}'));
+        };
+        window.addEventListener('storage', handleStorageChange);
+        return () => window.removeEventListener('storage', handleStorageChange);
+    }, []);
 
     const handleDrawerToggle = () => {
         setMobileOpen(!mobileOpen);
     };
 
-    const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
     const businessRole = userInfo.businessRole || 'learner';
 
     const learnerMenuItems = [
@@ -209,6 +218,37 @@ const Layout = () => {
                     </ListItemButton>
                 </ListItem>
             </List>
+
+            {/* Business Score Section */}
+            {businessRole === 'manorwoman' && userInfo.businessScore !== undefined && (
+                <Box sx={{
+                    m: 2,
+                    p: 2,
+                    borderRadius: 3,
+                    background: `linear-gradient(135deg, ${theme.palette.primary.main}15, ${theme.palette.secondary.main}15)`,
+                    border: `1px solid ${theme.palette.primary.main}30`
+                }}>
+                    <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                        Your Business Score
+                    </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 1, mt: 0.5, mb: 1.5 }}>
+                        <Typography variant="h4" sx={{ fontWeight: 900, color: theme.palette.primary.main, lineHeight: 1 }}>
+                            {userInfo.businessScore}
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: theme.palette.text.secondary, pb: 0.5 }}>/ 100</Typography>
+                    </Box>
+                    <LinearProgress
+                        variant="determinate"
+                        value={userInfo.businessScore}
+                        sx={{ height: 6, borderRadius: 3, mb: 1, bgcolor: 'rgba(255,255,255,0.05)' }}
+                    />
+                    <Typography variant="caption" sx={{ fontWeight: 600, color: theme.palette.text.primary }}>
+                        {userInfo.businessScore <= 30 ? 'Beginner' :
+                            userInfo.businessScore <= 60 ? 'Developing Entrepreneur' :
+                                userInfo.businessScore <= 80 ? 'Advanced Business Thinker' : 'Strategic Business Leader'}
+                    </Typography>
+                </Box>
+            )}
         </Box>
     );
 

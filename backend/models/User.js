@@ -30,6 +30,26 @@ const userSchema = mongoose.Schema({
         enum: ['manorwoman', 'learner'],
         default: 'learner',
     },
+    age: {
+        type: Number,
+        default: 0,
+    },
+    businessKnowledge: {
+        type: String,
+        default: '',
+    },
+    technologiesKnown: {
+        type: [String],
+        default: [],
+    },
+    resumeUrl: {
+        type: String,
+        default: '',
+    },
+    businessScore: {
+        type: Number,
+        default: 0,
+    },
 }, {
     timestamps: true,
 });

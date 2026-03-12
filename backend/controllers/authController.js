@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const Revenue = require('../models/Revenue');
 const jwt = require('jsonwebtoken');
 
 const generateToken = (id) => {
@@ -177,6 +178,11 @@ const getUserProfile = async (req, res) => {
                 email: user.email,
                 role: user.role,
                 businessRole: user.businessRole,
+                age: user.age,
+                businessKnowledge: user.businessKnowledge,
+                technologiesKnown: user.technologiesKnown,
+                resumeUrl: user.resumeUrl,
+                businessScore: user.businessScore,
             });
         } else {
             res.status(404).json({ message: 'User not found' });
@@ -186,4 +192,67 @@ const getUserProfile = async (req, res) => {
     }
 };
 
-module.exports = { authUser, registerUser, googleLogin, getUserProfile };
+// @desc    Update user profile
+// @route   PUT /api/users/profile
+// @access  Private
+const updateUserProfile = async (req, res) => {
+    try {
+        const user = await User.findById(req.user._id);
+
+        if (user) {
+            user.name = req.body.name || user.name;
+            user.age = req.body.age || user.age;
+            user.businessKnowledge = req.body.businessKnowledge || user.businessKnowledge;
+            user.technologiesKnown = req.body.technologiesKnown || user.technologiesKnown;
+            user.resumeUrl = req.body.resumeUrl || user.resumeUrl;
+
+            if (req.body.password) {
+                user.password = req.body.password;
+            }
+
+            // Business Score Calculation
+            // Score = (Knowledge: 30) + (Tech: 25) + (Data: 25) + (Resume: 20)
+            let score = 0;
+
+            // 1. Business Knowledge (30%)
+            if (user.businessKnowledge && user.businessKnowledge.length > 50) score += 30;
+            else if (user.businessKnowledge && user.businessKnowledge.length > 0) score += 15;
+
+            // 2. Technologies Known (25%)
+            if (user.technologiesKnown && user.technologiesKnown.length >= 4) score += 25;
+            else if (user.technologiesKnown && user.technologiesKnown.length > 0) score += (user.technologiesKnown.length * 5);
+
+            // 3. Business Data Entries (25%)
+            const entryCount = await Revenue.countDocuments({ userId: user._id });
+            if (entryCount >= 10) score += 25;
+            else if (entryCount > 0) score += (entryCount * 2.5);
+
+            // 4. Resume Completeness (20%)
+            if (user.resumeUrl) score += 20;
+
+            user.businessScore = Math.min(Math.round(score), 100);
+
+            const updatedUser = await user.save();
+
+            res.json({
+                _id: updatedUser._id,
+                name: updatedUser.name,
+                email: updatedUser.email,
+                role: updatedUser.role,
+                businessRole: updatedUser.businessRole,
+                age: updatedUser.age,
+                businessKnowledge: updatedUser.businessKnowledge,
+                technologiesKnown: updatedUser.technologiesKnown,
+                resumeUrl: updatedUser.resumeUrl,
+                businessScore: updatedUser.businessScore,
+                token: generateToken(updatedUser._id),
+            });
+        } else {
+            res.status(404).json({ message: 'User not found' });
+        }
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+module.exports = { authUser, registerUser, googleLogin, getUserProfile, updateUserProfile };

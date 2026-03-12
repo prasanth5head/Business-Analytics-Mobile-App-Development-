@@ -65,6 +65,8 @@ if (cluster.isMaster) {
     allowedHeaders: ['Content-Type', 'Authorization']
   }));
   app.use(express.json());
+  const path = require('path');
+  app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
   // Socket.io connection
   io.on('connection', (socket) => {
@@ -133,6 +135,7 @@ if (cluster.isMaster) {
 
   app.use('/api/users', require('./routes/userRoutes'));
   app.use('/api/market', require('./routes/marketRoutes'));
+  app.use('/api/upload', require('./routes/uploadRoutes'));
 
   const PORT = process.env.PORT || 5000;
 
