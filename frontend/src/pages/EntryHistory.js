@@ -4,7 +4,7 @@ import {
     TableContainer, TableHead, TableRow, Chip, Skeleton,
     Button, Snackbar, Alert, useTheme, Grid, Card, CardContent
 } from '@mui/material';
-import { DeleteOutline, History as HistoryIcon, AccessTime, Assessment, TrendingUp, TrendingDown, AccountBalanceWallet } from '@mui/icons-material';
+import { DeleteOutline, History as HistoryIcon, AccessTime, Assessment, TrendingUp, TrendingDown, AccountBalanceWallet, Restore } from '@mui/icons-material';
 import api from '../api';
 
 export default function EntryHistory() {
@@ -12,6 +12,7 @@ export default function EntryHistory() {
     const [loading, setLoading] = useState(true);
     const [data, setData] = useState([]);
     const [clearing, setClearing] = useState(false);
+    const [restoring, setRestoring] = useState(false);
     const [snack, setSnack] = useState({ open: false, msg: '', severity: 'info' });
 
     useEffect(() => {
@@ -34,19 +35,33 @@ export default function EntryHistory() {
     };
 
     const handleClearHistory = async () => {
-        if (!window.confirm("⚠️ DANGER: This will permanently delete ALL manual revenue history across the entire system. Are you absolutely sure?")) return;
+        if (!window.confirm("⚠️ This will clear your history globally from reports, but it will be preserved here. Are you sure?")) return;
 
         setClearing(true);
         try {
             const userInfo = JSON.parse(localStorage.getItem('userInfo'));
             const headers = { Authorization: `Bearer ${userInfo?.token}` };
             await api.delete('/api/market/revenue', { headers });
-            setData([]);
-            setSnack({ open: true, msg: '🗑️ All manual entry history permanently deleted.', severity: 'success' });
+            await fetchHistory();
+            setSnack({ open: true, msg: '🗑️ History cleared from global reports.', severity: 'success' });
         } catch (err) {
             setSnack({ open: true, msg: '❌ Failed to clear history.', severity: 'error' });
         }
         setClearing(false);
+    };
+
+    const handleRestoreHistory = async () => {
+        setRestoring(true);
+        try {
+            const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+            const headers = { Authorization: `Bearer ${userInfo?.token}` };
+            await api.put('/api/market/revenue/restore', {}, { headers });
+            await fetchHistory();
+            setSnack({ open: true, msg: '♻️ All history restored globally.', severity: 'success' });
+        } catch (err) {
+            setSnack({ open: true, msg: '❌ Failed to restore history.', severity: 'error' });
+        }
+        setRestoring(false);
     };
 
     if (loading) {
@@ -74,19 +89,34 @@ export default function EntryHistory() {
                         A raw chronological log of every single manual data entry.
                     </Typography>
                 </Box>
-                <Button
-                    variant="outlined"
-                    startIcon={<DeleteOutline />}
-                    onClick={handleClearHistory}
-                    disabled={clearing || data.length === 0}
-                    sx={{
-                        borderRadius: 3, fontWeight: 800, px: 3, height: 48,
-                        borderColor: '#f44336', color: '#f44336',
-                        '&:hover': { borderColor: '#d32f2f', bgcolor: 'rgba(244,67,54,0.05)' }
-                    }}
-                >
-                    {clearing ? 'Deleting...' : 'Clear All History'}
-                </Button>
+                <Box display="flex" gap={2}>
+                    <Button
+                        variant="outlined"
+                        startIcon={<Restore />}
+                        onClick={handleRestoreHistory}
+                        disabled={restoring || data.length === 0}
+                        sx={{
+                            borderRadius: 3, fontWeight: 800, px: 3, height: 48,
+                            borderColor: '#4caf50', color: '#4caf50',
+                            '&:hover': { borderColor: '#388e3c', bgcolor: 'rgba(76,175,80,0.05)' }
+                        }}
+                    >
+                        {restoring ? 'Restoring...' : 'Restore History'}
+                    </Button>
+                    <Button
+                        variant="outlined"
+                        startIcon={<DeleteOutline />}
+                        onClick={handleClearHistory}
+                        disabled={clearing || data.length === 0}
+                        sx={{
+                            borderRadius: 3, fontWeight: 800, px: 3, height: 48,
+                            borderColor: '#f44336', color: '#f44336',
+                            '&:hover': { borderColor: '#d32f2f', bgcolor: 'rgba(244,67,54,0.05)' }
+                        }}
+                    >
+                        {clearing ? 'Deleting...' : 'Clear Global Data'}
+                    </Button>
+                </Box>
             </Box>
 
             <Paper sx={{ p: 4, borderRadius: 4, border: `1px solid ${theme.palette.divider}`, mb: 4, display: 'flex', gap: 2, alignItems: 'center' }}>
@@ -164,16 +194,19 @@ export default function EntryHistory() {
                                 </TableHead>
                                 <TableBody>
                                     {batch.map((row) => (
-                                        <TableRow key={row._id} sx={{ '&:hover': { bgcolor: theme.palette.action.hover } }}>
+                                        <TableRow key={row._id} sx={{ opacity: row.isDeleted ? 0.6 : 1, '&:hover': { bgcolor: theme.palette.action.hover } }}>
                                             <TableCell>
-                                                <Chip label={row.month} size="small" variant="outlined" sx={{ fontWeight: 800, color: 'text.primary', borderColor: 'divider' }} />
+                                                <Box display="flex" alignItems="center" gap={1}>
+                                                    <Chip label={row.month} size="small" variant="outlined" sx={{ fontWeight: 800, color: 'text.primary', borderColor: 'divider' }} />
+                                                    {row.isDeleted && <Chip label="Cleared" size="small" color="error" variant="outlined" sx={{ height: 20, fontSize: '0.65rem' }} />}
+                                                </Box>
                                             </TableCell>
-                                            <TableCell sx={{ color: 'text.primary', fontWeight: 700 }}>
+                                            <TableCell sx={{ color: 'text.primary', fontWeight: 700, textDecoration: row.isDeleted ? 'line-through' : 'none' }}>
                                                 {row.product || 'All'}
                                             </TableCell>
-                                            <TableCell sx={{ fontWeight: 800, color: theme.palette.primary.main }}>₹{(row.amount || 0).toLocaleString()}</TableCell>
-                                            <TableCell sx={{ fontWeight: 800, color: row.profit >= 0 ? '#4caf50' : '#f44336' }}>₹{(row.profit || 0).toLocaleString()}</TableCell>
-                                            <TableCell sx={{ fontWeight: 800, color: '#f44336' }}>₹{(row.loss || 0).toLocaleString()}</TableCell>
+                                            <TableCell sx={{ fontWeight: 800, color: theme.palette.primary.main, textDecoration: row.isDeleted ? 'line-through' : 'none' }}>₹{(row.amount || 0).toLocaleString()}</TableCell>
+                                            <TableCell sx={{ fontWeight: 800, color: row.profit >= 0 ? '#4caf50' : '#f44336', textDecoration: row.isDeleted ? 'line-through' : 'none' }}>₹{(row.profit || 0).toLocaleString()}</TableCell>
+                                            <TableCell sx={{ fontWeight: 800, color: '#f44336', textDecoration: row.isDeleted ? 'line-through' : 'none' }}>₹{(row.loss || 0).toLocaleString()}</TableCell>
                                         </TableRow>
                                     ))}
                                 </TableBody>

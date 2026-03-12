@@ -156,7 +156,7 @@ const getMyBusinessData = async (req, res) => {
         let cached = await redis.get(cacheKey).catch(() => null);
         if (cached) return res.json(JSON.parse(cached));
 
-        const revenue = await Revenue.find({ userId });
+        const revenue = await Revenue.find({ userId, isDeleted: { $ne: true } });
         const myData = generateMyBusinessData(revenue);
 
         const totalSales = revenue.reduce((sum, r) => sum + (r.amount || 0), 0);
@@ -195,7 +195,7 @@ const getMyBusinessData = async (req, res) => {
             });
         }
 
-        const totalRecords = await Revenue.countDocuments({ userId });
+        const totalRecords = await Revenue.countDocuments({ userId, isDeleted: { $ne: true } });
         const result = {
             salesData: myData,
             productData,
@@ -275,10 +275,18 @@ const getManualRevenue = async (req, res) => {
 
 const clearRevenue = async (req, res) => {
     try {
-        await Revenue.deleteMany({ userId: req.user._id });
+        await Revenue.updateMany({ userId: req.user._id }, { isDeleted: true });
         await redis.del(`my_business_v2_${req.user._id}`).catch(() => null);
-        res.json({ message: 'Cleared' });
+        res.json({ message: 'History cleared globally but preserved in your entry logs.' });
     } catch (err) { res.status(500).json({ message: err.message }); }
 };
 
-module.exports = { getMarketData, getMyBusinessData, addRevenue, addRevenueBulk, getAIRecommendations, getManualRevenue, clearRevenue };
+const restoreRevenue = async (req, res) => {
+    try {
+        await Revenue.updateMany({ userId: req.user._id, isDeleted: true }, { isDeleted: false });
+        await redis.del(`my_business_v2_${req.user._id}`).catch(() => null);
+        res.json({ message: 'All deleted revenue history restored successfully.' });
+    } catch (err) { res.status(500).json({ message: err.message }); }
+};
+
+module.exports = { getMarketData, getMyBusinessData, addRevenue, addRevenueBulk, getAIRecommendations, getManualRevenue, clearRevenue, restoreRevenue };
