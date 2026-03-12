@@ -289,4 +289,22 @@ const restoreRevenue = async (req, res) => {
     } catch (err) { res.status(500).json({ message: err.message }); }
 };
 
-module.exports = { getMarketData, getMyBusinessData, addRevenue, addRevenueBulk, getAIRecommendations, getManualRevenue, clearRevenue, restoreRevenue };
+const clearRevenueBatch = async (req, res) => {
+    try {
+        const { ids } = req.body;
+        await Revenue.updateMany({ userId: req.user._id, _id: { $in: ids } }, { isDeleted: true });
+        await redis.del(`my_business_v2_${req.user._id}`).catch(() => null);
+        res.json({ message: 'Batch cleared successfully.' });
+    } catch (err) { res.status(500).json({ message: err.message }); }
+};
+
+const restoreRevenueBatch = async (req, res) => {
+    try {
+        const { ids } = req.body;
+        await Revenue.updateMany({ userId: req.user._id, _id: { $in: ids } }, { isDeleted: false });
+        await redis.del(`my_business_v2_${req.user._id}`).catch(() => null);
+        res.json({ message: 'Batch restored successfully.' });
+    } catch (err) { res.status(500).json({ message: err.message }); }
+};
+
+module.exports = { getMarketData, getMyBusinessData, addRevenue, addRevenueBulk, getAIRecommendations, getManualRevenue, clearRevenue, restoreRevenue, clearRevenueBatch, restoreRevenueBatch };

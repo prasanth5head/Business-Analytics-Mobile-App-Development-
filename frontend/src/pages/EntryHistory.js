@@ -64,6 +64,33 @@ export default function EntryHistory() {
         setRestoring(false);
     };
 
+    const handleClearBatch = async (batch) => {
+        if (!window.confirm("⚠️ This will clear this specific batch of entries globally from reports. Are you sure?")) return;
+        try {
+            const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+            const headers = { Authorization: `Bearer ${userInfo?.token}` };
+            const ids = batch.map(r => r._id);
+            await api.put('/api/market/revenue/batch/clear', { ids }, { headers });
+            await fetchHistory();
+            setSnack({ open: true, msg: '🗑️ Batch cleared from global reports.', severity: 'success' });
+        } catch (err) {
+            setSnack({ open: true, msg: '❌ Failed to clear batch.', severity: 'error' });
+        }
+    };
+
+    const handleRestoreBatch = async (batch) => {
+        try {
+            const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+            const headers = { Authorization: `Bearer ${userInfo?.token}` };
+            const ids = batch.map(r => r._id);
+            await api.put('/api/market/revenue/batch/restore', { ids }, { headers });
+            await fetchHistory();
+            setSnack({ open: true, msg: '♻️ Batch restored globally.', severity: 'success' });
+        } catch (err) {
+            setSnack({ open: true, msg: '❌ Failed to restore batch.', severity: 'error' });
+        }
+    };
+
     if (loading) {
         return (
             <Box sx={{ p: 4 }}>
@@ -136,14 +163,24 @@ export default function EntryHistory() {
 
                 return (
                     <Box key={index} mb={6}>
-                        <Typography variant="h4" sx={{ fontWeight: 900, mb: 2, color: 'text.primary', display: 'flex', alignItems: 'center', gap: 2, borderBottom: `4px solid ${theme.palette.primary.main}`, paddingBottom: 1 }}>
-                            Entry Batch {groupedData.length - index}
-                            <Chip
-                                label={`Submitted: ${new Date(batch[0]?.createdAt).toLocaleString()}`}
-                                size="small"
-                                sx={{ fontWeight: 'bold', bgcolor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)' }}
-                            />
-                        </Typography>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, borderBottom: `4px solid ${theme.palette.primary.main}`, paddingBottom: 1 }}>
+                            <Typography variant="h4" sx={{ fontWeight: 900, color: 'text.primary', display: 'flex', alignItems: 'center', gap: 2, m: 0 }}>
+                                Entry Batch {groupedData.length - index}
+                                <Chip
+                                    label={`Submitted: ${new Date(batch[0]?.createdAt).toLocaleString()}`}
+                                    size="small"
+                                    sx={{ fontWeight: 'bold', bgcolor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)' }}
+                                />
+                            </Typography>
+                            <Box display="flex" gap={1}>
+                                <Button size="small" variant="outlined" startIcon={<Restore />} onClick={() => handleRestoreBatch(batch)} sx={{ borderRadius: 2, fontWeight: 700, color: '#4caf50', borderColor: '#4caf50', '&:hover': { bgcolor: 'rgba(76,175,80,0.05)' } }}>
+                                    Restore Batch
+                                </Button>
+                                <Button size="small" variant="outlined" startIcon={<DeleteOutline />} onClick={() => handleClearBatch(batch)} sx={{ borderRadius: 2, fontWeight: 700, color: '#f44336', borderColor: '#f44336', '&:hover': { bgcolor: 'rgba(244,67,54,0.05)' } }}>
+                                    Clear Batch
+                                </Button>
+                            </Box>
+                        </Box>
 
                         {/* Stats Cards for the Batch */}
                         <Grid container spacing={2} mb={3}>
