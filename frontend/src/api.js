@@ -2,6 +2,7 @@ import axios from "axios";
 
 // Get base URL from environment variable, fallback to local if not set
 const baseURL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+export { baseURL };
 
 console.log('Mobile Debug: API URL is', baseURL);
 

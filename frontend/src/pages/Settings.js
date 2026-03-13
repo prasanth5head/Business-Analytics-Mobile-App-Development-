@@ -19,7 +19,7 @@ import {
     PictureAsPdf as PdfIcon,
     Delete as DeleteIcon
 } from '@mui/icons-material';
-import api from '../api';
+import api, { baseURL } from '../api';
 
 const Settings = () => {
     const [user, setUser] = useState({
@@ -324,9 +324,9 @@ const Settings = () => {
                                 bgcolor: 'rgba(0,0,0,0.2)'
                             }}>
                                 {user.resumeUrl.toLowerCase().endsWith('.pdf') ? (
-                                    <iframe src={user.resumeUrl} width="100%" height="100%" style={{ border: 'none' }} title="Resume Preview" />
+                                    <iframe src={user.resumeUrl.startsWith('http') ? user.resumeUrl : `${baseURL}${user.resumeUrl}`} width="100%" height="100%" style={{ border: 'none' }} title="Resume Preview" />
                                 ) : (
-                                    <Box component="img" src={user.resumeUrl} sx={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                                    <Box component="img" src={user.resumeUrl.startsWith('http') ? user.resumeUrl : `${baseURL}${user.resumeUrl}`} sx={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                                 )}
                                 <Button
                                     variant="contained"

@@ -11,10 +11,10 @@ const genAI = new GoogleGenerativeAI(API_KEY);
  * - gemini-1.5-flash: Stable workhorse, generous quota.
  */
 const MODELS = [
-    "gemini-3.0-flash",
-    "gemini-3-flash",
+    "gemini-2.0-flash",
     "gemini-2.0-flash-exp",
-    "gemini-1.5-flash"
+    "gemini-1.5-flash",
+    "gemini-1.5-flash-latest"
 ];
 
 /**
