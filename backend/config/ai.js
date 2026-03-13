@@ -11,9 +11,10 @@ const genAI = new GoogleGenerativeAI(API_KEY);
  * - gemini-1.5-flash: Stable workhorse, generous quota.
  */
 const MODELS = [
+    "gemini-2.0-flash",
     "gemini-1.5-flash",
-    "gemini-2.0-flash-exp",
-    "gemini-1.5-pro"
+    "gemini-1.5-pro",
+    "gemini-pro"
 ];
 
 /**
@@ -40,7 +41,7 @@ async function generateWithFallback(prompt, retriesPerModel = 2) {
 
                     if (!text) throw new Error("Empty response from AI");
 
-                    console.log(`[AI Success] Model: ${modelName}`);
+                    console.log(`[AI SUCCESS] Response received using model: ${modelName}`);
                     return text;
                 } catch (err) {
                     lastError = err;
@@ -48,7 +49,7 @@ async function generateWithFallback(prompt, retriesPerModel = 2) {
                     const isServiceUnavailable = message.includes("503") || message.includes("Service Unavailable");
                     const isQuotaExceeded = message.includes("429") || message.includes("Quota exceeded") || message.includes("Too Many Requests");
 
-                    console.error(`[AI Error] Model ${modelName} | Attempt ${attempt} | Error: ${message.substring(0, 100)}`);
+                    console.error(`[AI ERROR] Model: ${modelName} | Attempt: ${attempt} | Error: ${message.substring(0, 150)}`);
 
                     // If quota exceeded, don't bother retrying this model, move to next.
                     if (isQuotaExceeded) {
