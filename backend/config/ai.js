@@ -2,6 +2,12 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 require('dotenv').config();
 
 const API_KEY = (process.env.GEMINI_API_KEY || "").trim();
+console.log(`[AI CONFIG] API Key Length: ${API_KEY.length}`);
+if (API_KEY.length > 0) {
+    console.log(`[AI CONFIG] API Key starts with: ${API_KEY.substring(0, 4)}... ends with: ${API_KEY.substring(API_KEY.length - 4)}`);
+} else {
+    console.error(`[AI CONFIG] ERROR: GEMINI_API_KEY is empty or undefined!`);
+}
 const genAI = new GoogleGenerativeAI(API_KEY);
 
 /**
