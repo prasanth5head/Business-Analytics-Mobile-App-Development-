@@ -18,7 +18,8 @@ const PRODUCTS = [
     'Salon / Spa', 'Jewellery Shop', 'Footwear', 'Parking (Mall Income)',
     'Mobile Accessories', 'Book Store', 'Toy Store', 'Optical Shop', 'Watch Store',
     'Gym / Fitness Center', 'Gift Shop', 'Ice Cream Shop', 'Pharmacy', 'ATM / Banking',
-    'Tattoo Shop', 'Photo Studio', 'Pet Shop', 'Sweet Shop', 'Flower Shop'
+    'Tattoo Shop', 'Photo Studio', 'Pet Shop', 'Sweet Shop', 'Flower Shop', 
+    'GST', 'Transport Fee'
 ];
 
 export default function RevenueEntry() {
@@ -39,10 +40,10 @@ export default function RevenueEntry() {
             const updated = [...prev];
             const updatedRow = { ...updated[index], [field]: value };
 
-            // Calculate loss dynamically: Revenue - Profit
+            // Calculate loss dynamically: Profit - Revenue
             const revVal = Number(field === 'revenue' ? value : updatedRow.revenue) || 0;
             const proVal = Number(field === 'profit' ? value : updatedRow.profit) || 0;
-            updatedRow.loss = revVal - proVal;
+            updatedRow.loss = proVal - revVal;
 
             updated[index] = updatedRow;
             return updated;
@@ -76,7 +77,7 @@ export default function RevenueEntry() {
                 product: row.product || 'All',
                 amount: Number(row.revenue),
                 profit: Number(row.profit) || 0,
-                loss: Number(row.revenue) - (Number(row.profit) || 0),
+                loss: (Number(row.profit) || 0) - Number(row.revenue),
                 year: selectedYear
             }));
 

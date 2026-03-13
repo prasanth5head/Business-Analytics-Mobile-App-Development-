@@ -62,7 +62,7 @@ const generateTrendData = (baseSales, count = 200) => {
 
         const sales = Math.round(baseSales * (0.9 + Math.random() * 0.2));
         const profit = Math.round(sales * (0.2 + Math.random() * 0.4));
-        const loss = sales - profit;
+        const loss = profit - sales;
         const price = 500 + Math.floor(Math.random() * 5000);
         const gst = [5, 12, 18, 28][Math.floor(Math.random() * 4)];
 
@@ -177,7 +177,7 @@ const getMyBusinessData = async (req, res) => {
             const prodRevenue = revenue.filter(r => (r.product || 'All') === name);
             const sales = prodRevenue.reduce((sum, r) => sum + (r.amount || 0), 0);
             const profit = prodRevenue.reduce((sum, r) => sum + (r.profit || 0), 0);
-            const loss = sales - profit;
+            const loss = profit - sales;
             const price = prodRevenue.length > 0 ? Math.round(sales / prodRevenue.length) : 0;
             const gst = name.includes('Electronics') ? 18 : 5;
 
@@ -214,7 +214,7 @@ const addRevenue = async (req, res) => {
         let { amount, profit, month, product, year } = req.body;
         console.log(`[DATA INSERTION] Attempting to save single revenue record for user ${req.user._id}: ${month}/${year}, Product: ${product}, Amt: ${amount}`);
 
-        const loss = amount - profit;
+        const loss = profit - amount;
         const newRevenue = new Revenue({
             userId: req.user._id,
             amount, profit, loss, month, product,
@@ -244,7 +244,7 @@ const addRevenueBulk = async (req, res) => {
                 userId: req.user._id,
                 amount: revenueVal,
                 profit: profitVal,
-                loss: revenueVal - profitVal,
+                loss: profitVal - revenueVal,
                 year: rec.year || new Date().getFullYear()
             };
         });

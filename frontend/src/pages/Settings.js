@@ -297,22 +297,49 @@ const Settings = () => {
                             onChange={handleFileChange}
                         />
 
-                        <Box sx={{
-                            border: '2px dashed rgba(255,255,255,0.2)',
-                            borderRadius: 2,
-                            p: 3,
-                            textAlign: 'center',
-                            cursor: 'pointer',
-                            '&:hover': { bgcolor: 'rgba(255,255,255,0.03)' }
-                        }} onClick={() => fileInputRef.current?.click()}>
-                            <CloudUploadIcon sx={{ fontSize: 40, color: 'text.secondary', mb: 1 }} />
-                            <Typography variant="body2" color="text.secondary">
-                                Click to select Image or PDF
-                            </Typography>
-                            <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 1 }}>
-                                Max size: 5MB
-                            </Typography>
-                        </Box>
+                        {!user.resumeUrl || selectedFile ? (
+                            <Box sx={{
+                                border: '2px dashed rgba(255,255,255,0.2)',
+                                borderRadius: 2,
+                                p: 3,
+                                textAlign: 'center',
+                                cursor: 'pointer',
+                                '&:hover': { bgcolor: 'rgba(255,255,255,0.03)' }
+                            }} onClick={() => fileInputRef.current?.click()}>
+                                <CloudUploadIcon sx={{ fontSize: 40, color: 'text.secondary', mb: 1 }} />
+                                <Typography variant="body2" color="text.secondary">
+                                    Click to select Image or PDF
+                                </Typography>
+                                <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 1 }}>
+                                    Max size: 5MB
+                                </Typography>
+                            </Box>
+                        ) : (
+                            <Box sx={{
+                                border: '1px solid rgba(255,255,255,0.2)',
+                                borderRadius: 2,
+                                overflow: 'hidden',
+                                position: 'relative',
+                                height: 250,
+                                bgcolor: 'rgba(0,0,0,0.2)'
+                            }}>
+                                {user.resumeUrl.toLowerCase().endsWith('.pdf') ? (
+                                    <iframe src={user.resumeUrl} width="100%" height="100%" style={{ border: 'none' }} title="Resume Preview" />
+                                ) : (
+                                    <Box component="img" src={user.resumeUrl} sx={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                                )}
+                                <Button
+                                    variant="contained"
+                                    color="primary"
+                                    size="small"
+                                    startIcon={<CloudUploadIcon />}
+                                    sx={{ position: 'absolute', bottom: 10, right: 10, borderRadius: 2, backdropFilter: 'blur(10px)', background: 'rgba(0,0,0,0.6)', '&:hover': { background: 'rgba(0,0,0,0.8)' } }}
+                                    onClick={() => fileInputRef.current?.click()}
+                                >
+                                    Reupload
+                                </Button>
+                            </Box>
+                        )}
 
                         {selectedFile && (
                             <Box sx={{ mt: 3 }}>
@@ -352,16 +379,7 @@ const Settings = () => {
                             </Box>
                         )}
 
-                        {user.resumeUrl && !selectedFile && (
-                            <Box sx={{ mt: 3, p: 2, bgcolor: 'rgba(0,0,0,0.2)', borderRadius: 2 }}>
-                                <Typography variant="subtitle2" color="success.main" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                    Current Resume Uploaded
-                                </Typography>
-                                <Typography variant="caption" color="text.secondary" noWrap display="block" sx={{ mt: 1, wordBreak: 'break-all' }}>
-                                    {user.resumeUrl}
-                                </Typography>
-                            </Box>
-                        )}
+
                     </Paper>
 
                     <Paper elevation={0} sx={{

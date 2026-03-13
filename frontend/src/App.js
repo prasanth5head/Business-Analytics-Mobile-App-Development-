@@ -4,6 +4,7 @@ import Layout from './components/Layout';
 import ReactiveCursor from './components/ReactiveCursor';
 import PWAUpdateHandler from './components/PWAUpdateHandler';
 import ProtectedRoute from './components/ProtectedRoute';
+import MyBusinessProtectedRoute from './components/MyBusinessProtectedRoute';
 import { MarketProvider } from './context/MarketContext';
 import { MyBusinessProvider } from './context/MyBusinessContext';
 import { CustomThemeProvider } from './context/ThemeContext';
@@ -77,12 +78,14 @@ function App() {
                       <Route path="settings" element={<Settings />} />
                       <Route path="manual-report" element={<ManualReport />} />
                       <Route path="chat" element={<Chatai />} />
-                      <Route path="my-business/dashboard" element={<MyDashboard />} />
-                      <Route path="my-business/descriptive" element={<MyDescriptive />} />
-                      <Route path="my-business/diagnostic" element={<MyDiagnostic />} />
-                      <Route path="my-business/predictive" element={<MyPredictive />} />
-                      <Route path="my-business/prescriptive" element={<MyPrescriptive />} />
-                      <Route path="my-business/reports" element={<MyReports />} />
+                      <Route element={<MyBusinessProtectedRoute />}>
+                        <Route path="my-business/dashboard" element={<MyDashboard />} />
+                        <Route path="my-business/descriptive" element={<MyDescriptive />} />
+                        <Route path="my-business/diagnostic" element={<MyDiagnostic />} />
+                        <Route path="my-business/predictive" element={<MyPredictive />} />
+                        <Route path="my-business/prescriptive" element={<MyPrescriptive />} />
+                        <Route path="my-business/reports" element={<MyReports />} />
+                      </Route>
                       <Route path="*" element={<Dashboard />} />
                     </Route>
                   </Route>

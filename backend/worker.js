@@ -63,4 +63,4 @@ worker.on('failed', (job, err) => {
     console.error(`[AI WORKER] Job ${job.id} marked as FAILED:`, err.message);
 });
 
-console.log('AI Worker (gemini-3-flash-preview) initialized and listening...');
+console.log('AI Worker (gemini-3.0-flash) initialized and listening...');
